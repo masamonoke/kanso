@@ -1,38 +1,37 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <log.h>
 
-#include "glfw_context.h"
+#include "app.h"
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-
+static void clear(void);
 
 int32_t main(void) {
-	GLFWwindow* window;
-	int32_t status;
+	app_state_t* app_state;
 
-	status = 0;
-	if (glfw_context_create_window(&window, framebuffer_size_callback) && !window) {
-		goto L_RETURN;
+	if (app_new(&app_state)) {
+		return 1;
 	}
 
-	log_info("Created GLFW window");
+	while(!app_state->close) {
+		clear();
 
-	while(!glfwWindowShouldClose(window)) {
-		glfwSwapBuffers(window);
-		glfwPollEvents();
+		app_state->input(app_state);
+
+		app_state->update(app_state);
 	}
 
-	glfwTerminate();
+	app_state->free(app_state);
 
-L_RETURN:
-	return status;
+	return 0;
 }
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-	(void) window;
-    glViewport(0, 0, width, height);
+void clear(void) {
+	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
