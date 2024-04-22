@@ -17,3 +17,5 @@ void camera_update(GLFWwindow* window);
 float camera_fov(void);
 
 const float* camera_pos(void);
+
+const float* camera_front(void);

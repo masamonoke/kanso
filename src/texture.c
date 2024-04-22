@@ -7,6 +7,20 @@
 #include <glad/glad.h>
 #include <log.h>
 
+static void bind_jpg(uint8_t* texture_bytes, int32_t width, int32_t height) {
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_bytes);
+}
+
+static void bind_png(uint8_t* texture_bytes, int32_t width, int32_t height) {
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_bytes);
+}
+
+static const char* filename_ext(const char* filename) {
+    const char *dot = strrchr(filename, '.');
+    if(!dot || dot == filename) return "";
+    return dot + 1;
+}
+
 int32_t texture_create(const char* texname) {
 	uint32_t texture;
 	int32_t width;
@@ -27,7 +41,15 @@ int32_t texture_create(const char* texname) {
 
 	texture_bytes = stbi_load(texname, &width, &height, &nr_channels, 0);
 	if (texture_bytes) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_bytes);
+		if (0 == strcmp(filename_ext(texname), "png")) {
+			bind_png(texture_bytes, width, height);
+		} else if (0 == strcmp(filename_ext(texname), "jpg")) {
+			bind_jpg(texture_bytes, width, height);
+		} else {
+			log_error("Failed to define image extension");
+			return -1;
+		}
+		/* glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_bytes); */
 		glGenerateMipmap(GL_TEXTURE_2D);
 	} else {
 		log_error("Failed to load texture %s", texname);

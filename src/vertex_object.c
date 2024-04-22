@@ -18,10 +18,10 @@ void vertex_object_bind_vertices(vertex_object_t* vo, float* vertices, size_t ve
 	glBindVertexArray(0);
 }
 
-void vertex_object_bind_attr(vertex_object_t* vo, size_t att_idx, int32_t stride, size_t offset) {
+void vertex_object_bind_attr(vertex_object_t* vo, size_t att_idx, int32_t stride, size_t offset, size_t num) {
 	glBindVertexArray(vo->vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vo->vbo);
-	glVertexAttribPointer(att_idx, 3, GL_FLOAT, GL_FALSE, stride, (const void*) offset); // NOLINT
+	glVertexAttribPointer(att_idx, num, GL_FLOAT, GL_FALSE, stride, (const void*) offset); // NOLINT
 	glEnableVertexAttribArray(att_idx);
 }
 

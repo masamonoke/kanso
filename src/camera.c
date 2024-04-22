@@ -202,3 +202,7 @@ void camera_init_glfw_callbacks(GLFWwindow* window) {
 const float* camera_pos(void) {
 	return camera.pos;
 }
+
+const float* camera_front(void) {
+	return camera.front;
+}

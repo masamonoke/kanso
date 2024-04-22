@@ -13,6 +13,6 @@ void vertex_object_create(vertex_object_t* vo);
 
 void vertex_object_bind_vertices(vertex_object_t* vo, float* vertices, size_t verices_len);
 
-void vertex_object_bind_attr(vertex_object_t* vo, size_t att_idx, int32_t stride, size_t offset);
+void vertex_object_bind_attr(vertex_object_t* vo, size_t att_idx, int32_t stride, size_t offset, size_t num);
 
 void vertex_object_bind_indices(vertex_object_t* vo, uint32_t* indices, size_t indices_len);

@@ -18,6 +18,7 @@ struct app_state {
 	uint32_t shader_program;
 	uint32_t light_shader_program;
 	uint32_t texture;
+	uint32_t specular_map;
 	camera_t* camera;
 	bool close;
 	void (*update) (app_state_t* state);
