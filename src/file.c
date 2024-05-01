@@ -9,7 +9,6 @@ int32_t file_read(const char* filename, char** buf) {
 	int32_t status;
 	char* tmp;
 
-	tmp = *buf;
 	status = 0;
 	fp = fopen(filename, "rb");
 	if (fp == NULL) {
@@ -22,15 +21,13 @@ int32_t file_read(const char* filename, char** buf) {
 	tmp = malloc(sizeof(char) * (len + 1));
 	if (tmp) {
 		fread(tmp, 1, len, fp);
+		tmp[len] = '\0';
+		*buf = tmp;
 	} else {
 		status = 1;
 	}
 
-	tmp[len] = '\0';
-
 	fclose(fp);
-
-	*buf = tmp;
 
 	return status;
 }

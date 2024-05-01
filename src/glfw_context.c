@@ -54,6 +54,8 @@ int32_t glfw_context_create_window(GLFWwindow** window, void (*framebuffer_size_
 
 	glfwSetFramebufferSizeCallback(*window, framebuffer_size_callback);
 
+	log_info("Created GLFW window");
+
 L_RETURN:
 	return status;
 }

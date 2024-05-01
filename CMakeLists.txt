@@ -5,27 +5,24 @@ cmake_minimum_required(VERSION 3.28.0)
 set(NAME kanso)
 project(${NAME})
 
-set(CMAKE_C_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 add_subdirectory(deps/glfw)
 add_subdirectory(deps/cglm)
+add_subdirectory(deps/assimp)
+set(ASSIMP_BUILD_STATIC_LIB ON)
 
 include_directories(${OPENGL_INCLUDE_DIRS})
-
 include_directories(include)
 include_directories(deps/log.c/src)
+include_directories(deps/assimp/include)
 
 find_package(OpenGL REQUIRED)
 message(STATUS "Found OpenGL")
 
-find_package(glfw3 REQUIRED)
-message(STATUS "Found GLFW3")
-
-find_package(glfw3 REQUIRED)
-message(STATUS "Found GLM")
-
 file(GLOB SRC
      "src/*.c"
+     "src/*.cpp"
 	 "include/*.h"
 	 deps/log.c/src/log.c
 )
@@ -51,7 +48,14 @@ add_custom_command(TARGET assets POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets ${CMAKE_BINARY_DIR}/assets
 )
 
-target_compile_options(${PROJECT_NAME} PRIVATE -Waddress -Wall -Warray-bounds -Wbool-operation -Wchar-subscripts -Wcomment -Wmisleading-indentation -Wparentheses -Wextra)
-target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address,undefined,null,bounds)
+if (NOT MSVC)
+	target_compile_options(${PROJECT_NAME} PRIVATE -Waddress -Wall -Warray-bounds -Wbool-operation -Wchar-subscripts -Wcomment -Wmisleading-indentation -Wparentheses -Wextra)
+	target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address,undefined,null,bounds)
+endif()
 
-target_link_libraries(${PROJECT_NAME} glfw OpenGL::GL cglm)
+target_link_libraries(${PROJECT_NAME} glfw OpenGL::GL cglm assimp)
+
+find_program(iwyu_path NAMES include-what-you-use iwyu)
+if (iwyu_path)
+	set_property(TARGET ${NAME} PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
+endif()

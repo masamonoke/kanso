@@ -7,56 +7,60 @@
 #include <glad/glad.h>
 #include <log.h>
 
-static void bind_jpg(uint8_t* texture_bytes, int32_t width, int32_t height) {
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_bytes);
-}
-
-static void bind_png(uint8_t* texture_bytes, int32_t width, int32_t height) {
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_bytes);
-}
-
-static const char* filename_ext(const char* filename) {
-    const char *dot = strrchr(filename, '.');
-    if(!dot || dot == filename) return "";
-    return dot + 1;
-}
-
-int32_t texture_create(const char* texname) {
+int32_t texture_create_gl_texture(const char* texname) {
 	uint32_t texture;
 	int32_t width;
 	int32_t height;
 	int32_t nr_channels;
 	uint8_t* texture_bytes;
+	int32_t status;
 
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	status = 0;
 
 	stbi_set_flip_vertically_on_load(true);
 
 	texture_bytes = stbi_load(texname, &width, &height, &nr_channels, 0);
 	if (texture_bytes) {
-		if (0 == strcmp(filename_ext(texname), "png")) {
-			bind_png(texture_bytes, width, height);
-		} else if (0 == strcmp(filename_ext(texname), "jpg")) {
-			bind_jpg(texture_bytes, width, height);
-		} else {
-			log_error("Failed to define image extension");
-			return -1;
+		GLenum format;
+		switch (nr_channels) {
+			case 1:
+				format = GL_RED;
+				break;
+			case 3:
+				format = GL_RGB;
+				break;
+			case 4:
+				format = GL_RGBA;
+				break;
+			default:
+				log_error("Unknown texture %s format", texname);
+				status = -1;
+				goto L_FREE;
 		}
-		/* glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_bytes); */
+
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, (int32_t) format, width, height, 0, format, GL_UNSIGNED_BYTE, texture_bytes);
 		glGenerateMipmap(GL_TEXTURE_2D);
+
 	} else {
 		log_error("Failed to load texture %s", texname);
-		return -1;
+		status = -1;
 	}
 
+L_FREE:
 	stbi_image_free(texture_bytes);
+
+	if (status) {
+		return status;
+	}
 
 	return (int32_t) texture;
 }
