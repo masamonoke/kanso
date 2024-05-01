@@ -1,4 +1,3 @@
-#include <stdbool.h>
 #include <memory.h>
 
 #include <cglm/cglm.h>

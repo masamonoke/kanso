@@ -5,11 +5,8 @@
 #include "keys.h"
 
 #include <log.h>
-#include <cglm/cglm.h>
-#include <cglm/struct.h>
 
 #include <stdlib.h>
-#include <memory.h>
 #include <assert.h>
 
 /*! @brief Reads key input

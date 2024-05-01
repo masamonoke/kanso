@@ -1,6 +1,6 @@
 include(./.env.cmake OPTIONAL RESULT_VARIABLE LOCAL_ENV)
 
-cmake_minimum_required(VERSION 3.28.0)
+cmake_minimum_required(VERSION 3.23.2)
 
 set(NAME kanso)
 project(${NAME})
@@ -50,7 +50,9 @@ add_custom_command(TARGET assets POST_BUILD
 
 if (NOT MSVC)
 	target_compile_options(${PROJECT_NAME} PRIVATE -Waddress -Wall -Warray-bounds -Wbool-operation -Wchar-subscripts -Wcomment -Wmisleading-indentation -Wparentheses -Wextra)
-	target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address,undefined,null,bounds)
+	if (NOT WIN32)
+		target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address,undefined,null,bounds)
+	endif()
 endif()
 
 target_link_libraries(${PROJECT_NAME} glfw OpenGL::GL cglm assimp)

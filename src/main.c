@@ -1,12 +1,4 @@
 #include <stdint.h>
-#include <stdio.h>
-#include <math.h>
-#include <stdlib.h>
-#include <assert.h>
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <log.h>
 
 #include "app.h"
 

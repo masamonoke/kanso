@@ -4,7 +4,6 @@
 #include <cglm/cglm.h>
 
 #include <math.h>
-#include <memory.h>
 
 static void input(GLFWwindow* window);
 

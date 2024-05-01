@@ -1,7 +1,5 @@
 #include <glad/glad.h>
 
-#include <stdlib.h>
-
 #include "window.h"
 #include "glfw_context.h"
 

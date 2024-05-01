@@ -2,10 +2,8 @@
 #include "file.h"
 
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include <log.h>
 
-#include <stdio.h>
 #include <stdlib.h>
 
 uint32_t shader_create_program(const char* vertex_file, const char* frag_file) { // NOLINT
