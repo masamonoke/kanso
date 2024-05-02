@@ -48,16 +48,18 @@ add_custom_command(TARGET assets POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets ${CMAKE_BINARY_DIR}/assets
 )
 
+find_program(iwyu_path NAMES include-what-you-use iwyu)
+if (iwyu_path)
+	set_property(TARGET ${NAME} PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
+endif()
+
 if (NOT MSVC)
-	target_compile_options(${PROJECT_NAME} PRIVATE -Waddress -Wall -Warray-bounds -Wbool-operation -Wchar-subscripts -Wcomment -Wmisleading-indentation -Wparentheses -Wextra)
-	if (NOT WIN32)
+	target_compile_options(${PROJECT_NAME} PRIVATE -Waddress -Wall -Warray-bounds -Wbool-operation -Wchar-subscripts -Wcomment -Wmisleading-indentation -Wparentheses -Wextra -pedantic)
+	if (NOT WIN32 AND ${CMAKE_BUILD_TYPE} MATCHES Debug)
+		message(STATUS "Using fsanitize")
 		target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address,undefined,null,bounds)
 	endif()
 endif()
 
 target_link_libraries(${PROJECT_NAME} glfw OpenGL::GL cglm assimp)
 
-find_program(iwyu_path NAMES include-what-you-use iwyu)
-if (iwyu_path)
-	set_property(TARGET ${NAME} PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
-endif()

@@ -87,10 +87,17 @@ int32_t mesh_new(mesh_t** mesh, vertex_vector_t vertices, int32_vector_t indices
 
 void mesh_delete(mesh_t** mesh) {
 	free((*mesh)->indices_vector.array);
+	(*mesh)->indices_vector.array = NULL;
 	free((*mesh)->vertices_vector.vertices);
+	(*mesh)->vertices_vector.vertices = NULL;
 	free((*mesh)->textures_vector.textures->path);
+	(*mesh)->textures_vector.textures->path = NULL;
 	free((*mesh)->textures_vector.textures->type);
+	(*mesh)->textures_vector.textures->type = NULL;
 	free((*mesh)->textures_vector.textures);
+	(*mesh)->textures_vector.textures = NULL;
 	free(*mesh);
+	*mesh = NULL;
+	log_debug("Freed mesh");
 }
 

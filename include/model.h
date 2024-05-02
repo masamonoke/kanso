@@ -10,7 +10,8 @@ typedef struct model {
 	size_t meshes_count;
 	const char* directory;
 	void (*draw) (const struct model*, uint32_t);
-	void (*free) (struct model** model);
 } model_t;
 
 int32_t model_new(model_t** model, const char* path);
+
+void model_free(model_t** model);

@@ -48,12 +48,10 @@ namespace {
 				auto str = std::string(model->directory) + '/' + std::string(filename.C_Str());
 				texture_t t;
 				t.id = texture_create_gl_texture(str.c_str());
-				char* type = static_cast<char*>(malloc((sizeof(char) * type_name.length()) + 1));
-				std::strcpy(type, type_name.c_str());
-				t.type = type;
-				char* f = static_cast<char*>(malloc(sizeof(char) * strlen(str.c_str()) + 1));
-				std::strcpy(f, str.c_str());
-				t.path = f;
+				t.type = static_cast<char*>(malloc((sizeof(char) * type_name.length()) + 1));
+				std::strcpy(t.type, type_name.c_str());
+				t.path = static_cast<char*>(malloc(sizeof(char) * strlen(str.c_str()) + 1));
+				std::strcpy(t.path, str.c_str());
 				textures.push_back(t);
 				loaded_textures.push_back(t);
 			}
@@ -123,7 +121,6 @@ namespace {
 
 		texture_vector_t textures_v;
 		textures_v.textures = static_cast<texture_t*>(malloc(sizeof(texture_t) * textures.size()));
-		// chars will be freed in model destructor
 		memcpy(textures_v.textures, textures.data(), sizeof(texture_t) * textures.size());
 		textures_v.size = textures.size();
 
@@ -171,7 +168,7 @@ namespace {
 		path_str = path_str.substr(0, path_str.find_last_of('/')).c_str();
 		char* tmp = static_cast<char*>(malloc((sizeof(char) * path_str.length()) + 1));
 		std::strcpy(tmp, path_str.c_str());
-		model->directory = tmp;
+		model->directory = tmp;;
 
 		std::vector<aiMesh*> ai_meshes;
 		collect_meshes(scene->mRootNode, scene, ai_meshes);
@@ -186,22 +183,23 @@ namespace {
 		model->meshes_count = meshes.size();
 		model->draw = draw;
 	}
-
-	void delete_model(model_t** model) {
-		for (size_t i = 0; i < (*model)->meshes_count; i++) {
-			mesh_delete(&(*model)->meshes[i]);
-		}
-		free(const_cast<char*>((*model)->directory));
-		free(*model);
-	}
 }
 
 int32_t model_new(model_t** model, const char* path) {
 	*model = static_cast<model_t*>(malloc(sizeof(model_t)));
 	load_model(*model, path);
 
-	(*model)->free = delete_model;
-
 	return 0;
 }
 
+void model_free(model_t** model) {
+	for (size_t i = 0; i < (*model)->meshes_count; i++) {
+		mesh_delete(&(*model)->meshes[i]);
+	}
+	(*model)->meshes = NULL;
+	free(const_cast<char*>((*model)->directory));
+	(*model)->directory = NULL;
+	free(*model);
+	*model = NULL;
+	log_debug("Freed model");
+}

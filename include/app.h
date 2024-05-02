@@ -23,7 +23,6 @@ struct app_state {
 	 *  @param[in] app_state_t** ctx: An app state which will hold all data about current context
 	*/
 	void (*input) (app_state_t* state);
-	void (*free) (app_state_t* state);
 };
 
 /*! @brief Creating new app context
@@ -32,3 +31,9 @@ struct app_state {
  * @pointer_lifetime mallocs memory for state. Caller should free context with call ctx.free(ctx)
 */
 int32_t app_new(app_state_t** state);
+
+/*! @brief Frees all fields in application context and context itself
+ * @param[in] app_state_t** ctx: An app state which will hold all data about current context
+ * @pointer_lifetime *ctx pointer becomes NULL after free
+*/
+void app_free(app_state_t** ctx);

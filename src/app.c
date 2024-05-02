@@ -31,8 +31,6 @@ static void update(app_state_t* ctx);
 /*! @brief Updates all states in context
  * @param[in] app_state_t** ctx: An app state which will hold all data about current context
 */
-static void free_app_ctx(app_state_t* ctx);
-
 int32_t app_new(app_state_t** ctx) {
 	*ctx = malloc(sizeof(app_state_t));
 
@@ -48,7 +46,6 @@ int32_t app_new(app_state_t** ctx) {
 
 	(*ctx)->update = update;
 	(*ctx)->input = input;
-	(*ctx)->free = free_app_ctx;
 
 	camera_init_callbacks((*ctx)->window);
 
@@ -57,6 +54,14 @@ int32_t app_new(app_state_t** ctx) {
 	(*ctx)->close = false;
 
 	return 0;
+}
+
+void app_free(app_state_t** ctx) {
+	window_free(&(*ctx)->window);
+	scene_free(&(*ctx)->scene);
+	free(*ctx);
+	*ctx = NULL;
+	log_info("Freed application");
 }
 
 
@@ -92,12 +97,3 @@ static void update(app_state_t* ctx) {
 	draw(ctx);
 }
 
-static void free_app_ctx(app_state_t* ctx) {
-	window_free(&ctx->window);
-	ctx->scene->free(&ctx->scene);
-	assert(ctx->scene == NULL);
-	assert(ctx->window == NULL);
-	free(ctx);
-
-	log_info("Freed application");
-}

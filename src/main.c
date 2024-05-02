@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdio.h>
 
 #include "app.h"
 
@@ -15,7 +16,7 @@ int32_t main(void) {
 		app_state->update(app_state);
 	}
 
-	app_state->free(app_state);
+	app_free(&app_state);
 
 	return 0;
 }

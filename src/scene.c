@@ -6,6 +6,7 @@
 
 #include <glad/glad.h>
 #include <cglm/cglm.h>
+#include <log.h>
 
 #include <assert.h>
 
@@ -73,7 +74,6 @@ static void draw_models(struct transform t, uint32_t shader_program, model_t* mo
 
 static void draw(scene_t* scene);
 
-static void free_scene(scene_t** scene);
 
 int32_t scene_new(scene_t** scene) {
 	*scene = malloc(sizeof(scene_t));
@@ -95,9 +95,20 @@ int32_t scene_new(scene_t** scene) {
 	model_new(&(*scene)->scn_ctx->model, "assets/backpack/backpack.obj");
 
 	(*scene)->draw = draw;
-	(*scene)->free = free_scene;
 
 	return 0;
+}
+
+void scene_free(scene_t** scene) {
+	model_free(&(*scene)->scn_ctx->model);
+	glDeleteVertexArrays(1, &(*scene)->scn_ctx->vo.vao);
+	glDeleteBuffers(1, &(*scene)->scn_ctx->vo.vbo);
+	glDeleteBuffers(1, &(*scene)->scn_ctx->vo.ebo);
+	free((*scene)->scn_ctx);
+	(*scene)->scn_ctx = NULL;
+	free(*scene);
+	*scene = NULL;
+	log_debug("Freed scene");
 }
 
 
@@ -175,18 +186,4 @@ static void draw (scene_t* scene) {
 	setup_lights(scene->scn_ctx->model_shader_program);
 
 	draw_models(t, scene->scn_ctx->model_shader_program, scene->scn_ctx->model);
-}
-
-static void free_scene(scene_t** scene) {
-	(*scene)->scn_ctx->model->free(&(*scene)->scn_ctx->model);
-	(*scene)->scn_ctx->model = NULL;
-	assert((*scene)->scn_ctx->model == NULL);
-	glDeleteVertexArrays(1, &(*scene)->scn_ctx->vo.vao);
-	glDeleteBuffers(1, &(*scene)->scn_ctx->vo.vbo);
-	glDeleteBuffers(1, &(*scene)->scn_ctx->vo.ebo);
-	free((*scene)->scn_ctx);
-	(*scene)->scn_ctx = NULL;
-	assert((*scene)->scn_ctx == NULL);
-	free(*scene);
-	*scene = NULL;
 }
