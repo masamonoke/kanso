@@ -54,10 +54,12 @@ if (iwyu_path)
 endif()
 
 if (NOT MSVC)
-	target_compile_options(${PROJECT_NAME} PRIVATE -Waddress -Wall -Warray-bounds -Wbool-operation -Wchar-subscripts -Wcomment -Wmisleading-indentation -Wparentheses -Wextra -pedantic)
+	target_compile_options(${PROJECT_NAME} PRIVATE -Waddress -Wall -Warray-bounds -Wbool-operation -Wchar-subscripts -Wcomment
+		-Wmisleading-indentation -Wparentheses -Wextra -pedantic -Wstrict-prototypes -Wshadow -Wconversion -Wvla -Wdouble-promotion -Wmissing-noreturn
+		-Wmissing-format-attribute -Wmissing-prototypes)
 	if (NOT WIN32 AND ${CMAKE_BUILD_TYPE} MATCHES Debug)
 		message(STATUS "Using fsanitize")
-		target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address,undefined,null,bounds)
+		target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address,undefined,null,bounds,leak)
 	endif()
 endif()
 
