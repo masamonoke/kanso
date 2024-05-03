@@ -12,8 +12,4 @@ cmake --build . -j 4
 ```cmake
 set(CMAKE_C_COMPILER /path/to/your/c/compiler)
 ```
-<p>Then you need to update cmake cache if you already have it in your build folder: </p>
-
-```console
-cmake ..
-```
+<p>To apply new C compiler you need to remove old build and cmake cache and do upper commands again</p>
