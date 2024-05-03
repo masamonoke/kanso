@@ -13,7 +13,7 @@ struct transform {
 
 #define TRANSFORM_IDENTITY { .model = GLM_MAT4_IDENTITY_INIT, .view = GLM_MAT4_IDENTITY_INIT, .proj = GLM_MAT4_IDENTITY_INIT }
 
-uint32_t shader_create_program(const char* vertex_shader, const char* fragment_shader);
+int32_t shader_create_program(const char* vertex_file, const char* frag_file, uint32_t* shader_program);
 
 void shader_set_bool(uint32_t shader_program, const char* name, bool value);
 

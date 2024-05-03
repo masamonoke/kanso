@@ -17,6 +17,12 @@ int32_t glfw_context_create_window(GLFWwindow** window, void (*framebuffer_size_
 
 	status = 0;
 
+	// valgrind and address sanitizer may show gpu memory leak after this function
+	// and it not freed after glfwTerminate() call
+	// but that is not glfw problem or anything else but PU drivers (libraries outside glfw control)
+	// like to allocate some global memory and keep it allocated even when GL/Vulkan context is destroyed.
+	// They have some globals/statics that are never released.
+	// So if valgrind shows memory coming from them, this is expected.
 	glfwInit();
 
 #ifdef __APPLE__

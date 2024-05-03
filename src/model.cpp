@@ -16,6 +16,7 @@
 extern "C" {
 #include "model.h"
 #include "texture.h"             // for texture_t, texture_create_gl_texture
+#include "shader.h"
 
 #include <log.h>                 // for log_error, log_info
 #ifdef __cplusplus
@@ -30,7 +31,7 @@ namespace {
 	{
 		std::vector<texture_t> textures;
 
-		for (size_t i = 0; i < mat->GetTextureCount(ai_type); i++) {
+		for (uint32_t i = 0; i < mat->GetTextureCount(ai_type); i++) {
 			aiString filename;
 			mat->GetTexture(ai_type, i, &filename);
 
@@ -47,7 +48,13 @@ namespace {
 			if (!skip) {
 				auto str = std::string(model->directory) + '/' + std::string(filename.C_Str());
 				texture_t t;
-				t.id = texture_create_gl_texture(str.c_str());
+				auto tex_id = texture_create_gl_texture(str.c_str());
+				if (tex_id >= 0) {
+					t.id = static_cast<uint32_t>(tex_id);
+				} else {
+					log_error("Failed to create texture");
+					continue;
+				}
 				t.type = static_cast<char*>(malloc((sizeof(char) * type_name.length()) + 1));
 				std::strcpy(t.type, type_name.c_str());
 				t.path = static_cast<char*>(malloc(sizeof(char) * strlen(str.c_str()) + 1));
@@ -125,9 +132,12 @@ namespace {
 		textures_v.size = textures.size();
 
 		mesh_t* m;
-		mesh_new(&m, vertices_v, indices_v, textures_v);
-
-		return m;
+		if (mesh_new(&m, vertices_v, indices_v, textures_v)) {
+			log_error("Failed to create mesh");
+			return NULL;
+		} else {
+			return m;
+		}
 	}
 
 	void collect_meshes(aiNode* node, const aiScene* scene, std::vector<aiMesh*>& meshes) { // NOLINT
@@ -143,16 +153,19 @@ namespace {
 
 	std::vector<mesh_t*> process_meshes(model_t* model, const aiScene* scene, const std::vector<aiMesh*>& ai_meshes, std::vector<mesh_t*>& meshes) {
 		for (size_t i = 0; i < ai_meshes.size(); i++) {
-			meshes[i] = process_mesh(model, ai_meshes[i], scene);
+			auto m = process_mesh(model, ai_meshes[i], scene);
+			if (m) {
+				meshes[i] = m;
+			}
 		}
 
 		return meshes;
 	}
 
-	void draw(const model_t* model, uint32_t shader_program) {
+	void draw(const model_t* model) {
 		for (size_t i = 0; i < model->meshes_count; i++) {
 			assert(model->meshes[i] != nullptr);
-			model->meshes[i]->draw(model->meshes[i], shader_program);
+			model->meshes[i]->draw(model->meshes[i], model->shader_program);
 		}
 	}
 
@@ -168,7 +181,7 @@ namespace {
 		path_str = path_str.substr(0, path_str.find_last_of('/')).c_str();
 		char* tmp = static_cast<char*>(malloc((sizeof(char) * path_str.length()) + 1));
 		std::strcpy(tmp, path_str.c_str());
-		model->directory = tmp;;
+		model->directory = tmp;
 
 		std::vector<aiMesh*> ai_meshes;
 		collect_meshes(scene->mRootNode, scene, ai_meshes);
@@ -189,6 +202,10 @@ int32_t model_new(model_t** model, const char* path) {
 	*model = static_cast<model_t*>(malloc(sizeof(model_t)));
 	load_model(*model, path);
 
+	if (shader_create_program("shaders/backpack.vert", "shaders/backpack.frag", &(*model)->shader_program)) {
+		log_error("Failed to compile model %s shader program", path);
+	}
+
 	return 0;
 }
 
@@ -196,6 +213,7 @@ void model_free(model_t** model) {
 	for (size_t i = 0; i < (*model)->meshes_count; i++) {
 		mesh_delete(&(*model)->meshes[i]);
 	}
+	free((*model)->meshes);
 	(*model)->meshes = NULL;
 	free(const_cast<char*>((*model)->directory));
 	(*model)->directory = NULL;

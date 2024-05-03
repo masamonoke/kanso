@@ -13,7 +13,7 @@ extern void camera_mouse_callback(window_t* window, double xpos_d, double ypos_d
 extern void camera_change_fov_callback(window_t* window, double xoffset, double yoffset);
 
 void camera_move_front(float camera_speed) {
-	float tmp[3];
+	vec3 tmp;
 	memcpy(tmp, camera.front, sizeof(float) * 3);
 	tmp[0] *= camera_speed;
 	tmp[1] *= camera_speed;
@@ -22,7 +22,7 @@ void camera_move_front(float camera_speed) {
 }
 
 void camera_move_back(float camera_speed) {
-	float tmp[3];
+	vec3 tmp;
 	memcpy(tmp, camera.front, sizeof(float) * 3);
 	tmp[0] *= camera_speed;
 	tmp[1] *= camera_speed;
@@ -31,7 +31,7 @@ void camera_move_back(float camera_speed) {
 }
 
 void camera_move_left(float camera_speed) {
-	float cross[3];
+	vec3 cross;
 
 	glm_cross(camera.front, camera.up, cross);
 	glm_normalize(cross);
@@ -44,7 +44,7 @@ void camera_move_left(float camera_speed) {
 }
 
 void camera_move_right(float camera_speed) {
-	float cross[3];
+	vec3 cross;
 
 	glm_cross(camera.front, camera.up, cross);
 	glm_normalize(cross);
@@ -57,7 +57,7 @@ void camera_move_right(float camera_speed) {
 }
 
 void camera_move_up(float camera_speed) {
-	float cross[3];
+	vec3 cross;
 
 	memcpy(cross, camera.up, sizeof(float) * 3);
 	glm_normalize(cross);
@@ -70,7 +70,7 @@ void camera_move_up(float camera_speed) {
 }
 
 void camera_move_down(float camera_speed) {
-	float cross[3];
+	vec3 cross;
 
 	memcpy(cross, camera.up, sizeof(float) * 3);
 	glm_normalize(cross);
@@ -91,7 +91,7 @@ const float* camera_front(void) {
 }
 
 void camera_set_view(mat4 view) {
-	float direction[3];
+	vec3 direction;
 
 	glm_vec3_add(camera.pos, camera.front, direction);
 	glm_lookat(camera.pos, direction, camera.up, view);

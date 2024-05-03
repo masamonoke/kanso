@@ -16,7 +16,7 @@ int32_t file_read(const char* filename, char** buf) {
 	}
 
 	fseek(fp, 0, SEEK_END);
-	len = ftell(fp);
+	len = (size_t) ftell(fp);
 	fseek(fp, 0, SEEK_SET);
 	tmp = malloc(sizeof(char) * (len + 1));
 	if (tmp) {

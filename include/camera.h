@@ -10,9 +10,9 @@
 /*! @brief Camera specific data. There is only one camera in this build.
 */
 struct camera {
-	float pos[3];
-	float front[3];
-	float up[3];
+	vec3 pos;
+	vec3 front;
+	vec3 up;
 	float fov;
 };
 

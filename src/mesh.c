@@ -36,7 +36,7 @@ static void draw_mesh(mesh_t* mesh, uint32_t shader_program) {
 	uint32_t specular_nr;
 	uint32_t height_nr;
 	uint32_t normal_nr;
-	size_t i;
+	uint32_t i;
 	char name[64];
 	char number[32];
 
@@ -86,18 +86,32 @@ int32_t mesh_new(mesh_t** mesh, vertex_vector_t vertices, int32_vector_t indices
 }
 
 void mesh_delete(mesh_t** mesh) {
+	size_t i;
+
+	glDeleteVertexArrays(1, &(*mesh)->vo.vao);
+	glDeleteBuffers(1, &(*mesh)->vo.vbo);
+	glDeleteBuffers(1, &(*mesh)->vo.ebo);
+	log_debug("Freed mesh vertex object");
+
 	free((*mesh)->indices_vector.array);
 	(*mesh)->indices_vector.array = NULL;
+
 	free((*mesh)->vertices_vector.vertices);
 	(*mesh)->vertices_vector.vertices = NULL;
-	free((*mesh)->textures_vector.textures->path);
-	(*mesh)->textures_vector.textures->path = NULL;
-	free((*mesh)->textures_vector.textures->type);
-	(*mesh)->textures_vector.textures->type = NULL;
+
+	for (i = 0; i < (*mesh)->textures_vector.size; i++) {
+		free((*mesh)->textures_vector.textures[i].path);
+		(*mesh)->textures_vector.textures[i].path = NULL;
+		free((*mesh)->textures_vector.textures[i].type);
+		(*mesh)->textures_vector.textures[i].type = NULL;
+	}
+
 	free((*mesh)->textures_vector.textures);
 	(*mesh)->textures_vector.textures = NULL;
+
 	free(*mesh);
 	*mesh = NULL;
+
 	log_debug("Freed mesh");
 }
 

@@ -6,25 +6,26 @@
 
 #include <stdlib.h>
 
-uint32_t shader_create_program(const char* vertex_file, const char* frag_file) { // NOLINT
+int32_t shader_create_program(const char* vertex_file, const char* frag_file, uint32_t* shader_program) { // NOLINT
 	char* vertex_shader_str;
 	char* frag_shader_str;
 	uint32_t vertex_shader;
 	uint32_t frag_shader;
-	uint32_t shader_program;
 	int32_t status;
 	char info[512];
 
 	vertex_shader_str = NULL;
 	if (file_read(vertex_file, &vertex_shader_str) && !vertex_shader_str) {
 		log_error("Failed to read %s", vertex_file);
-		return -1;
+		status = -1;
+		goto L_RETURN;
 	}
 
 	frag_shader_str = NULL;
 	if (file_read(frag_file, &frag_shader_str) && !frag_shader_str) {
 		log_error("Failed to read %s", frag_file);
-		return -1;
+		status = -1;
+		goto L_RETURN;
 	}
 
 	vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -34,7 +35,8 @@ uint32_t shader_create_program(const char* vertex_file, const char* frag_file) {
 	if (!status) {
 		glGetShaderInfoLog(vertex_shader, 512, NULL, info);
 		log_error("Vertex shader %s compilation failed: %s", vertex_file, info);
-		return -1;
+		status = -1;
+		goto L_RETURN;
 	}
 
 	frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -44,26 +46,32 @@ uint32_t shader_create_program(const char* vertex_file, const char* frag_file) {
 	if (!status) {
 		glGetShaderInfoLog(frag_shader, 512, NULL, info);
 		log_error("Fragment shader %s compilation failed: %s", frag_file, info);
-		return -1;
+		status = -1;
+		goto L_RETURN;
 	}
 
-	shader_program = glCreateProgram();
-	glAttachShader(shader_program, vertex_shader);
-	glAttachShader(shader_program, frag_shader);
-	glLinkProgram(shader_program);
-	glGetProgramiv(shader_program, GL_LINK_STATUS, &status);
+	*shader_program = glCreateProgram();
+	glAttachShader(*shader_program, vertex_shader);
+	glAttachShader(*shader_program, frag_shader);
+	glLinkProgram(*shader_program);
+	glGetProgramiv(*shader_program, GL_LINK_STATUS, &status);
 	if (!status) {
-		glGetProgramInfoLog(shader_program, 512, NULL, info);
+		glGetProgramInfoLog(*shader_program, 512, NULL, info);
 		log_info("Shader program linking failed: %s", info);
-		shader_program = -1;
+		status = -1;
+		goto L_RETURN;
 	}
+
 
 	glDeleteShader(vertex_shader);
 	glDeleteShader(frag_shader);
 	free(vertex_shader_str);
 	free(frag_shader_str);
+	status = 0;
 
-	return shader_program;
+L_RETURN:
+
+	return status;
 }
 
 void shader_set_bool(uint32_t shader_program, const char* name, bool value) {

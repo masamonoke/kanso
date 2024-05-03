@@ -3,10 +3,12 @@
 #include "texture.h"
 #include "vertex_object.h"
 
+#include <cglm/types.h>
+
 typedef struct vertex {
-	float pos[3];
-	float normal[3];
-	float tex_coords[3];
+	vec3 pos;
+	vec3 normal;
+	vec3 tex_coords;
 } vertex_t;
 
 typedef struct vertex_vector {

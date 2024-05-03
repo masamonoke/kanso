@@ -79,7 +79,7 @@ static void mouse_callback(GLFWwindow* window, double xpos_d, double ypos_d) {
 	float ypos;
 	float xoffset;
 	float yoffset;
-	float front[3];
+	vec3 front;
 	const float SENSITIVITY = 0.1f;
 	static bool first_time = true;
 	static float last_x;

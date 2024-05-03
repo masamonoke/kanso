@@ -1,6 +1,10 @@
 #include "texture.h"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wconversion"
+#pragma clang diagnostic ignored "-Wdouble-promotion"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#pragma clang diagnostic pop
 
 #include <stdbool.h>
 

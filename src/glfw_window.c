@@ -19,8 +19,9 @@ int32_t window_new(window_t** window) {
 	return glfw_context_create_window((GLFWwindow**) window, framebuffer_size_callback);
 }
 
+#include <stdlib.h>
 void window_free(window_t** window) {
-	// glfwTerminate call cleans all window context
+	glfwDestroyWindow((GLFWwindow*) *window);
 	glfwTerminate();
 	*window = NULL;
 }

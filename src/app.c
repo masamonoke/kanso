@@ -1,6 +1,4 @@
 #include "app.h"
-#include "shader.h"
-#include "texture.h"
 #include "camera.h"
 #include "keys.h"
 
@@ -75,8 +73,10 @@ static void input(app_state_t* state) {
 
 /*! @brief Set default scene image to white fill
 */
+
+#define CLEAR_COLOR 0.1f, 0.1f, 0.1f, 1.0f // grey
 static void clear(void) {
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClearColor(CLEAR_COLOR);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
