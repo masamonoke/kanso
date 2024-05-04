@@ -1,3 +1,6 @@
+# About
+The project is on quite early state and for now there is nothing interesting
+
 # Build
 
 ```console
