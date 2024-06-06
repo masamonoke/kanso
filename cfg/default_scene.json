@@ -1,0 +1,55 @@
+{
+	"models": [
+		{
+			"model_type": "LOADED_MODEL",
+			"path": "assets/backpack/backpack.obj"
+		},
+		{
+			"model_type": "LOADED_MODEL",
+			"position": [ 4.0, 0.0, 2.0 ],
+			"path": "assets/backpack/backpack.obj"
+		},
+		{
+			"model_type": "PRIMITIVE_MODEL",
+			"position": [ 0.7, 0.2, 2.0 ],
+			"scale": [ 0.2, 0.2, 0.2 ],
+			"primitive_type": "CUBE"
+		},
+		{
+			"model_type": "PRIMITIVE_MODEL",
+			"position": [ -0.7, 0.2, 2.0 ],
+			"scale": [ 0.4, 0.2, 0.2 ],
+			"primitive_type": "CUBE"
+		}
+	],
+	"lights": [
+		{
+			"light_type": "DIRECTIONAL_LIGHT",
+			"ambient": [ 0.5, 0.5, 0.5 ],
+			"diffuse": [ 0.4, 0.4, 0.4 ],
+			"specular": [ 0.5, 0.5, 0.5 ],
+			"direction": [ -0.2, -1.0, -0.3 ]
+		},
+		{
+			"light_type": "SPOT_LIGHT",
+			"ambient": [ 0.0, 0.0, 0.0 ],
+			"diffuse": [ 1.0, 1.0, 1.0 ],
+			"specular": [ 1.0, 1.0, 1.0 ],
+			"constant": 1.0,
+			"linear": 0.09,
+			"quadratic": 0.000032,
+			"inner_cut_off_angle": 12.5,
+			"outer_cut_off_angle": 15.0
+		},
+		{
+			"light_type": "POINT_LIGHT",
+			"ambient": [ 0.05, 0.05, 0.05 ],
+			"diffuse": [ 0.8, 0.8, 0.8 ],
+			"specular": [ 1.0, 1.0, 1.0 ],
+			"constant": 1.0,
+			"linear": 0.09,
+			"quadratic": 0.032,
+			"position": [ 0.7, 0.2, 2.0 ]
+		}
+	]
+}

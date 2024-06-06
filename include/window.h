@@ -10,7 +10,7 @@ typedef struct window window_t;
  *  @return int32_t status: 0 is success otherwise is failure
  *  @pointer_lifetime Mallocs memory and caller should free it with window_free() function
 */
-int32_t window_new(window_t** window);
+__attribute__((warn_unused_result)) int32_t window_new(window_t** window);
 
 /*! @brief Frees window object
  *  @param[in] window_t* window: pointer to abstract window
@@ -21,7 +21,7 @@ void window_free(window_t** window);
 /*! @brief Gives current value of window counter. Can be used to calculate delta time or fps counter
  *  @return int32_t status: 0 is success otherwise is failure
 */
-float window_context_time(void);
+__attribute__((warn_unused_result)) float window_context_time(void);
 
 /*! @brief Sets cursor capture and cursor becomes hidden and fixated around window
  *  @param[in] window_t* window: pointer to abstract window
@@ -49,4 +49,4 @@ void window_update(window_t* window);
  *  @param[in] window_t* window: pointer to abstract window
  *  @param[in] int32_t key: key number
 */
-bool window_is_key_pressed(window_t* window, int32_t key);
+__attribute__((warn_unused_result)) bool window_is_key_pressed(window_t* window, int32_t key);

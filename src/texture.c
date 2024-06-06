@@ -1,15 +1,19 @@
-#include "texture.h"
+#include <stdbool.h>    // for true
+
+#include <glad/glad.h>  // for GL_TEXTURE_2D, glTexParameteri, GL_REPEAT
+#include <log.h>        // for log_error
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wconversion"
 #pragma clang diagnostic ignored "-Wdouble-promotion"
+#endif
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "stb_image.h"  // for stbi_image_free, stbi_load, stbi_set_flip_ver...
+#ifdef __clang__
 #pragma clang diagnostic pop
+#endif
 
-#include <stdbool.h>
-
-#include <glad/glad.h>
-#include <log.h>
+#include "texture.h"
 
 int32_t texture_create_gl_texture(const char* texname) {
 	uint32_t texture;

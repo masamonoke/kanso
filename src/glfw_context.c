@@ -1,12 +1,13 @@
-#include <log.h>
-#include <glad/glad.h>
+#include <stdio.h>          // for NULL
 
+#include <json_object.h>    // for json_object_get_int, json_object_object_g...
+#include <json_util.h>      // for json_object_from_file
+#include <glad/glad.h>      // for gladLoadGLLoader, GLADloadproc, GL_DEPTH_...
+#include <GLFW/glfw3.h>     // for glfwWindowHint, GLFWwindow, glfwCreateWindow
+
+#include "custom_logger.h"  // for custom_log_error, custom_log_info, custom...
 #include "glfw_context.h"
 
-#include <stdio.h>
-
-
-// TODO: get this from config
 #define DEFAULT_WINDOW_SIZE 800, 600
 #define DEFAULT_TITLE "Kanso Engine"
 
@@ -14,6 +15,7 @@ int32_t glfw_context_create_window(GLFWwindow** window, void (*framebuffer_size_
 	int32_t status;
 	int32_t framebuffer_width;
 	int32_t framebuffer_height;
+	struct json_object* j;
 
 	status = 0;
 
@@ -38,9 +40,39 @@ int32_t glfw_context_create_window(GLFWwindow** window, void (*framebuffer_size_
 #endif
 
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	*window = glfwCreateWindow(DEFAULT_WINDOW_SIZE, DEFAULT_TITLE, NULL, NULL);
+
+
+	j = json_object_from_file("cfg/window.json");
+	if (j) {
+		struct json_object* width_json;
+		struct json_object* height_json;
+
+		custom_log_info("Reading window config from file");
+		json_object_object_get_ex(j, "width", &width_json);
+		json_object_object_get_ex(j, "height", &height_json);
+
+		if (width_json && height_json) {
+			*window = glfwCreateWindow(json_object_get_int(width_json), json_object_get_int(height_json),DEFAULT_TITLE, NULL, NULL);
+		} else {
+			custom_log_error("Failed to read json height or width value");
+			json_object_put(j);
+			goto L_DEFAULT_WINDOW_INIT;
+		}
+
+		if (json_object_put(j)) {
+			custom_log_debug("Freed json object");
+		} else {
+			custom_log_error("Failed to free json object");
+		}
+
+	} else {
+		custom_log_info("Window config is not found. Using default values");
+L_DEFAULT_WINDOW_INIT:
+		*window = glfwCreateWindow(DEFAULT_WINDOW_SIZE, DEFAULT_TITLE, NULL, NULL);
+	}
+
 	if (window == NULL) {
-		log_error("Failed to create GLFW window\n");
+		custom_log_error("Failed to create GLFW window\n");
 		glfwTerminate();
 		status = -1;
 		goto L_RETURN;
@@ -48,7 +80,7 @@ int32_t glfw_context_create_window(GLFWwindow** window, void (*framebuffer_size_
 	glfwMakeContextCurrent(*window);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		log_error("Failed to initialize GLAD\n");
+		custom_log_error("Failed to initialize GLAD\n");
 		status = -1;
 		goto L_RETURN;
 	}
@@ -60,9 +92,10 @@ int32_t glfw_context_create_window(GLFWwindow** window, void (*framebuffer_size_
 
 	glfwSetFramebufferSizeCallback(*window, framebuffer_size_callback);
 
-	log_info("Created GLFW window");
+	custom_log_info("Created GLFW window");
 
 L_RETURN:
+
 	return status;
 }
 

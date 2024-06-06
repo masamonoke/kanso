@@ -1,16 +1,25 @@
 #pragma once
 
 #include <stdint.h> // for int32_t
-#include "shader.h" // shader_create_program, struct transform, shader_set_transform
 
-typedef struct cube cube_t;
+#include "vertex_object.h"    // for vertex_object_t
+#include "model.h"
 
 enum primitive_type {
-	CUBE
+	CUBE,
+	UNDEFINED_PRIMITIVE
 };
 
-int32_t primitive_new(enum primitive_type type, void** primitive);
+struct primitive_model_data {
+	enum primitive_type primitive_type;
+	vertex_object_t vo;
+};
 
-void primitive_draw(enum primitive_type type, void* primitive, struct transform t);
+typedef struct primitive_model {
+	struct model_common common;
+	struct primitive_model_data model_data;
+} primitive_model_t;
 
-void primitive_free(enum primitive_type type, void** primitive);
+__attribute__((warn_unused_result)) int32_t primitive_new(void** primitive, enum primitive_type type);
+
+void primitive_free(void** primitive);

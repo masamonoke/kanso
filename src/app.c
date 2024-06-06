@@ -1,11 +1,11 @@
+#include <stdlib.h>     // for free, malloc, NULL
+
+#include "glad/glad.h"  // for GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT, glC...
+
 #include "app.h"
-#include "camera.h"
-#include "keys.h"
-
-#include <log.h>
-
-#include <stdlib.h>
-#include <assert.h>
+#include "camera.h"     // for camera_init_callbacks, camera_update
+#include "keys.h"       // for ESCAPE_KEY
+#include "custom_logger.h"
 
 /*! @brief Reads key input
  *  @param[in] app_state_t** ctx: An app state which will hold all data about current context
@@ -26,6 +26,8 @@ static void draw(app_state_t* ctx);
 */
 static void update(app_state_t* ctx);
 
+static int32_t default_scene(scene_t* scene);
+
 /*! @brief Updates all states in context
  * @param[in] app_state_t** ctx: An app state which will hold all data about current context
 */
@@ -33,12 +35,18 @@ int32_t app_new(app_state_t** ctx) {
 	*ctx = malloc(sizeof(app_state_t));
 
 	if (window_new(&(*ctx)->window)) {
-		log_error("Failed to create window");
+		custom_log_error("Failed to create window");
 		return -1;
 	}
 
 	if (scene_new(&(*ctx)->scene)) {
-		log_error("Failed to create scene");
+		custom_log_error("Failed to create scene");
+		return -1;
+	}
+
+	if (0 != default_scene((*ctx)->scene)) {
+		custom_log_error("Failed to initialize default scene. Shutting down");
+		app_free(ctx);
 		return -1;
 	}
 
@@ -47,7 +55,11 @@ int32_t app_new(app_state_t** ctx) {
 
 	camera_init_callbacks((*ctx)->window);
 
+	custom_log_debug("Initiated camera callbacks");
+
 	window_set_capture_cursor((*ctx)->window);
+
+	custom_log_debug("Set window cursor mode to capture");
 
 	(*ctx)->close = false;
 
@@ -59,7 +71,7 @@ void app_free(app_state_t** ctx) {
 	scene_free(&(*ctx)->scene);
 	free(*ctx);
 	*ctx = NULL;
-	log_info("Freed application");
+	custom_log_info("Freed application");
 }
 
 
@@ -97,3 +109,6 @@ static void update(app_state_t* ctx) {
 	draw(ctx);
 }
 
+static int32_t default_scene(scene_t* scene) {
+	return scene_load_from_json(scene, "cfg/default_scene.json");
+}

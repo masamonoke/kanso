@@ -1,10 +1,10 @@
+#include <glad/glad.h>      // for glGetUniformLocation, GL_COMPILE_STATUS
+#include <stdlib.h>         // for NULL, free
+#include <cglm/types.h>     // for mat4
+
 #include "shader.h"
-#include "file.h"
-
-#include <glad/glad.h>
-#include <log.h>
-
-#include <stdlib.h>
+#include "custom_logger.h"  // for custom_log_error
+#include "file.h"           // for file_read
 
 int32_t shader_create_program(const char* vertex_file, const char* frag_file, uint32_t* shader_program) { // NOLINT
 	char* vertex_shader_str;
@@ -16,14 +16,14 @@ int32_t shader_create_program(const char* vertex_file, const char* frag_file, ui
 
 	vertex_shader_str = NULL;
 	if (file_read(vertex_file, &vertex_shader_str) && !vertex_shader_str) {
-		log_error("Failed to read %s", vertex_file);
+		custom_log_error("Failed to read %s", vertex_file);
 		status = -1;
 		goto L_RETURN;
 	}
 
 	frag_shader_str = NULL;
 	if (file_read(frag_file, &frag_shader_str) && !frag_shader_str) {
-		log_error("Failed to read %s", frag_file);
+		custom_log_error("Failed to read %s", frag_file);
 		status = -1;
 		goto L_RETURN;
 	}
@@ -34,7 +34,7 @@ int32_t shader_create_program(const char* vertex_file, const char* frag_file, ui
 	glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &status);
 	if (!status) {
 		glGetShaderInfoLog(vertex_shader, 512, NULL, info);
-		log_error("Vertex shader %s compilation failed: %s", vertex_file, info);
+		custom_log_error("Vertex shader %s compilation failed: %s", vertex_file, info);
 		status = -1;
 		goto L_RETURN;
 	}
@@ -45,7 +45,7 @@ int32_t shader_create_program(const char* vertex_file, const char* frag_file, ui
 	glGetShaderiv(frag_shader, GL_COMPILE_STATUS, &status);
 	if (!status) {
 		glGetShaderInfoLog(frag_shader, 512, NULL, info);
-		log_error("Fragment shader %s compilation failed: %s", frag_file, info);
+		custom_log_error("Fragment shader %s compilation failed: %s", frag_file, info);
 		status = -1;
 		goto L_RETURN;
 	}
@@ -57,7 +57,7 @@ int32_t shader_create_program(const char* vertex_file, const char* frag_file, ui
 	glGetProgramiv(*shader_program, GL_LINK_STATUS, &status);
 	if (!status) {
 		glGetProgramInfoLog(*shader_program, 512, NULL, info);
-		log_info("Shader program linking failed: %s", info);
+		custom_log_error("Shader program linking failed: %s", info);
 		status = -1;
 		goto L_RETURN;
 	}

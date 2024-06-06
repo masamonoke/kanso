@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include <cglm/types.h>
+#include <cglm/mat4.h>
 
 struct transform {
 	mat4 model;
@@ -13,7 +14,7 @@ struct transform {
 
 #define TRANSFORM_IDENTITY { .model = GLM_MAT4_IDENTITY_INIT, .view = GLM_MAT4_IDENTITY_INIT, .proj = GLM_MAT4_IDENTITY_INIT }
 
-int32_t shader_create_program(const char* vertex_file, const char* frag_file, uint32_t* shader_program);
+__attribute__((warn_unused_result)) int32_t shader_create_program(const char* vertex_file, const char* frag_file, uint32_t* shader_program);
 
 void shader_set_bool(uint32_t shader_program, const char* name, bool value);
 

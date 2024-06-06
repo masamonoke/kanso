@@ -1,11 +1,16 @@
+#include <stdlib.h>           // for free, malloc
+
+#include <glad/glad.h>        // for GL_ARRAY_BUFFER, glBindVertexArray, glB...
+#include "cglm/affine.h"      // for glm_scale
+#include "cglm/affine-pre.h"  // for glm_translate
+#include "cglm/cam.h"         // for glm_perspective
+#include "cglm/mat4.h"        // for glm_mat4_identity
+#include "cglm/util.h"        // for glm_rad
+
 #include "primitive.h"
-#include "vertex_object.h"    // for vertex_object_t
-
-#include <log.h>              // for log_error
-#include <cglm/cglm.h>        // for glm_mat4_identity, glm_translate, glm_scale
-#include <glad/glad.h>        //for glUseProgram, glBindVertexArray, glDrawArrays
-
-#include <stdlib.h>           // for malloc
+#include "custom_logger.h"    // for custom_log_error, custom_log_debug
+#include "shader.h"           // for transform, shader_create_program, shade...
+#include "camera.h"           // for camera_fov, camera_set_view
 
 struct cube {
 	uint32_t shader_program;
@@ -14,44 +19,36 @@ struct cube {
 
 static int32_t create_cube(void** primitive);
 
-int32_t primitive_new(enum primitive_type type, void** primitive) {
+int32_t primitive_new(void** primitive, enum primitive_type type) {
 	switch (type) {
 		case CUBE:
 			return create_cube(primitive);
 		default:
-			log_error("Unknown primitive type: %d", type);
+			custom_log_error("Unknown primitive type: %d", type);
 	}
+
+	return 0;
 }
 
-static void draw_cube(void* primitive, struct transform t);
+static void draw_cube(void* primitive);
 
-void primitive_draw(enum primitive_type type, void* primitive, struct transform t) {
-	switch (type) {
-		case CUBE:
-			draw_cube(primitive, t);
-			break;
-		default:
-			log_error("Unknown primitive type: %d", type);
-	}
-}
+void primitive_free(void** primitive) {
+	primitive_model_t** model;
 
-void primitive_free(enum primitive_type type, void** primitive) {
-	switch (type) {
+	model = (primitive_model_t**) primitive;
+	switch ((*model)->model_data.primitive_type) {
 		case CUBE:
 			{
-				cube_t** cube;
+				glDeleteVertexArrays(1, &(*model)->model_data.vo.vao);
+				glDeleteBuffers(1, &(*model)->model_data.vo.vbo);
+				glDeleteBuffers(1, &(*model)->model_data.vo.ebo);
 
-				cube = (cube_t**) primitive;
-				glDeleteVertexArrays(1, &(*cube)->vo.vao);
-				glDeleteBuffers(1, &(*cube)->vo.vbo);
-				glDeleteBuffers(1, &(*cube)->vo.ebo);
-
-				free(*cube);
-				log_debug("Freed cube primitive");
+				free(*model);
+				custom_log_debug("Freed cube primitive");
 			}
 			break;
 		default:
-			log_error("Unknown primitive type: %d", type);
+			custom_log_error("Unknown primitive type: %d", (*model)->model_data.primitive_type);
 	}
 }
 
@@ -104,21 +101,21 @@ const float VERTICES[] = {
 };
 
 static int32_t create_cube(void** primitive) {
-	cube_t** cube;
+	primitive_model_t** cube;
 
-	cube = (cube_t**) primitive;
-	*cube = malloc(sizeof(cube_t));
+	cube = (primitive_model_t**) primitive;
+	*cube = malloc(sizeof(primitive_model_t));
 
-	if (shader_create_program("shaders/light_cube.vert", "shaders/light_cube.frag", &(*cube)->shader_program)) {
-		log_error("Failed to compile cube shader program");
+	if (shader_create_program("shaders/light_cube.vert", "shaders/light_cube.frag", &(*cube)->common.shader_program)) {
+		custom_log_error("Failed to compile cube shader program");
 	}
 
-	glGenVertexArrays(1, &(*cube)->vo.vao);
-	glGenBuffers(1, &(*cube)->vo.vbo);
-	glGenBuffers(1, &(*cube)->vo.ebo);
+	glGenVertexArrays(1, &(*cube)->model_data.vo.vao);
+	glGenBuffers(1, &(*cube)->model_data.vo.vbo);
+	glGenBuffers(1, &(*cube)->model_data.vo.ebo);
 
-	glBindVertexArray((*cube)->vo.vao);
-	glBindBuffer(GL_ARRAY_BUFFER, (*cube)->vo.vbo);
+	glBindVertexArray((*cube)->model_data.vo.vao);
+	glBindBuffer(GL_ARRAY_BUFFER, (*cube)->model_data.vo.vbo);
 
 	glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr) sizeof(VERTICES), (float*) VERTICES, GL_STATIC_DRAW);
 
@@ -128,18 +125,30 @@ static int32_t create_cube(void** primitive) {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
+	(*cube)->common.draw = draw_cube;
+
+	(*cube)->model_data.primitive_type = CUBE;
+	(*cube)->common.type = PRIMITVE_MODEL;
+
 	return 0;
 }
 
-static void draw_cube(void* primitive, struct transform t) {
-	cube_t* cube;
+static void draw_cube(void* primitive) {
+	primitive_model_t* cube;
 
-	cube = (cube_t*) primitive;
-	glUseProgram(cube->shader_program);
-	glBindVertexArray(cube->vo.vao);
-	glm_mat4_identity(t.model);
-	glm_translate(t.model, (vec3) { 0.7f, 0.2f, 2.0f });
-	glm_scale(t.model, (vec3) { 0.2f, 0.2f, 0.2f });
-	shader_set_transform(t, cube->shader_program);
+	cube = (primitive_model_t*) primitive;
+
+	camera_set_view(cube->common.transform.view);
+	glm_perspective(glm_rad(camera_fov()), 600.0f / 800, 0.1f, 100.f, cube->common.transform.proj);
+
+	glUseProgram(cube->common.shader_program);
+	glBindVertexArray(cube->model_data.vo.vao);
+
+	glm_mat4_identity(cube->common.transform.model);
+	glm_translate(cube->common.transform.model, cube->common.position);
+	glm_scale(cube->common.transform.model, cube->common.scale);
+
+	shader_set_transform(cube->common.transform, cube->common.shader_program);
+
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 }

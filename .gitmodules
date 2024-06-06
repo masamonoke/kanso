@@ -10,3 +10,6 @@
 [submodule "deps/assimp"]
 	path = deps/assimp
 	url = https://github.com/assimp/assimp
+[submodule "deps/json-c"]
+	path = deps/json-c
+	url = https://github.com/json-c/json-c

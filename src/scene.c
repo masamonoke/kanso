@@ -1,35 +1,45 @@
+#include <math.h>           // for cosf
+#include <stdlib.h>         // for NULL, size_t, free, malloc
+#include <assert.h>         // for assert
+
+#include <cglm/types.h>     // for vec3
+#include <cglm/util.h>      // for glm_rad
+#include <glad/glad.h>      // for glUseProgram
+
+#include "camera.h"         // for camera_front, camera_pos
+#include "custom_logger.h"  // for custom_log_debug, custom_log_error
+#include "model.h"          // for model_common, model_free, model_t, models...
+#include "shader.h"         // for shader_set_vec3, shader_set_uniform_primi...
+#include "light.h"
 #include "scene.h"
-#include "vertex_object.h"
-#include "model.h"
-#include "shader.h"
-#include "camera.h"
-#include "primitive.h"
 
-#include <glad/glad.h>
-#include <cglm/cglm.h>
-#include <log.h>
-
-#include <assert.h>
+#define MAX_MODELS_COUNT 1024
+#define MAX_LIGHTS_COUNT 100
 
 struct scene_ctx {
-	model_t* model;
-	cube_t* cube;
+	size_t light_count;
+	size_t model_count;
+	model_t* models[MAX_MODELS_COUNT];
+	light_t* lights[MAX_LIGHTS_COUNT];
 };
-
-static void setup_lights(uint32_t shader_program);
-
-
-static void draw_models(struct transform t, model_t* model);
 
 static void draw(scene_t* scene);
 
-
 int32_t scene_new(scene_t** scene) {
+	size_t i;
+
 	*scene = malloc(sizeof(scene_t));
 	(*scene)->scn_ctx = malloc(sizeof(scene_ctx_t));
 
-	model_new(&(*scene)->scn_ctx->model, "assets/backpack/backpack.obj");
-	primitive_new(CUBE, (void**) &(*scene)->scn_ctx->cube);
+	for (i = 0; i < MAX_MODELS_COUNT; i++) {
+		(*scene)->scn_ctx->models[i] = NULL;
+	}
+	(*scene)->scn_ctx->model_count = 0;
+
+	for (i = 0; i < MAX_LIGHTS_COUNT; i++) {
+		(*scene)->scn_ctx->lights[i] = NULL;
+	}
+	(*scene)->scn_ctx->light_count = 0;
 
 	(*scene)->draw = draw;
 
@@ -37,73 +47,107 @@ int32_t scene_new(scene_t** scene) {
 }
 
 void scene_free(scene_t** scene) {
-	model_free(&(*scene)->scn_ctx->model);
-	primitive_free(CUBE, (void**) &(*scene)->scn_ctx->cube);
+	size_t i;
+	size_t models_count;
+	size_t lights_count;
+
+	for (i = 0, models_count = 0; i < MAX_MODELS_COUNT && models_count != (*scene)->scn_ctx->model_count; i++) {
+		if ((*scene)->scn_ctx->models[i] != NULL) {
+			model_free(&(*scene)->scn_ctx->models[i]);
+			models_count++;
+		}
+	}
+
+	for (i = 0, lights_count = 0; i < MAX_LIGHTS_COUNT && lights_count != (*scene)->scn_ctx->light_count; i++) {
+		if ((*scene)->scn_ctx->lights[i] != NULL) {
+			light_free(&(*scene)->scn_ctx->lights[i]);
+			lights_count++;
+		}
+	}
+
+#ifdef DEBUG
+	assert(models_count == (*scene)->scn_ctx->model_count);
+	assert(lights_count == (*scene)->scn_ctx->light_count);
+
+	for (i = 0; i < MAX_MODELS_COUNT; i++) {
+		assert((*scene)->scn_ctx->models[i] == NULL);
+	}
+
+	for (i = 0; i < MAX_LIGHTS_COUNT; i++) {
+		assert((*scene)->scn_ctx->lights[i] == NULL);
+	}
+#endif
+
+	(*scene)->scn_ctx->model_count -= models_count;
+	(*scene)->scn_ctx->light_count -= lights_count;
+
 	free((*scene)->scn_ctx);
 	(*scene)->scn_ctx = NULL;
 	free(*scene);
 	*scene = NULL;
-	log_debug("Freed scene");
+
+	custom_log_debug("Freed scene");
 }
 
+int32_t scene_add_model(scene_t* scene, model_t* model) {
+	size_t i;
 
-// ------------------------------------------------------[ static functions ]------------------------------------------------------
+	for (i = 0; i < MAX_MODELS_COUNT; i++) {
+		if (scene->scn_ctx->models[i] == NULL) {
+			scene->scn_ctx->models[i] = model;
+			return 0;
+		}
+	}
 
-static void setup_lights(uint32_t shader_program) {
-	glUseProgram(shader_program);
+	custom_log_error("Can't add new model to scene");
 
-	shader_set_vec3(shader_program, "spotLight.pos", (float*) camera_pos());
-	shader_set_vec3(shader_program, "spotLight.direction", (float*) camera_front());
-	shader_set_vec3(shader_program, "spotLight.ambient", (vec3) { 0.0f, 0.0f, 0.0f });
-	shader_set_vec3(shader_program, "spotLight.diffuse", (vec3) { 1.0f, 1.0f, 1.0f });
-	shader_set_vec3(shader_program, "spotLight.specular", (vec3) { 1.0f, 1.0f, 1.0f });
-	shader_set_uniform_primitive(shader_program, "spotLight.constant", 1.0f);
-	shader_set_uniform_primitive(shader_program, "spotLight.linear", 0.09f);
-	shader_set_uniform_primitive(shader_program, "spotLight.quadratic", 0.000032f);
-	shader_set_uniform_primitive(shader_program, "spotLight.innerCutOff", cosf(glm_rad(12.5f)));
-	shader_set_uniform_primitive(shader_program, "spotLight.outerCutOff", cosf(glm_rad(15.0f)));
-
-	shader_set_vec3(shader_program, "dirLight.direction", (vec3) { -0.2f, -1.0f, -0.3f });
-	shader_set_vec3(shader_program, "dirLight.ambient", (vec3) { 0.5f, 0.5f, 0.5f });
-	shader_set_vec3(shader_program, "dirLight.diffuse", (vec3) { 0.4f, 0.4f, 0.4f });
-	shader_set_vec3(shader_program, "dirLight.specular", (vec3) { 0.5f, 0.5f, 0.5f });
-
-	shader_set_vec3(shader_program, "pointLight.pos", (vec3) { 0.7f, 0.2f, 2.0f });
-	shader_set_vec3(shader_program, "pointLight.ambient", (vec3) { 0.05f, 0.05f, 0.05f });
-	shader_set_vec3(shader_program, "pointLight.diffuse", (vec3) { 0.8f, 0.8f, 0.8f });
-	shader_set_vec3(shader_program, "pointLight.specular", (vec3) { 1.0f, 1.0f, 1.0f });
-	shader_set_uniform_primitive(shader_program, "pointLight.constant", 1.0f);
-	shader_set_uniform_primitive(shader_program, "pointLight.linear", 0.09f);
-	shader_set_uniform_primitive(shader_program, "pointLight.quadratic", 0.032f);
-
-	shader_set_vec3(shader_program, "viewPos", (float*) camera_pos());
-	shader_set_uniform_primitive(shader_program, "material.shininess", 32.0f);
+	return -1;
 }
 
-static void draw_models(struct transform t, model_t* model) {
-	glUseProgram(model->shader_program);
-	glm_mat4_identity(t.model);
-	glm_mat4_identity(t.proj);
-	glm_mat4_identity(t.view);
-	camera_set_view(t.view);
-	glm_perspective(glm_rad(camera_fov()), 600.0f / 800, 0.1f, 100.f, t.proj);
-	glm_translate(t.model, (vec3) { 0.0f, 3.0f, 0.0f });
-	glm_scale(t.model, (vec3) { 1.0f, 1.0f, 1.0f });
-	shader_set_mat4(model->shader_program, "model", t.model);
-	shader_set_mat4(model->shader_program, "view", t.view);
-	shader_set_mat4(model->shader_program, "proj", t.proj);
-	model->draw(model);
+int32_t scene_load_from_json(scene_t* scene, const char* path) {
+	int32_t status;
+
+	status = models_from_json(path, scene->scn_ctx->models, &scene->scn_ctx->model_count, MAX_MODELS_COUNT);
+
+/* #ifdef DEBUG */
+/* 	size_t i; */
+/* 	size_t model_count; */
+
+/* 	for (i = 0, model_count = 0; i < MAX_MODELS_COUNT && model_count != scene->scn_ctx->model_count; i++) { */
+/* 		if (scene->scn_ctx->models[i] != NULL) { */
+/* 			model_print(scene->scn_ctx->models[i]); */
+/* 			model_count++; */
+/* 		} */
+/* 	} */
+/* #endif */
+
+	status = light_from_json(path, scene->scn_ctx->lights, &scene->scn_ctx->light_count, MAX_LIGHTS_COUNT);
+
+	return status;
 }
+
 
 static void draw (scene_t* scene) {
-	struct transform t = TRANSFORM_IDENTITY;
+	size_t i;
+	size_t j;
+	size_t models_count;
+	size_t lights_count;
 
-	camera_set_view(t.view);
-	glm_perspective(glm_rad(camera_fov()), 600.0f / 800, 0.1f, 100.f, t.proj);
+	for (i = 0, models_count = 0; i < MAX_MODELS_COUNT; i++) {
+		if (scene->scn_ctx->models[i] != NULL) {
 
-	primitive_draw(CUBE, (void*) scene->scn_ctx->cube, t);
+			for (j = 0, lights_count = 0; j < MAX_LIGHTS_COUNT && lights_count < scene->scn_ctx->light_count; j++) {
+				if (scene->scn_ctx->lights[j] != NULL) {
+					scene->scn_ctx->lights[j]->common.bind_shader(scene->scn_ctx->lights[j], scene->scn_ctx->models[i]->common.shader_program);
+					lights_count++;
+				}
+			}
 
-	setup_lights(scene->scn_ctx->model->shader_program);
-
-	draw_models(t, scene->scn_ctx->model);
+			scene->scn_ctx->models[i]->common.draw(scene->scn_ctx->models[i]);
+			models_count++;
+			if (models_count == scene->scn_ctx->model_count) {
+				break;
+			}
+		}
+	}
 }

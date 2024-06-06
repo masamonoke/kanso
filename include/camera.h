@@ -26,7 +26,7 @@ void camera_init_callbacks(window_t* window);
 /*! @brief Gives camera object to get data from it
  * @return const camera_t* camera: camera object
 */
-const camera_t* camera_get(void);
+__attribute__((warn_unused_result)) const camera_t* camera_get(void);
 
 /*! @brief Sets view 4x4 matrix from model-view-projection model
  * @param[in]: mat4 view: cglm/cglm.h mat4 object
@@ -51,17 +51,17 @@ void camera_update(window_t* window);
 /*! @brief Returns current camera's fov
  * @return float fov: field of view
 */
-float camera_fov(void);
+__attribute__((warn_unused_result)) float camera_fov(void);
 
 /*! @brief Returns current camera's position vector float[3]
  * @return float* pos: float[3] array
 */
-const float* camera_pos(void);
+__attribute__((warn_unused_result)) const float* camera_pos(void);
 
 /*! @brief Returns current camera's front vector float[3]
  * @return float* pos: float[3] array
 */
-const float* camera_front(void);
+__attribute__((warn_unused_result)) const float* camera_front(void);
 
 /*! @brief Moves camera front with specified speed
  * @param[in] float camera_speed

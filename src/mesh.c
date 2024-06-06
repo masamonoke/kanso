@@ -1,12 +1,12 @@
-#include "mesh.h"
-#include "shader.h"
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
 #include <glad/glad.h>
-#include <log.h>
+
+#include "mesh.h"
+#include "shader.h"
+#include "custom_logger.h"
 
 static void setup_vertex_objects(vertex_object_t* vo, vertex_vector_t vertices, int32_vector_t indices) {
 	glGenVertexArrays(1, &vo->vao);
@@ -58,7 +58,7 @@ static void draw_mesh(mesh_t* mesh, uint32_t shader_program) {
 		} else if (0 == strcmp(name, "texture_normal")) {
 			sprintf(number, "%d", normal_nr++);
 		} else {
-			log_error("Unknown texture type: %s", name);
+			custom_log_error("Unknown texture type: %s", name);
 			return;
 		}
 		strcat(name, number);
@@ -91,7 +91,7 @@ void mesh_delete(mesh_t** mesh) {
 	glDeleteVertexArrays(1, &(*mesh)->vo.vao);
 	glDeleteBuffers(1, &(*mesh)->vo.vbo);
 	glDeleteBuffers(1, &(*mesh)->vo.ebo);
-	log_debug("Freed mesh vertex object");
+	custom_log_debug("Freed mesh vertex object");
 
 	free((*mesh)->indices_vector.array);
 	(*mesh)->indices_vector.array = NULL;
@@ -112,6 +112,6 @@ void mesh_delete(mesh_t** mesh) {
 	free(*mesh);
 	*mesh = NULL;
 
-	log_debug("Freed mesh");
+	custom_log_debug("Freed mesh");
 }
 

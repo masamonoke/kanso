@@ -1,9 +1,12 @@
 #pragma once
 
-#include "texture.h"
-#include "vertex_object.h"
+#include <stddef.h>         // for size_t
+#include <stdint.h>         // for int32_t, uint32_t
 
-#include <cglm/types.h>
+#include <cglm/types.h>     // for vec3
+
+#include "texture.h"        // for texture_t
+#include "vertex_object.h"  // for vertex_object_t
 
 typedef struct vertex {
 	vec3 pos;
@@ -37,7 +40,7 @@ typedef struct mesh {
 /*
 	Creates new mesh object. Mallocs memory and to clean it you need to call mesh_delete()
 */
-int32_t mesh_new(mesh_t** mesh, vertex_vector_t vertices, int32_vector_t indices, texture_vector_t textures);
+__attribute__((warn_unused_result)) int32_t mesh_new(mesh_t** mesh, vertex_vector_t vertices, int32_vector_t indices, texture_vector_t textures);
 
 /*
 	Delete mesh object

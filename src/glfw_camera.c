@@ -1,9 +1,14 @@
-#include "glfw_context.h"
-#include "camera.h"
+#include <math.h>          // for cosf, sinf
+#include <stdbool.h>       // for bool, false, true
 
-#include <cglm/cglm.h>
+#include "GLFW/glfw3.h"    // for glfwGetKey, GLFWwindow, GLFW_PRESS, GLFW_K...
+#include "cglm/types.h"    // for vec3
+#include "cglm/util.h"     // for glm_rad, glm_clamp
+#include "cglm/vec3.h"     // for glm_normalize
 
-#include <math.h>
+#include "camera.h"        // for camera_get, camera_move_back, camera_move_...
+#include "glfw_context.h"  // for glfw_context_time
+#include "window.h"        // for window_t, window_set_cursor, window_set_sc...
 
 static void input(GLFWwindow* window);
 

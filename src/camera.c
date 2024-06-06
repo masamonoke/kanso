@@ -1,6 +1,8 @@
-#include <memory.h>
+#include <string.h>      // for memcpy
 
-#include <cglm/cglm.h>
+#include "cglm/cam.h"    // for glm_lookat
+#include "cglm/types.h"  // for vec3, mat4
+#include "cglm/vec3.h"   // for glm_normalize, glm_vec3_add, glm_vec3_sub
 
 #include "camera.h"
 

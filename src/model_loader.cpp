@@ -1,8 +1,8 @@
 #include <stdlib.h>              // for malloc, free
-#include <cassert>               // for assert
 #include <cstring>               // for size_t, strcpy, memcpy, strcmp, strlen
 #include <string>                // for basic_string, allocator, char_traits
 #include <vector>                // for vector
+#include <cstdint>               // for int32_t, uint32_t
 
 #include "assimp/material.h"     // for aiTextureType, aiMaterial
 #include "assimp/material.inl"   // for aiMaterial::GetTexture, aiMaterial::...
@@ -14,11 +14,11 @@
 
 #ifdef __cplusplus
 extern "C" {
-#include "model.h"
-#include "texture.h"             // for texture_t, texture_create_gl_texture
-#include "shader.h"
 
-#include <log.h>                 // for log_error, log_info
+#include "texture.h"             // for texture_t, texture_create_gl_texture
+#include "model_loader.h"
+#include "mesh.h"                // for mesh_t, vertex_t, mesh_new, int32_ve...
+#include "custom_logger.h"
 #ifdef __cplusplus
 }
 #endif
@@ -26,7 +26,7 @@ extern "C" {
 
 namespace {
 
-	std::vector<texture_t> load_material_textures(model_t* model, aiMaterial* mat, aiTextureType ai_type, const std::string& type_name,
+	std::vector<texture_t> load_material_textures(loaded_model_t* model, aiMaterial* mat, aiTextureType ai_type, const std::string& type_name,
 		std::vector<texture_t>& loaded_textures)
 	{
 		std::vector<texture_t> textures;
@@ -46,13 +46,13 @@ namespace {
 			}
 
 			if (!skip) {
-				auto str = std::string(model->directory) + '/' + std::string(filename.C_Str());
+				auto str = std::string(model->model_data.directory) + '/' + std::string(filename.C_Str());
 				texture_t t;
 				auto tex_id = texture_create_gl_texture(str.c_str());
 				if (tex_id >= 0) {
 					t.id = static_cast<uint32_t>(tex_id);
 				} else {
-					log_error("Failed to create texture");
+					custom_log_error("Failed to create texture");
 					continue;
 				}
 				t.type = static_cast<char*>(malloc((sizeof(char) * type_name.length()) + 1));
@@ -67,7 +67,7 @@ namespace {
 		return textures;
 	}
 
-	mesh_t* process_mesh(model_t* model, aiMesh* mesh, const aiScene* scene) {
+	mesh_t* process_mesh(loaded_model_t* model, aiMesh* mesh, const aiScene* scene) {
 		std::vector<vertex_t> vertices;
 		std::vector<int32_t> indices;
 		std::vector<texture_t> textures;
@@ -133,7 +133,7 @@ namespace {
 
 		mesh_t* m;
 		if (mesh_new(&m, vertices_v, indices_v, textures_v)) {
-			log_error("Failed to create mesh");
+			custom_log_error("Failed to create mesh");
 			return NULL;
 		} else {
 			return m;
@@ -151,7 +151,7 @@ namespace {
 		}
 	}
 
-	std::vector<mesh_t*> process_meshes(model_t* model, const aiScene* scene, const std::vector<aiMesh*>& ai_meshes, std::vector<mesh_t*>& meshes) {
+	std::vector<mesh_t*> process_meshes(loaded_model_t* model, const aiScene* scene, const std::vector<aiMesh*>& ai_meshes, std::vector<mesh_t*>& meshes) {
 		for (size_t i = 0; i < ai_meshes.size(); i++) {
 			auto m = process_mesh(model, ai_meshes[i], scene);
 			if (m) {
@@ -161,63 +161,31 @@ namespace {
 
 		return meshes;
 	}
-
-	void draw(const model_t* model) {
-		for (size_t i = 0; i < model->meshes_count; i++) {
-			assert(model->meshes[i] != nullptr);
-			model->meshes[i]->draw(model->meshes[i], model->shader_program);
-		}
-	}
-
-	void load_model(model_t* model, const char* path) {
-		Assimp::Importer importer;
-		const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
-		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-			log_error("Error while loading model %s: %s", path, importer.GetErrorString());
-			return;
-		}
-
-		auto path_str = std::string(path);
-		path_str = path_str.substr(0, path_str.find_last_of('/')).c_str();
-		char* tmp = static_cast<char*>(malloc((sizeof(char) * path_str.length()) + 1));
-		std::strcpy(tmp, path_str.c_str());
-		model->directory = tmp;
-
-		std::vector<aiMesh*> ai_meshes;
-		collect_meshes(scene->mRootNode, scene, ai_meshes);
-
-		std::vector<mesh_t*> meshes;
-		meshes.resize(ai_meshes.size());
-		log_info("Loading model %s", path);
-		process_meshes(model, scene, ai_meshes, meshes);
-
-		model->meshes = static_cast<mesh_t**>(malloc(sizeof(mesh_t*) * meshes.size()));
-		memcpy(model->meshes, meshes.data(), sizeof(mesh_t*) * meshes.size());
-		model->meshes_count = meshes.size();
-		model->draw = draw;
-	}
 }
 
-int32_t model_new(model_t** model, const char* path) {
-	*model = static_cast<model_t*>(malloc(sizeof(model_t)));
-	load_model(*model, path);
-
-	if (shader_create_program("shaders/backpack.vert", "shaders/backpack.frag", &(*model)->shader_program)) {
-		log_error("Failed to compile model %s shader program", path);
+void model_loader_load_model(loaded_model_t* model, const char* path) {
+	Assimp::Importer importer;
+	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+		custom_log_error("Error while loading model %s: %s", path, importer.GetErrorString());
+		return;
 	}
 
-	return 0;
-}
+	auto path_str = std::string(path);
+	path_str = path_str.substr(0, path_str.find_last_of('/')).c_str();
+	char* tmp = static_cast<char*>(malloc((sizeof(char) * path_str.length()) + 1));
+	std::strcpy(tmp, path_str.c_str());
+	model->model_data.directory = tmp;
 
-void model_free(model_t** model) {
-	for (size_t i = 0; i < (*model)->meshes_count; i++) {
-		mesh_delete(&(*model)->meshes[i]);
-	}
-	free((*model)->meshes);
-	(*model)->meshes = NULL;
-	free(const_cast<char*>((*model)->directory));
-	(*model)->directory = NULL;
-	free(*model);
-	*model = NULL;
-	log_debug("Freed model");
+	std::vector<aiMesh*> ai_meshes;
+	collect_meshes(scene->mRootNode, scene, ai_meshes);
+
+	std::vector<mesh_t*> meshes;
+	meshes.resize(ai_meshes.size());
+	custom_log_info("Loading model %s", path);
+	process_meshes(model, scene, ai_meshes, meshes);
+
+	model->model_data.meshes = static_cast<mesh_t**>(malloc(sizeof(mesh_t*) * meshes.size()));
+	memcpy(model->model_data.meshes, meshes.data(), sizeof(mesh_t*) * meshes.size());
+	model->model_data.meshes_count = meshes.size();
 }
