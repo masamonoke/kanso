@@ -44,6 +44,7 @@ int32_t app_new(app_state_t** ctx) {
 		return -1;
 	}
 
+	custom_log_info("Loading scene");
 	if (0 != default_scene((*ctx)->scene)) {
 		custom_log_error("Failed to initialize default scene. Shutting down");
 		app_free(ctx);
@@ -71,7 +72,7 @@ void app_free(app_state_t** ctx) {
 	scene_free(&(*ctx)->scene);
 	free(*ctx);
 	*ctx = NULL;
-	custom_log_info("Freed application");
+	custom_log_info("All clear");
 }
 
 

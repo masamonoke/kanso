@@ -49,55 +49,50 @@ static void draw(void* model) {
 	}
 }
 
-const uint32_t MAX_CACHE_ENTRIES = 1024;
+#define MAX_CACHE_ENTRIES 1024
 
 struct model_cache_entry {
 	loaded_model_t* model;   // value
 	const char* path; // key
 };
 
-struct cache {
-	struct model_cache_entry* models;
+struct model_cache {
+	struct model_cache_entry models[MAX_CACHE_ENTRIES];
 	size_t len;
 };
 
-static struct cache cache = {
+static struct model_cache cache = {
 	.len = 0,
-	.models = NULL
 };
+
+static void share_ref(loaded_model_t** dest, loaded_model_t* ref);
 
 int32_t loaded_model_new(loaded_model_t** model, const char* path) {
 	size_t i;
 	volatile bool found;
+	static bool initialized_cache = false;
 
-	if (cache.models == NULL) {
-		custom_log_info("Models cache initiated");
-		cache.models = malloc(sizeof(struct model_cache_entry) * MAX_CACHE_ENTRIES);
+	if (!initialized_cache) {
 		for (i = 0; i < MAX_CACHE_ENTRIES; i++) {
 			cache.models[i].model = NULL;
 			cache.models[i].path = NULL;
 		}
+		initialized_cache = true;
 	}
 
 	*model = (loaded_model_t*) malloc(sizeof(loaded_model_t));
 
+	found = false;
 	for (i = 0; i < cache.len; i++) {
 		if (cache.models[i].model != NULL) {
 			if (0 == strcmp(cache.models[i].path, path)) {
 				loaded_model_t* ref;
 
-				custom_log_debug("%s model is already loaded", cache.models[i].path);
 				ref = cache.models[i].model;
 				found = true;
-				model_share((model_t**) model, (model_t*) ref);
 
-				(*model)->model_data.model_vo.ebo = ref->model_data.model_vo.ebo;
-				(*model)->model_data.model_vo.vbo = ref->model_data.model_vo.vbo;
-				(*model)->model_data.model_vo.vao = ref->model_data.model_vo.vao;
-				(*model)->model_data.directory = ref->model_data.directory;
-				(*model)->model_data.meshes = ref->model_data.meshes;
-				(*model)->model_data.meshes_count = ref->model_data.meshes_count;
-
+				share_ref(model, ref);
+				break;
 			}
 		}
 	}
@@ -107,6 +102,8 @@ int32_t loaded_model_new(loaded_model_t** model, const char* path) {
 
 		(*model)->common.type = LOADED_MODEL;
 		(*model)->common.draw = draw;
+		(*model)->model_data._ref_count = malloc(sizeof(uint32_t));
+		*(*model)->model_data._ref_count = 0;
 
 		for (i = 0; i < MAX_CACHE_ENTRIES; i++) {
 			if (cache.models[i].model == NULL) {
@@ -116,8 +113,6 @@ int32_t loaded_model_new(loaded_model_t** model, const char* path) {
 				break;
 			}
 		}
-	} else {
-		custom_log_info("Got model %s from shared memory", path);
 	}
 
 	if (shader_create_program("shaders/backpack.vert", "shaders/backpack.frag", &(*model)->common.shader_program)) {
@@ -129,27 +124,50 @@ int32_t loaded_model_new(loaded_model_t** model, const char* path) {
 
 void loaded_model_free(loaded_model_t** model) {
 	size_t i;
-	static bool freed_cache = false;
 
-	if (!freed_cache) {
-		free(cache.models);
-		cache.models = NULL;
+	if (!(*model)->model_data._ref_count) {
+		return;
 	}
+	if (*(*model)->model_data._ref_count == 1) {
 
-	for (i = 0; i < (*model)->model_data.meshes_count; i++) {
-		mesh_delete(&(*model)->model_data.meshes[i]);
-	}
+		free((*model)->model_data._ref_count);
+		(*model)->model_data._ref_count = NULL;
+
+		for (i = 0; i < (*model)->model_data.meshes_count; i++) {
+			mesh_delete(&(*model)->model_data.meshes[i]);
+		}
 
 #ifdef DEBUG
-	for (i = 0; i < (*model)->model_data.meshes_count; i++) {
-		assert((*model)->model_data.meshes[i] == NULL);
-	}
+		for (i = 0; i < (*model)->model_data.meshes_count; i++) {
+			assert((*model)->model_data.meshes[i] == NULL);
+		}
 #endif
 
-	free((*model)->model_data.meshes);
-	(*model)->model_data.meshes = NULL;
-	free((char*) ((*model)->model_data.directory));
-	(*model)->model_data.directory = NULL;
-	free(*model);
-	custom_log_debug("Freed model");
+		free((*model)->model_data.meshes);
+		(*model)->model_data.meshes = NULL;
+		free((char*) ((*model)->model_data.directory));
+		(*model)->model_data.directory = NULL;
+		free(*model);
+	} else {
+		*(*model)->model_data._ref_count -= 1;
+		// free shared ptr
+		free(*model);
+	}
+}
+
+static void share_ref(loaded_model_t** dest, loaded_model_t* ref) {
+	struct transform t = TRANSFORM_IDENTITY;
+
+	(*dest)->common.type = ref->common.type;
+	(*dest)->common.draw = ref->common.draw;
+	memcpy((*dest)->common.position, ref->common.position, sizeof(vec3));
+	memcpy((*dest)->common.scale, ref->common.scale, sizeof(vec3));
+	(*dest)->common.transform = t;
+
+	ref->model_data._ref_count += 1;
+	(*dest)->model_data._ref_count = ref->model_data._ref_count;
+
+	(*dest)->model_data.directory = ref->model_data.directory;
+	(*dest)->model_data.meshes = ref->model_data.meshes;
+	(*dest)->model_data.meshes_count = ref->model_data.meshes_count;
 }

@@ -2,24 +2,49 @@
 	"models": [
 		{
 			"model_type": "LOADED_MODEL",
-			"path": "assets/backpack/backpack.obj"
+			"path": "assets/table/OfficeTable.fbx",
+			"position": [ 0.0, 0.0, 2.0 ]
 		},
 		{
 			"model_type": "LOADED_MODEL",
-			"position": [ 4.0, 0.0, 2.0 ],
-			"path": "assets/backpack/backpack.obj"
+			"path": "assets/table/OfficeTable.fbx",
+			"position": [ 0.0, 0.0, 1.0 ]
 		},
 		{
-			"model_type": "PRIMITIVE_MODEL",
-			"position": [ 0.7, 0.2, 2.0 ],
-			"scale": [ 0.2, 0.2, 0.2 ],
-			"primitive_type": "CUBE"
+			"model_type": "LOADED_MODEL",
+			"path": "assets/royal_chair/CadeiraMadeiraFASE1.fbx",
+			"position": [ 2.0, 0.0, 2.0 ],
+			"scale": [ 0.5, 0.5, 0.5 ]
 		},
 		{
-			"model_type": "PRIMITIVE_MODEL",
-			"position": [ -0.7, 0.2, 2.0 ],
-			"scale": [ 0.4, 0.2, 0.2 ],
-			"primitive_type": "CUBE"
+			"model_type": "LOADED_MODEL",
+			"path": "assets/royal_chair/CadeiraMadeiraFASE1.fbx",
+			"position": [ 3.0, 0.0, 2.0 ],
+			"scale": [ 0.5, 0.5, 0.5 ]
+		},
+		{
+			"model_type": "LOADED_MODEL",
+			"path": "assets/royal_chair/CadeiraMadeiraFASE1.fbx",
+			"position": [ -2.0, 0.0, 2.0 ],
+			"scale": [ 0.5, 0.5, 0.5 ]
+		},
+		{
+			"model_type": "LOADED_MODEL",
+			"path": "assets/royal_chair/CadeiraMadeiraFASE1.fbx",
+			"position": [ -3.0, 0.0, 2.0 ],
+			"scale": [ 0.5, 0.5, 0.5 ]
+		},
+		{
+			"model_type": "LOADED_MODEL",
+			"path": "assets/royal_chair/CadeiraMadeiraFASE1.fbx",
+			"position": [ 0.0, 0.0, 0.0 ],
+			"scale": [ 0.5, 0.5, 0.5 ]
+		},
+		{
+			"model_type": "LOADED_MODEL",
+			"path": "assets/royal_chair/CadeiraMadeiraFASE1.fbx",
+			"position": [ 0.0, 0.0, -1.0 ],
+			"scale": [ 0.5, 0.5, 0.5 ]
 		}
 	],
 	"lights": [

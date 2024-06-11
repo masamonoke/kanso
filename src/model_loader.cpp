@@ -182,7 +182,7 @@ void model_loader_load_model(loaded_model_t* model, const char* path) {
 
 	std::vector<mesh_t*> meshes;
 	meshes.resize(ai_meshes.size());
-	custom_log_info("Loading model %s", path);
+	custom_log_debug("Loading model %s", path);
 	process_meshes(model, scene, ai_meshes, meshes);
 
 	model->model_data.meshes = static_cast<mesh_t**>(malloc(sizeof(mesh_t*) * meshes.size()));

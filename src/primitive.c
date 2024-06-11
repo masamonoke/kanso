@@ -44,7 +44,6 @@ void primitive_free(void** primitive) {
 				glDeleteBuffers(1, &(*model)->model_data.vo.ebo);
 
 				free(*model);
-				custom_log_debug("Freed cube primitive");
 			}
 			break;
 		default:

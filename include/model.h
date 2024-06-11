@@ -12,14 +12,12 @@ enum model_type {
 	LOADED_MODEL
 };
 
-// TODO: replace void* to model_t*
 struct model_common {
 	enum model_type type;
 	uint32_t shader_program;
 	struct transform transform;
 	vec3 position;
 	vec3 scale;
-	uint32_t* _ref_count;
 	void (*draw) (void*);
 };
 
@@ -38,18 +36,14 @@ typedef struct model {
  * @param[in] const void* payload: Model specific data. For loaded_model_t this will be path to object data, for primitive this will be type of primitive like CUBE
  * @pointer_lifetime mallocs memory for model. Caller should free context with call model_free(ctx)
 */
+__attribute__((nonnull(1, 5)))
 void model_new(model_t** model, enum model_type type, vec3* init_position, vec3* init_scale, const void* payload);
 
-
-// TODO: redo to model_share
-void model_share(model_t** dest, model_t* ref);
-
-__attribute__((warn_unused_result)) int32_t models_from_json(const char* path, model_t** models_ptrs, size_t* length, size_t max_models);
+__attribute__((warn_unused_result))
+int32_t models_from_json(const char* path, model_t** models_ptrs, size_t* length, size_t max_models);
 
 /*! @brief Frees model memory. The type of passed model defined from model.common.type
  * @param[in] model_t** model: Model abstraction object which will hold all data about model like vertices, meshes etc
  * @pointer_lifetime Model is freed and set to NULL
 */
 void model_free(model_t** model);
-
-void model_print(model_t* model);

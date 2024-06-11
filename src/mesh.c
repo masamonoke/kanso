@@ -91,7 +91,6 @@ void mesh_delete(mesh_t** mesh) {
 	glDeleteVertexArrays(1, &(*mesh)->vo.vao);
 	glDeleteBuffers(1, &(*mesh)->vo.vbo);
 	glDeleteBuffers(1, &(*mesh)->vo.ebo);
-	custom_log_debug("Freed mesh vertex object");
 
 	free((*mesh)->indices_vector.array);
 	(*mesh)->indices_vector.array = NULL;
@@ -111,7 +110,5 @@ void mesh_delete(mesh_t** mesh) {
 
 	free(*mesh);
 	*mesh = NULL;
-
-	custom_log_debug("Freed mesh");
 }
 

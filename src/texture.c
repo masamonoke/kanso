@@ -25,7 +25,7 @@ int32_t texture_create_gl_texture(const char* texname) {
 
 	status = 0;
 
-	stbi_set_flip_vertically_on_load(true);
+	/* stbi_set_flip_vertically_on_load(true); */
 
 	texture_bytes = stbi_load(texname, &width, &height, &nr_channels, 0);
 	if (texture_bytes) {

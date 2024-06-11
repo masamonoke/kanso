@@ -48,26 +48,26 @@ int32_t scene_new(scene_t** scene) {
 
 void scene_free(scene_t** scene) {
 	size_t i;
-	size_t models_count;
-	size_t lights_count;
+	size_t models_count_processed;
+	size_t lights_count_processed;
 
-	for (i = 0, models_count = 0; i < MAX_MODELS_COUNT && models_count != (*scene)->scn_ctx->model_count; i++) {
+	for (i = 0, models_count_processed = 0; i < MAX_MODELS_COUNT && models_count_processed != (*scene)->scn_ctx->model_count; i++) {
 		if ((*scene)->scn_ctx->models[i] != NULL) {
 			model_free(&(*scene)->scn_ctx->models[i]);
-			models_count++;
+			models_count_processed++;
 		}
 	}
 
-	for (i = 0, lights_count = 0; i < MAX_LIGHTS_COUNT && lights_count != (*scene)->scn_ctx->light_count; i++) {
+	for (i = 0, lights_count_processed = 0; i < MAX_LIGHTS_COUNT && lights_count_processed != (*scene)->scn_ctx->light_count; i++) {
 		if ((*scene)->scn_ctx->lights[i] != NULL) {
 			light_free(&(*scene)->scn_ctx->lights[i]);
-			lights_count++;
+			lights_count_processed++;
 		}
 	}
 
 #ifdef DEBUG
-	assert(models_count == (*scene)->scn_ctx->model_count);
-	assert(lights_count == (*scene)->scn_ctx->light_count);
+	assert(models_count_processed == (*scene)->scn_ctx->model_count);
+	assert(lights_count_processed == (*scene)->scn_ctx->light_count);
 
 	for (i = 0; i < MAX_MODELS_COUNT; i++) {
 		assert((*scene)->scn_ctx->models[i] == NULL);
@@ -78,15 +78,13 @@ void scene_free(scene_t** scene) {
 	}
 #endif
 
-	(*scene)->scn_ctx->model_count -= models_count;
-	(*scene)->scn_ctx->light_count -= lights_count;
+	(*scene)->scn_ctx->model_count = 0;
+	(*scene)->scn_ctx->light_count = 0;
 
 	free((*scene)->scn_ctx);
 	(*scene)->scn_ctx = NULL;
 	free(*scene);
 	*scene = NULL;
-
-	custom_log_debug("Freed scene");
 }
 
 int32_t scene_add_model(scene_t* scene, model_t* model) {
@@ -108,19 +106,6 @@ int32_t scene_load_from_json(scene_t* scene, const char* path) {
 	int32_t status;
 
 	status = models_from_json(path, scene->scn_ctx->models, &scene->scn_ctx->model_count, MAX_MODELS_COUNT);
-
-/* #ifdef DEBUG */
-/* 	size_t i; */
-/* 	size_t model_count; */
-
-/* 	for (i = 0, model_count = 0; i < MAX_MODELS_COUNT && model_count != scene->scn_ctx->model_count; i++) { */
-/* 		if (scene->scn_ctx->models[i] != NULL) { */
-/* 			model_print(scene->scn_ctx->models[i]); */
-/* 			model_count++; */
-/* 		} */
-/* 	} */
-/* #endif */
-
 	status = light_from_json(path, scene->scn_ctx->lights, &scene->scn_ctx->light_count, MAX_LIGHTS_COUNT);
 
 	return status;

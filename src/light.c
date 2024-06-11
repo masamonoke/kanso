@@ -18,15 +18,15 @@ void light_new(light_t** light, enum light_type type, vec3* ambient, vec3* diffu
 	switch (type) {
 		case LIGHT_SPOT:
 			spot_light_new(light, specific_data);
-			custom_log_info("Created spot light");
+			custom_log_debug("Created spot light");
 			break;
 		case LIGHT_DIRECTIONAL:
 			directional_light_new(light, specific_data);
-			custom_log_info("Created directional light");
+			custom_log_debug("Created directional light");
 			break;
 		case LIGHT_POINT:
 			point_light_new(light, specific_data);
-			custom_log_info("Created point light");
+			custom_log_debug("Created point light");
 			break;
 		default:
 			custom_log_error("Failed to define type: %d", type);
@@ -94,7 +94,7 @@ int32_t light_from_json(const char* path, light_t** lights_ptrs, size_t* length,
 		}
 
 		// better not use struct arraylist* from json-c directly
-		if (!(array_len = json_object_get_array(lights_jso)->length)) { // NOLINT
+		if (!(array_len = json_object_get_array(lights_jso)->length)) {
 			custom_log_error("Failed to parse lights from %s", path);
 			status = -1;
 			goto L_FREE_JSO;
@@ -142,7 +142,7 @@ L_FREE_JSO:
 		status = -1;
 	}
 
-	custom_log_info("Loaded lights: %d", *length);
+	custom_log_debug("Loaded lights: %d", *length);
 	return status;
 }
 

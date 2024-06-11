@@ -17,19 +17,13 @@ struct json_object;
 void model_new(model_t** model, enum model_type type, vec3* init_position, vec3* init_scale, const void* payload) { // NOLINT
 	switch (type) {
 		case LOADED_MODEL:
-			if (payload) {
-				if (0 != loaded_model_new((loaded_model_t**) model, (const char*) payload)) {
-					return;
-				}
-			} else {
-				custom_log_error("Null model path passed");
+			if (0 != loaded_model_new((loaded_model_t**) model, (const char*) payload)) {
+				return;
 			}
 			break;
 		case PRIMITVE_MODEL:
-			if (payload) {
-				if (0 != primitive_new((void**) model, *((enum primitive_type*) payload))) {
-					return;
-				}
+			if (0 != primitive_new((void**) model, *((enum primitive_type*) payload))) {
+				return;
 			} else {
 				custom_log_error("Null primitive model type passed");
 			}
@@ -38,6 +32,7 @@ void model_new(model_t** model, enum model_type type, vec3* init_position, vec3*
 			custom_log_error("Unknown model type: %d", (*model)->common.type);
 			break;
 	}
+
 	if (init_position) {
 		memcpy((*model)->common.position, *init_position, sizeof(vec3));
 	} else {
@@ -52,42 +47,21 @@ void model_new(model_t** model, enum model_type type, vec3* init_position, vec3*
 		(*model)->common.scale[1] = 1.0f;
 		(*model)->common.scale[2] = 1.0f;
 	}
-
-	(*model)->common._ref_count = malloc(sizeof(uint32_t));
-	*(*model)->common._ref_count = 1;
-}
-
-void model_share(model_t** dest, model_t* ref) {
-	struct transform t = TRANSFORM_IDENTITY;
-
-	(*dest)->common.type = ref->common.type;
-	(*dest)->common.draw = ref->common.draw;
-	memcpy((*dest)->common.position, ref->common.position, sizeof(vec3));
-	memcpy((*dest)->common.scale, ref->common.scale, sizeof(vec3));
-	(*dest)->common.transform = t;
-	(*dest)->common._ref_count = ref->common._ref_count;
-	ref->common._ref_count += 1;
 }
 
 void model_free(model_t** model) {
-	if (*(*model)->common._ref_count == 1) {
-		switch ((*model)->common.type) {
-			case LOADED_MODEL:
-				loaded_model_free((loaded_model_t**) model);
-				break;
-			case PRIMITVE_MODEL:
-				primitive_free((void**) model);
-				break;
-			default:
-				custom_log_error("Unknown model type: %d", (*model)->common.type);
-				break;
-		}
-		free((*model)->common._ref_count);
-	} else {
-		*(*model)->common._ref_count -= 1;
-		// free shared ptr
-		free(*model);
+	switch ((*model)->common.type) {
+		case LOADED_MODEL:
+			loaded_model_free((loaded_model_t**) model);
+			break;
+		case PRIMITVE_MODEL:
+			primitive_free((void**) model);
+			break;
+		default:
+			custom_log_error("Unknown model type: %d", (*model)->common.type);
+			break;
 	}
+
 	*model = NULL;
 }
 
@@ -96,7 +70,7 @@ static int32_t get_type(struct json_object* model_jso, struct json_object** jso,
 
 static void get_position(struct json_object* model_jso, struct json_object** jso, const char* path, vec3 position);
 
-static void get_scale(struct json_object* model_jso, struct json_object** jso, const char* type, const char* path, vec3 scale);
+static void get_scale(struct json_object* model_jso, struct json_object** jso, vec3 scale);
 
 __attribute__((warn_unused_result))
 static int32_t add_loaded_model(struct json_object* model_jso, struct json_object** jso, vec3* position, vec3* scale, model_t** models_ptrs,
@@ -149,7 +123,7 @@ int32_t models_from_json(const char* path, model_t** models_ptrs, size_t* length
 
 			get_position(model_jso, &jso, path, position);
 
-			get_scale(model_jso, &jso, type, path, scale);
+			get_scale(model_jso, &jso, scale);
 
 			if (0 == strcmp(type, "LOADED_MODEL")) {
 				(void) add_loaded_model(model_jso, &jso, &position, &scale, models_ptrs, max_models, length);
@@ -170,7 +144,7 @@ L_FREE_JSO:
 		status = -1;
 	}
 
-	custom_log_info("Loaded models: %d", *length);
+	custom_log_debug("Loaded models: %d", *length);
 	return status;
 }
 
@@ -202,13 +176,11 @@ static void get_position(struct json_object* model_jso, struct json_object** jso
 	}
 }
 
-static void get_scale(struct json_object* model_jso, struct json_object** jso, const char* type, const char* path, vec3 scale) {
+static void get_scale(struct json_object* model_jso, struct json_object** jso, vec3 scale) {
 	if (!json_object_object_get_ex(model_jso, "scale", jso)) {
 		scale[0] = 1;
 		scale[1] = 1;
 		scale[2] = 1;
-		custom_log_warn("Failed to get scale of %s type model from %s. Using default scale (%d, %d, %d) instead",
-			type, path, (double) scale[0], (double) scale[1], (double) scale[2]);
 	} else {
 		scale[0] = (float) json_object_get_double(json_object_array_get_idx(*jso, 0));
 		scale[1] = (float) json_object_get_double(json_object_array_get_idx(*jso, 1));
