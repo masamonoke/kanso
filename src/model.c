@@ -6,10 +6,9 @@
 #include <json_object.h>
 #include <json_util.h>
 #include <cglm/types.h>
+#include <c_log.h>
 
-#include "custom_logger.h"
 #include "loaded_model.h"
-#include "log.h"
 #include "primitive.h"
 
 struct json_object;
@@ -25,11 +24,11 @@ void model_new(model_t** model, enum model_type type, vec3* init_position, vec3*
 			if (0 != primitive_new((void**) model, *((enum primitive_type*) payload))) {
 				return;
 			} else {
-				custom_log_error("Null primitive model type passed");
+				log_error("Null primitive model type passed");
 			}
 			break;
 		default:
-			custom_log_error("Unknown model type: %d", (*model)->common.type);
+			log_error("Unknown model type: %d", (*model)->common.type);
 			break;
 	}
 
@@ -58,7 +57,7 @@ void model_free(model_t** model) {
 			primitive_free((void**) model);
 			break;
 		default:
-			custom_log_error("Unknown model type: %d", (*model)->common.type);
+			log_error("Unknown model type: %d", (*model)->common.type);
 			break;
 	}
 
@@ -92,7 +91,7 @@ int32_t models_from_json(const char* path, model_t** models_ptrs, size_t* length
 		size_t array_len;
 		size_t i;
 
-		custom_log_debug("Reading model from config %s", path);
+		log_debug("Reading model from config %s", path);
 
 		json_object_object_get_ex(file_jso, "models", &models_jso);
 		if (!models_jso) {
@@ -103,7 +102,7 @@ int32_t models_from_json(const char* path, model_t** models_ptrs, size_t* length
 
 		// better not use struct arraylist* from json-c directly
 		if (!(array_len = json_object_get_array(models_jso)->length)) { // NOLINT
-			custom_log_error("Failed to parse models from %s", path);
+			log_error("Failed to parse models from %s", path);
 			status = -1;
 			goto L_FREE_JSO;
 		}
@@ -136,15 +135,15 @@ int32_t models_from_json(const char* path, model_t** models_ptrs, size_t* length
 
 L_FREE_JSO:
 		if (!json_object_put(file_jso)) {
-			custom_log_error("Failed to free json object");
+			log_error("Failed to free json object");
 			status = -1;
 		}
 	} else {
-		custom_log_error("Failed to load model from config %s", path);
+		log_error("Failed to load model from config %s", path);
 		status = -1;
 	}
 
-	custom_log_debug("Loaded models: %d", *length);
+	log_debug("Loaded models: %d", *length);
 	return status;
 }
 
@@ -153,11 +152,11 @@ L_FREE_JSO:
 
 static int32_t get_type(struct json_object* model_jso, struct json_object** jso, const char* path, const char** ret_type) {
 	if (!json_object_object_get_ex(model_jso, "model_type", jso)) {
-		custom_log_error("Failed to get type of model from %s", path);
+		log_error("Failed to get type of model from %s", path);
 		return -1;
 	}
 	*ret_type = json_object_get_string(*jso);
-	custom_log_debug("Loading model %s", *ret_type);
+	log_debug("Loading model %s", *ret_type);
 
 	return 0;
 }
@@ -167,7 +166,7 @@ static void get_position(struct json_object* model_jso, struct json_object** jso
 		position[0] = 0;
 		position[1] = 0;
 		position[2] = 0;
-		custom_log_warn("Failed to get position of model from %s. Using default position (%d, %d, %d) instead",
+		log_warn("Failed to get position of model from %s. Using default position (%d, %d, %d) instead",
 			path, (double) position[0], (double) position[1], (double) position[2]);
 	} else {
 		position[0] = (float) json_object_get_double(json_object_array_get_idx(*jso, 0));
@@ -194,13 +193,13 @@ static int32_t add_loaded_model(struct json_object* model_jso, struct json_objec
 	const char* model_path;
 
 	if (!json_object_object_get_ex(model_jso, "path", jso)) {
-		custom_log_error("Failed to get type of model from %s", model_path);
+		log_error("Failed to get type of model from %s", model_path);
 		return -1;
 	} else {
 		model_t* model;
 
 		model_path = json_object_get_string(*jso);
-		custom_log_debug("Path is %s", model_path);
+		log_debug("Path is %s", model_path);
 		model_new(&model, LOADED_MODEL, position, scale, model_path);
 		for (size_t j = 0; j < max_models; j++) {
 			if (models_ptrs[j] == NULL) {
@@ -220,17 +219,17 @@ static int32_t add_primitive_model(struct json_object* model_jso, struct json_ob
 	const char* primitive_type_str;
 	enum primitive_type primitive_type;
 	if (!json_object_object_get_ex(model_jso, "primitive_type", jso)) {
-		custom_log_error("Failed to get primitive type");
+		log_error("Failed to get primitive type");
 		return -1;
 	} else {
 		model_t* model;
 
 		primitive_type_str = json_object_get_string(*jso);
-		custom_log_debug("Primitive type is %s", primitive_type_str);
+		log_debug("Primitive type is %s", primitive_type_str);
 		if (0 == strcmp(primitive_type_str, "CUBE")) {
 			primitive_type = CUBE;
 		} else {
-			custom_log_error("Failed to define type %s", primitive_type_str);
+			log_error("Failed to define type %s", primitive_type_str);
 			primitive_type = UNDEFINED_PRIMITIVE;
 		}
 

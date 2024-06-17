@@ -8,8 +8,8 @@
 #include <cglm/cam.h>
 #include <cglm/mat4.h>
 #include <cglm/util.h>
+#include <c_log.h>
 
-#include "custom_logger.h"
 #include "shader.h"
 #include "camera.h"
 
@@ -25,7 +25,7 @@ int32_t primitive_new(void** primitive, enum primitive_type type) {
 		case CUBE:
 			return create_cube(primitive);
 		default:
-			custom_log_error("Unknown primitive type: %d", type);
+			log_error("Unknown primitive type: %d", type);
 	}
 
 	return 0;
@@ -48,7 +48,7 @@ void primitive_free(void** primitive) {
 			}
 			break;
 		default:
-			custom_log_error("Unknown primitive type: %d", (*model)->model_data.primitive_type);
+			log_error("Unknown primitive type: %d", (*model)->model_data.primitive_type);
 	}
 }
 
@@ -107,7 +107,7 @@ static int32_t create_cube(void** primitive) {
 	*cube = malloc(sizeof(primitive_model_t));
 
 	if (shader_create_program("shaders/light_cube.vert", "shaders/light_cube.frag", &(*cube)->common.shader_program)) {
-		custom_log_error("Failed to compile cube shader program");
+		log_error("Failed to compile cube shader program");
 	}
 
 	glGenVertexArrays(1, &(*cube)->model_data.vo.vao);

@@ -5,9 +5,9 @@
 #include <stdio.h>
 
 #include <glad/glad.h>
+#include <c_log.h>
 
 #include "shader.h"
-#include "custom_logger.h"
 
 static void setup_vertex_objects(vertex_object_t* vo, vertex_vector_t vertices, int32_vector_t indices) {
 	glGenVertexArrays(1, &vo->vao);
@@ -59,7 +59,7 @@ static void draw_mesh(mesh_t* mesh, uint32_t shader_program) {
 		} else if (0 == strcmp(name, "texture_normal")) {
 			sprintf(number, "%d", normal_nr++);
 		} else {
-			custom_log_error("Unknown texture type: %s", name);
+			log_error("Unknown texture type: %s", name);
 			return;
 		}
 		strcat(name, number);

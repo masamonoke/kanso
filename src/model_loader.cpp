@@ -14,10 +14,11 @@
 
 #ifdef __cplusplus
 extern "C" {
+#include <c_log.h>
+
 #include "model_loader.h"
 #include "texture.h"
 #include "mesh.h"
-#include "custom_logger.h"
 #ifdef __cplusplus
 }
 #endif
@@ -51,7 +52,7 @@ namespace {
 				if (tex_id >= 0) {
 					t.id = static_cast<uint32_t>(tex_id);
 				} else {
-					custom_log_error("Failed to create texture");
+					log_error("Failed to create texture");
 					continue;
 				}
 				t.type = static_cast<char*>(malloc((sizeof(char) * type_name.length()) + 1));
@@ -132,7 +133,7 @@ namespace {
 
 		mesh_t* m;
 		if (mesh_new(&m, vertices_v, indices_v, textures_v)) {
-			custom_log_error("Failed to create mesh");
+			log_error("Failed to create mesh");
 			return NULL;
 		} else {
 			return m;
@@ -166,7 +167,7 @@ void model_loader_load_model(loaded_model_t* model, const char* path) {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-		custom_log_error("Error while loading model %s: %s", path, importer.GetErrorString());
+		log_error("Error while loading model %s: %s", path, importer.GetErrorString());
 		return;
 	}
 
@@ -181,7 +182,7 @@ void model_loader_load_model(loaded_model_t* model, const char* path) {
 
 	std::vector<mesh_t*> meshes;
 	meshes.resize(ai_meshes.size());
-	custom_log_debug("Loading model %s", path);
+	log_debug("Loading model %s", path);
 	process_meshes(model, scene, ai_meshes, meshes);
 
 	model->model_data.meshes = static_cast<mesh_t**>(malloc(sizeof(mesh_t*) * meshes.size()));

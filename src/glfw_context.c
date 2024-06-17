@@ -4,8 +4,8 @@
 #include <json_util.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <c_log.h>
 
-#include "custom_logger.h"
 #include "glfw_context.h"
 
 #define DEFAULT_WINDOW_SIZE 800, 600
@@ -54,32 +54,32 @@ int32_t glfw_context_create_window(GLFWwindow** window, void (*framebuffer_size_
 		struct json_object* width_json;
 		struct json_object* height_json;
 
-		custom_log_info("Reading window config from file");
+		log_info("Reading window config from file");
 		json_object_object_get_ex(j, "width", &width_json);
 		json_object_object_get_ex(j, "height", &height_json);
 
 		if (width_json && height_json) {
 			*window = glfwCreateWindow(json_object_get_int(width_json), json_object_get_int(height_json),DEFAULT_TITLE, NULL, NULL);
 		} else {
-			custom_log_error("Failed to read json height or width value");
+			log_error("Failed to read json height or width value");
 			json_object_put(j);
 			goto L_DEFAULT_WINDOW_INIT;
 		}
 
 		if (json_object_put(j)) {
-			custom_log_debug("Freed json object");
+			log_debug("Freed json object");
 		} else {
-			custom_log_error("Failed to free json object");
+			log_error("Failed to free json object");
 		}
 
 	} else {
-		custom_log_info("Window config is not found. Using default values");
+		log_info("Window config is not found. Using default values");
 L_DEFAULT_WINDOW_INIT:
 		*window = glfwCreateWindow(DEFAULT_WINDOW_SIZE, DEFAULT_TITLE, NULL, NULL);
 	}
 
 	if (window == NULL) {
-		custom_log_error("Failed to create GLFW window\n");
+		log_error("Failed to create GLFW window\n");
 		glfwTerminate();
 		status = -1;
 		goto L_RETURN;
@@ -87,7 +87,7 @@ L_DEFAULT_WINDOW_INIT:
 	glfwMakeContextCurrent(*window);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		custom_log_error("Failed to initialize GLAD\n");
+		log_error("Failed to initialize GLAD\n");
 		status = -1;
 		goto L_RETURN;
 	}
@@ -99,7 +99,7 @@ L_DEFAULT_WINDOW_INIT:
 
 	glfwSetFramebufferSizeCallback(*window, framebuffer_size_callback);
 
-	custom_log_info("Created GLFW window");
+	log_info("Created GLFW window");
 
 L_RETURN:
 

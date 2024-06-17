@@ -2,8 +2,8 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <c_log.h>
 
-#include "custom_logger.h"
 #include "model.h"
 #include "light.h"
 
@@ -91,7 +91,7 @@ int32_t scene_add_model(scene_t* scene, model_t* model) {
 		}
 	}
 
-	custom_log_error("Can't add new model to scene");
+	log_error("Can't add new model to scene");
 
 	return -1;
 }

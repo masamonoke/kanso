@@ -11,13 +11,14 @@ add_subdirectory(deps/glfw)
 add_subdirectory(deps/cglm)
 add_subdirectory(deps/assimp)
 add_subdirectory(deps/json-c)
+add_subdirectory(deps/c-logger)
 set(ASSIMP_BUILD_STATIC_LIB ON)
 
 include_directories(${OPENGL_INCLUDE_DIRS})
 include_directories(include)
-include_directories(deps/log.c/src)
 include_directories(deps/assimp/include)
 include_directories(deps/json-c)
+include_directories(deps/c-logger)
 
 find_package(OpenGL REQUIRED)
 message(STATUS "Found OpenGL")
@@ -26,7 +27,6 @@ file(GLOB SRC
      "src/*.c"
      "src/*.cpp"
 	 "include/*.h"
-	 deps/log.c/src/log.c
 )
 
 file(GLOB SHADERS_OPENGL
@@ -74,8 +74,10 @@ if (NOT MSVC)
 		message(STATUS "Using fsanitize")
 		target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address,undefined,null,bounds,leak)
 		target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG=ON)
+		target_compile_definitions(c_logger PUBLIC DEBUG=ON)
+		target_compile_definitions(c_logger PUBLIC LOG_FILE=ON)
+		target_compile_definitions(c_logger PUBLIC LOG_SYNC=ON)
 	endif()
 endif()
 
-target_link_libraries(${PROJECT_NAME} glfw OpenGL::GL cglm assimp json-c)
-
+target_link_libraries(${PROJECT_NAME} glfw OpenGL::GL cglm assimp json-c c_logger)

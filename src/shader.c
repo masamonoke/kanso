@@ -4,8 +4,8 @@
 
 #include <glad/glad.h>
 #include <cglm/types.h>
+#include <c_log.h>
 
-#include "custom_logger.h"
 #include "file.h"
 
 int32_t shader_create_program(const char* vertex_file, const char* frag_file, uint32_t* shader_program) { // NOLINT
@@ -18,14 +18,14 @@ int32_t shader_create_program(const char* vertex_file, const char* frag_file, ui
 
 	vertex_shader_str = NULL;
 	if (file_read(vertex_file, &vertex_shader_str) && !vertex_shader_str) {
-		custom_log_error("Failed to read %s", vertex_file);
+		log_error("Failed to read %s", vertex_file);
 		status = -1;
 		goto L_RETURN;
 	}
 
 	frag_shader_str = NULL;
 	if (file_read(frag_file, &frag_shader_str) && !frag_shader_str) {
-		custom_log_error("Failed to read %s", frag_file);
+		log_error("Failed to read %s", frag_file);
 		status = -1;
 		goto L_RETURN;
 	}
@@ -36,7 +36,7 @@ int32_t shader_create_program(const char* vertex_file, const char* frag_file, ui
 	glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &status);
 	if (!status) {
 		glGetShaderInfoLog(vertex_shader, 512, NULL, info);
-		custom_log_error("Vertex shader %s compilation failed: %s", vertex_file, info);
+		log_error("Vertex shader %s compilation failed: %s", vertex_file, info);
 		status = -1;
 		goto L_RETURN;
 	}
@@ -47,7 +47,7 @@ int32_t shader_create_program(const char* vertex_file, const char* frag_file, ui
 	glGetShaderiv(frag_shader, GL_COMPILE_STATUS, &status);
 	if (!status) {
 		glGetShaderInfoLog(frag_shader, 512, NULL, info);
-		custom_log_error("Fragment shader %s compilation failed: %s", frag_file, info);
+		log_error("Fragment shader %s compilation failed: %s", frag_file, info);
 		status = -1;
 		goto L_RETURN;
 	}
@@ -59,7 +59,7 @@ int32_t shader_create_program(const char* vertex_file, const char* frag_file, ui
 	glGetProgramiv(*shader_program, GL_LINK_STATUS, &status);
 	if (!status) {
 		glGetProgramInfoLog(*shader_program, 512, NULL, info);
-		custom_log_error("Shader program linking failed: %s", info);
+		log_error("Shader program linking failed: %s", info);
 		status = -1;
 		goto L_RETURN;
 	}

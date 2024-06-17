@@ -3,10 +3,11 @@
 #include <stdlib.h>
 
 #include <glad/glad.h>
+#include <c_log.h>
 
 #include "camera.h"
 #include "keys.h"
-#include "custom_logger.h"
+/* #include "custom_logger.h" */
 
 /*! @brief Reads key input
  *  @param[in] app_state_t** ctx: An app state which will hold all data about current context
@@ -36,18 +37,18 @@ int32_t app_new(app_state_t** ctx) {
 	*ctx = malloc(sizeof(app_state_t));
 
 	if (window_new(&(*ctx)->window)) {
-		custom_log_error("Failed to create window");
+		log_error("Failed to create window");
 		return -1;
 	}
 
 	if (scene_new(&(*ctx)->scene)) {
-		custom_log_error("Failed to create scene");
+		log_error("Failed to create scene");
 		return -1;
 	}
 
-	custom_log_info("Loading scene");
+	log_info("Loading scene");
 	if (0 != default_scene((*ctx)->scene)) {
-		custom_log_error("Failed to initialize default scene. Shutting down");
+		log_error("Failed to initialize default scene. Shutting down");
 		app_free(ctx);
 		return -1;
 	}
@@ -57,11 +58,11 @@ int32_t app_new(app_state_t** ctx) {
 
 	camera_init_callbacks((*ctx)->window);
 
-	custom_log_debug("Initiated camera callbacks");
+	log_debug("Initiated camera callbacks");
 
 	window_set_capture_cursor((*ctx)->window);
 
-	custom_log_debug("Set window cursor mode to capture");
+	log_debug("Set window cursor mode to capture");
 
 	(*ctx)->close = false;
 
@@ -73,7 +74,7 @@ void app_free(app_state_t** ctx) {
 	scene_free(&(*ctx)->scene);
 	free(*ctx);
 	*ctx = NULL;
-	custom_log_info("All clear");
+	log_info("All clear");
 }
 
 

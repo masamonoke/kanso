@@ -9,9 +9,8 @@
 #include <json_object.h>
 #include <json_util.h>
 #include <cglm/util.h>
-#include <log.h>
+#include <c_log.h>
 
-#include "custom_logger.h"
 #include "point_light.h"
 #include "spot_light.h"
 #include "directional_light.h"
@@ -23,18 +22,18 @@ void light_new(light_t** light, enum light_type type, vec3* ambient, vec3* diffu
 	switch (type) {
 		case LIGHT_SPOT:
 			spot_light_new(light, specific_data);
-			custom_log_debug("Created spot light");
+			log_debug("Created spot light");
 			break;
 		case LIGHT_DIRECTIONAL:
 			directional_light_new(light, specific_data);
-			custom_log_debug("Created directional light");
+			log_debug("Created directional light");
 			break;
 		case LIGHT_POINT:
 			point_light_new(light, specific_data);
-			custom_log_debug("Created point light");
+			log_debug("Created point light");
 			break;
 		default:
-			custom_log_error("Failed to define type: %d", type);
+			log_error("Failed to define type: %d", type);
 			return;
 	}
 
@@ -48,18 +47,18 @@ void light_free(light_t** light) {
 	switch ((*light)->common.type) {
 		case LIGHT_POINT:
 			point_light_free(light);
-			custom_log_debug("Freed point light");
+			log_debug("Freed point light");
 			break;
 		case LIGHT_DIRECTIONAL:
 			directional_light_free(light);
-			custom_log_debug("Freed directional light");
+			log_debug("Freed directional light");
 			break;
 		case LIGHT_SPOT:
 			spot_light_free(light);
-			custom_log_debug("Freed spot light");
+			log_debug("Freed spot light");
 			break;
 		default:
-			custom_log_error("Undefined light type");
+			log_error("Undefined light type");
 			break;
 	}
 }
@@ -89,7 +88,7 @@ int32_t light_from_json(const char* path, light_t** lights_ptrs, size_t* length,
 		size_t array_len;
 		size_t i;
 
-		custom_log_debug("Reading model from config %s", path);
+		log_debug("Reading model from config %s", path);
 
 		json_object_object_get_ex(file_jso, "lights", &lights_jso);
 		if (!lights_jso) {
@@ -100,7 +99,7 @@ int32_t light_from_json(const char* path, light_t** lights_ptrs, size_t* length,
 
 		// better not use struct arraylist* from json-c directly
 		if (!(array_len = json_object_get_array(lights_jso)->length)) {
-			custom_log_error("Failed to parse lights from %s", path);
+			log_error("Failed to parse lights from %s", path);
 			status = -1;
 			goto L_FREE_JSO;
 		}
@@ -139,26 +138,26 @@ int32_t light_from_json(const char* path, light_t** lights_ptrs, size_t* length,
 
 L_FREE_JSO:
 		if (!json_object_put(file_jso)) {
-			custom_log_error("Failed to free json object");
+			log_error("Failed to free json object");
 			status = -1;
 		}
 	} else {
-		custom_log_error("Failed to load model from config %s", path);
+		log_error("Failed to load model from config %s", path);
 		status = -1;
 	}
 
-	custom_log_debug("Loaded lights: %d", *length);
+	log_debug("Loaded lights: %d", *length);
 	return status;
 }
 
 
 __attribute__((warn_unused_result)) static int32_t get_type(struct json_object* light_jso, struct json_object** jso, const char* path, const char** ret_type) {
 	if (!json_object_object_get_ex(light_jso, "light_type", jso)) {
-		custom_log_error("Failed to get type of light from %s", path);
+		log_error("Failed to get type of light from %s", path);
 		return -1;
 	}
 	*ret_type = json_object_get_string(*jso);
-	custom_log_debug("Loading model %s", *ret_type);
+	log_debug("Loading model %s", *ret_type);
 
 	return 0;
 }
@@ -167,7 +166,7 @@ static void get_common(struct json_object* light_jso, vec3 ambient, vec3 diffuse
 	struct json_object* jso;
 
 	if (!json_object_object_get_ex(light_jso, "ambient", &jso)) {
-		custom_log_error("Failed to get ambient");
+		log_error("Failed to get ambient");
 	}
 
 	ambient[0] = (float) json_object_get_double(json_object_array_get_idx(jso, 0));
@@ -175,7 +174,7 @@ static void get_common(struct json_object* light_jso, vec3 ambient, vec3 diffuse
 	ambient[2] = (float) json_object_get_double(json_object_array_get_idx(jso, 2));
 
 	if (!json_object_object_get_ex(light_jso, "diffuse", &jso)) {
-		custom_log_error("Failed to get diffuse");
+		log_error("Failed to get diffuse");
 	}
 
 	diffuse[0] = (float) json_object_get_double(json_object_array_get_idx(jso, 0));
@@ -183,7 +182,7 @@ static void get_common(struct json_object* light_jso, vec3 ambient, vec3 diffuse
 	diffuse[2] = (float) json_object_get_double(json_object_array_get_idx(jso, 2));
 
 	if (!json_object_object_get_ex(light_jso, "specular", &jso)) {
-		custom_log_error("Failed to get specular");
+		log_error("Failed to get specular");
 	}
 
 	specular[0] = (float) json_object_get_double(json_object_array_get_idx(jso, 0));
@@ -200,31 +199,31 @@ static bool create_spot_light(light_t** light, struct json_object* light_jso, ve
 	float outer_cut_off;
 
 	if (!json_object_object_get_ex(light_jso, "constant", &jso)) {
-		custom_log_error("Failed to get constant");
+		log_error("Failed to get constant");
 		return false;
 	}
 	constant = (float) json_object_get_double(jso);
 
 	if (!json_object_object_get_ex(light_jso, "linear", &jso)) {
-		custom_log_error("Failed to get linear");
+		log_error("Failed to get linear");
 		return false;
 	}
 	linear = (float) json_object_get_double(jso);
 
 	if (!json_object_object_get_ex(light_jso, "quadratic", &jso)) {
-		custom_log_error("Failed to get quadratic");
+		log_error("Failed to get quadratic");
 		return false;
 	}
 	quadratic = (float) json_object_get_double(jso);
 
 	if (!json_object_object_get_ex(light_jso, "inner_cut_off_angle", &jso)) {
-		custom_log_error("Failed to get inner cut off angle");
+		log_error("Failed to get inner cut off angle");
 		return false;
 	}
 	inner_cut_off = cosf((glm_rad((float) json_object_get_double(jso))));
 
 	if (!json_object_object_get_ex(light_jso, "outer_cut_off_angle", &jso)) {
-		custom_log_error("Failed to get outer cut off angle");
+		log_error("Failed to get outer cut off angle");
 		return false;
 	}
 	outer_cut_off = cosf((glm_rad((float) json_object_get_double(jso))));
@@ -253,19 +252,19 @@ static bool create_point_light(light_t** light, struct json_object* light_jso, v
 	vec3 position;
 
 	if (!json_object_object_get_ex(light_jso, "constant", &jso)) {
-		custom_log_error("Failed to get constant");
+		log_error("Failed to get constant");
 		return false;
 	}
 	constant = (float) json_object_get_double(jso);
 
 	if (!json_object_object_get_ex(light_jso, "linear", &jso)) {
-		custom_log_error("Failed to get linear");
+		log_error("Failed to get linear");
 		return false;
 	}
 	linear = (float) json_object_get_double(jso);
 
 	if (!json_object_object_get_ex(light_jso, "quadratic", &jso)) {
-		custom_log_error("Failed to get quadratic");
+		log_error("Failed to get quadratic");
 		return false;
 	}
 	quadratic = (float) json_object_get_double(jso);

@@ -12,8 +12,8 @@
 #include <cglm/mat4.h>
 #include <cglm/util.h>
 #include <cglm/types.h>
+#include <c_log.h>
 
-#include "custom_logger.h"
 #include "model_loader.h"
 #include "shader.h"
 #include "camera.h"
@@ -117,7 +117,7 @@ int32_t loaded_model_new(loaded_model_t** model, const char* path) {
 	}
 
 	if (shader_create_program("shaders/backpack.vert", "shaders/backpack.frag", &(*model)->common.shader_program)) {
-		custom_log_error("Failed to compile model %s shader program", path);
+		log_error("Failed to compile model %s shader program", path);
 	}
 
 	return 0;

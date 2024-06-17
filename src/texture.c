@@ -1,7 +1,7 @@
 #include "texture.h"
 
 #include <glad/glad.h>
-#include <log.h>
+#include <c_log.h>
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wconversion"
