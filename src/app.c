@@ -30,10 +30,12 @@ static void update(app_state_t* ctx);
 
 static int32_t default_scene(scene_t* scene);
 
+static int32_t custom_scene(scene_t* scene, const char* scene_path);
+
 /*! @brief Updates all states in context
  * @param[in] app_state_t** ctx: An app state which will hold all data about current context
 */
-int32_t app_new(app_state_t** ctx) {
+int32_t app_new(app_state_t** ctx, const char* scene_path) {
 	*ctx = malloc(sizeof(app_state_t));
 
 	if (window_new(&(*ctx)->window)) {
@@ -46,11 +48,20 @@ int32_t app_new(app_state_t** ctx) {
 		return -1;
 	}
 
-	log_info("Loading scene");
-	if (0 != default_scene((*ctx)->scene)) {
-		log_error("Failed to initialize default scene. Shutting down");
-		app_free(ctx);
-		return -1;
+	if (scene_path) {
+		log_info("Loading scene %s", scene_path);
+		if (0 != custom_scene((*ctx)->scene, scene_path)) {
+			log_error("Failed to initialize scene %s. Shutting down", scene_path);
+			app_free(ctx);
+			return -1;
+		}
+	} else {
+		log_info("Loading default scene");
+		if (0 != default_scene((*ctx)->scene)) {
+			log_error("Failed to initialize default scene. Shutting down");
+			app_free(ctx);
+			return -1;
+		}
 	}
 
 	(*ctx)->update = update;
@@ -110,6 +121,10 @@ static void draw(app_state_t* ctx) {
 static void update(app_state_t* ctx) {
 	clear();
 	draw(ctx);
+}
+
+static int32_t custom_scene(scene_t* scene, const char* scene_path) {
+	return scene_load_from_json(scene, scene_path);
 }
 
 static int32_t default_scene(scene_t* scene) {

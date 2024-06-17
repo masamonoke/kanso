@@ -2,10 +2,16 @@
 
 #include "app.h"
 
-int32_t main(void) {
+int32_t main(int32_t argc, char** argv) {
 	app_state_t* app_state;
+	char* scene_path;
 
-	if (app_new(&app_state)) {
+	scene_path = NULL;
+	if (argc > 1) {
+		scene_path = argv[1];
+	}
+
+	if (app_new(&app_state, scene_path)) {
 		return 1;
 	}
 
