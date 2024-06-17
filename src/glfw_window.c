@@ -1,11 +1,12 @@
-#include <stdbool.h>       // for bool
-#include <stdint.h>        // for int32_t
+#include "window.h"
 
-#include <glad/glad.h>     // for glViewport
-#include "GLFW/glfw3.h"    // for GLFWwindow, glfwDestroyWindow, glfwGetKey
+#include <stdbool.h>
+#include <stdint.h>
 
-#include "window.h"        // for window_t, window_context_time, window_free
-#include "glfw_context.h"  // for glfw_context_capture_cursor, glfw_context_...
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
+#include "glfw_context.h"
 
 struct GLFWwindow;
 

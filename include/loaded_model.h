@@ -1,11 +1,11 @@
 #pragma once
 
-#include <stddef.h>         // for size_t
-#include <stdint.h>         // for int32_t
+#include <stddef.h>
+#include <stdint.h>
 
-#include "mesh.h"           // for mesh_t
-#include "model.h"          // for model_common
-#include "vertex_object.h"  // for vertex_object_t
+#include "mesh.h"
+#include "model.h"
+#include "vertex_object.h"
 
 struct loaded_model_data {
 	mesh_t** meshes;

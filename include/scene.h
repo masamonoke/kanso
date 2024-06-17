@@ -1,8 +1,8 @@
 #pragma once
 
-#include <stdint.h>  // for int32_t
+#include <stdint.h>
 
-#include "model.h"   // for model_t
+#include "model.h"
 
 typedef struct scene_ctx scene_ctx_t;
 

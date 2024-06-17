@@ -1,10 +1,10 @@
 #pragma once
 
-#include <stdbool.h>  // for bool
-#include <stdint.h>   // for int32_t
+#include <stdbool.h>
+#include <stdint.h>
 
-#include "scene.h"    // for scene_t
-#include "window.h"   // for window_t
+#include "scene.h"
+#include "window.h"
 
 typedef struct app_state app_state_t;
 

@@ -1,18 +1,23 @@
-#include <string.h>         // for memcpy
+#include "light.h"
+
+#include <string.h>
 #include <math.h>
+#include <stdbool.h>
 
-#include "cglm/types.h"     // for vec3
-#include "cglm/cglm.h"
-#include "arraylist.h"      // for json-c array_list
-#include "json_object.h"    // for json_object_array_get_idx, json_object_ge...
-#include "json_util.h"      // for json_object_from_file
+#include <cglm/types.h>
+#include <arraylist.h>
+#include <json_object.h>
+#include <json_util.h>
+#include <cglm/util.h>
+#include <log.h>
 
-#include "custom_logger.h"  // for custom_log_info, custom_log_error
-#include "point_light.h"    // for point_light_new
+#include "custom_logger.h"
+#include "point_light.h"
 #include "spot_light.h"
 #include "directional_light.h"
-#include "light.h"
 #include "camera.h"
+
+struct json_object;
 
 void light_new(light_t** light, enum light_type type, vec3* ambient, vec3* diffuse, vec3* specular, void* specific_data) {
 	switch (type) {

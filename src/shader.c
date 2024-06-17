@@ -1,10 +1,12 @@
-#include <glad/glad.h>      // for glGetUniformLocation, GL_COMPILE_STATUS
-#include <stdlib.h>         // for NULL, free
-#include <cglm/types.h>     // for mat4
-
 #include "shader.h"
-#include "custom_logger.h"  // for custom_log_error
-#include "file.h"           // for file_read
+
+#include <stdlib.h>
+
+#include <glad/glad.h>
+#include <cglm/types.h>
+
+#include "custom_logger.h"
+#include "file.h"
 
 int32_t shader_create_program(const char* vertex_file, const char* frag_file, uint32_t* shader_program) { // NOLINT
 	char* vertex_shader_str;

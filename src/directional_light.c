@@ -1,12 +1,13 @@
-#include <stdint.h>      // for uint32_t
-#include <stdlib.h>      // for free, malloc, NULL
-#include <string.h>      // for memcpy
-
-#include <glad/glad.h>   // for glUseProgram
-#include "cglm/types.h"  // for vec3
-
 #include "directional_light.h"
-#include "shader.h"      // for shader_set_vec3
+
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <glad/glad.h>
+#include <cglm/types.h>
+
+#include "shader.h"
 
 static void bind_shader(void* light, uint32_t shader_program);
 

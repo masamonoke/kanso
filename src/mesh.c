@@ -1,10 +1,11 @@
+#include "mesh.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
 #include <glad/glad.h>
 
-#include "mesh.h"
 #include "shader.h"
 #include "custom_logger.h"
 

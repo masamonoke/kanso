@@ -1,10 +1,11 @@
-#include <stdlib.h>     // for free, malloc, NULL
-
-#include "glad/glad.h"  // for GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT, glC...
-
 #include "app.h"
-#include "camera.h"     // for camera_init_callbacks, camera_update
-#include "keys.h"       // for ESCAPE_KEY
+
+#include <stdlib.h>
+
+#include <glad/glad.h>
+
+#include "camera.h"
+#include "keys.h"
 #include "custom_logger.h"
 
 /*! @brief Reads key input

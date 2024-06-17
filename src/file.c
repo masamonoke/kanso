@@ -1,7 +1,7 @@
-#include <stdio.h>                 // for fseek, fclose, fopen, fread, ftell
-#include <stdlib.h>                // for malloc
-
 #include "file.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 int32_t file_read(const char* filename, char** buf) {
 	FILE* fp;

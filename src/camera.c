@@ -1,10 +1,11 @@
-#include <string.h>      // for memcpy
-
-#include "cglm/cam.h"    // for glm_lookat
-#include "cglm/types.h"  // for vec3, mat4
-#include "cglm/vec3.h"   // for glm_normalize, glm_vec3_add, glm_vec3_sub
-
 #include "camera.h"
+
+#include <string.h>
+
+#include <cglm/cam.h>
+#include <cglm/types.h>
+#include <cglm/vec3.h>
+
 
 #define CAMERA_INIT { .pos = { 0.0f, 0.0f, 4.0f }, .front = { 0.0f, 0.0f, -1.0f }, .up = { 0.0f, 1.0f, 0.0f }, .fov = MIN_FOV }
 

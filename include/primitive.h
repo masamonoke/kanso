@@ -1,8 +1,8 @@
 #pragma once
 
-#include <stdint.h> // for int32_t
+#include <stdint.h>
 
-#include "vertex_object.h"    // for vertex_object_t
+#include "vertex_object.h"
 #include "model.h"
 
 enum primitive_type {

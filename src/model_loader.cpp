@@ -1,23 +1,22 @@
-#include <stdlib.h>              // for malloc, free
-#include <cstring>               // for size_t, strcpy, memcpy, strcmp, strlen
-#include <string>                // for basic_string, allocator, char_traits
-#include <vector>                // for vector
-#include <cstdint>               // for int32_t, uint32_t
+#include <cstdlib>
+#include <cstring>
+#include <string>
+#include <vector>
+#include <cstdint>
 
-#include "assimp/material.h"     // for aiTextureType, aiMaterial
-#include "assimp/material.inl"   // for aiMaterial::GetTexture, aiMaterial::...
-#include "assimp/mesh.h"         // for aiMesh, aiFace
-#include "assimp/types.h"        // for aiString
-#include <assimp/Importer.hpp>   // for Importer
-#include <assimp/postprocess.h>  // for aiPostProcessSteps
-#include <assimp/scene.h>        // for aiScene, aiNode, AI_SCENE_FLAGS_INCO...
+#include <assimp/material.h>
+#include <assimp/material.inl>
+#include <assimp/mesh.h>
+#include <assimp/types.h>
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
 
 #ifdef __cplusplus
 extern "C" {
-
-#include "texture.h"             // for texture_t, texture_create_gl_texture
 #include "model_loader.h"
-#include "mesh.h"                // for mesh_t, vertex_t, mesh_new, int32_ve...
+#include "texture.h"
+#include "mesh.h"
 #include "custom_logger.h"
 #ifdef __cplusplus
 }

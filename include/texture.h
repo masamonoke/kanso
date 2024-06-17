@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>  // for int32_t, uint32_t
+#include <stdint.h>
 
 typedef struct texture {
 	uint32_t id;

@@ -1,15 +1,20 @@
-#include <stdio.h>          // for NULL
+#include <stdio.h>
 
-#include <json_object.h>    // for json_object_get_int, json_object_object_g...
-#include <json_util.h>      // for json_object_from_file
-#include <glad/glad.h>      // for gladLoadGLLoader, GLADloadproc, GL_DEPTH_...
-#include <GLFW/glfw3.h>     // for glfwWindowHint, GLFWwindow, glfwCreateWindow
+#include <json_object.h>
+#include <json_util.h>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
-#include "custom_logger.h"  // for custom_log_error, custom_log_info, custom...
+#include "custom_logger.h"
 #include "glfw_context.h"
 
 #define DEFAULT_WINDOW_SIZE 800, 600
 #define DEFAULT_TITLE "Kanso Engine"
+
+static void err_callback(int32_t code, const char* err_str) {
+	(void) code;
+    fprintf(stderr, "GLFW Error: %s\n", err_str);
+}
 
 int32_t glfw_context_create_window(GLFWwindow** window, void (*framebuffer_size_callback)(struct GLFWwindow*, int, int)) {
 	int32_t status;
@@ -19,12 +24,14 @@ int32_t glfw_context_create_window(GLFWwindow** window, void (*framebuffer_size_
 
 	status = 0;
 
+	glfwSetErrorCallback(err_callback);
+
 	// valgrind and address sanitizer may show gpu memory leak after this function
 	// and it not freed after glfwTerminate() call
-	// but that is not glfw problem or anything else but PU drivers (libraries outside glfw control)
+	// but that is not glfw problem or anything else but GPU drivers (libraries outside glfw control)
 	// like to allocate some global memory and keep it allocated even when GL/Vulkan context is destroyed.
 	// They have some globals/statics that are never released.
-	// So if valgrind shows memory coming from them, this is expected.
+	// So if valgrind shows memory leaks coming from them, this is to be expected.
 	glfwInit();
 
 #ifdef __APPLE__

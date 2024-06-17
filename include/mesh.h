@@ -1,12 +1,12 @@
 #pragma once
 
-#include <stddef.h>         // for size_t
-#include <stdint.h>         // for int32_t, uint32_t
+#include <stddef.h>
+#include <stdint.h>
 
-#include <cglm/types.h>     // for vec3
+#include <cglm/types.h>
 
-#include "texture.h"        // for texture_t
-#include "vertex_object.h"  // for vertex_object_t
+#include "texture.h"
+#include "vertex_object.h"
 
 typedef struct vertex {
 	vec3 pos;

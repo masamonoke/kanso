@@ -1,16 +1,17 @@
-#include <stdlib.h>           // for free, malloc
-
-#include <glad/glad.h>        // for GL_ARRAY_BUFFER, glBindVertexArray, glB...
-#include "cglm/affine.h"      // for glm_scale
-#include "cglm/affine-pre.h"  // for glm_translate
-#include "cglm/cam.h"         // for glm_perspective
-#include "cglm/mat4.h"        // for glm_mat4_identity
-#include "cglm/util.h"        // for glm_rad
-
 #include "primitive.h"
-#include "custom_logger.h"    // for custom_log_error, custom_log_debug
-#include "shader.h"           // for transform, shader_create_program, shade...
-#include "camera.h"           // for camera_fov, camera_set_view
+
+#include <stdlib.h>
+
+#include <glad/glad.h>
+#include <cglm/affine.h>
+#include <cglm/affine-pre.h>
+#include <cglm/cam.h>
+#include <cglm/mat4.h>
+#include <cglm/util.h>
+
+#include "custom_logger.h"
+#include "shader.h"
+#include "camera.h"
 
 struct cube {
 	uint32_t shader_program;

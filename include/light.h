@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h> // for uint32_t
+#include <stdint.h>
 #include <stddef.h>
 
 #include <cglm/types.h>

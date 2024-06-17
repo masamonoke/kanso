@@ -1,17 +1,11 @@
-#include <math.h>           // for cosf
-#include <stdlib.h>         // for NULL, size_t, free, malloc
-#include <assert.h>         // for assert
-
-#include <cglm/types.h>     // for vec3
-#include <cglm/util.h>      // for glm_rad
-#include <glad/glad.h>      // for glUseProgram
-
-#include "camera.h"         // for camera_front, camera_pos
-#include "custom_logger.h"  // for custom_log_debug, custom_log_error
-#include "model.h"          // for model_common, model_free, model_t, models...
-#include "shader.h"         // for shader_set_vec3, shader_set_uniform_primi...
-#include "light.h"
 #include "scene.h"
+
+#include <stdlib.h>
+#include <assert.h>
+
+#include "custom_logger.h"
+#include "model.h"
+#include "light.h"
 
 #define MAX_MODELS_COUNT 1024
 #define MAX_LIGHTS_COUNT 100

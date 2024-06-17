@@ -1,21 +1,22 @@
-#include <stdbool.h>          // for bool, false, true
-#include <stdlib.h>           // for free, malloc
-#include <string.h>           // for strcmp
-#include <assert.h>           // for assert
-
-#include <glad/glad.h>        // for glUseProgram
-
-#include "cglm/affine.h"      // for glm_scale
-#include "cglm/affine-pre.h"  // for glm_translate
-#include "cglm/cam.h"         // for glm_perspective
-#include "cglm/mat4.h"        // for glm_mat4_identity
-#include "cglm/util.h"        // for glm_rad
-
 #include "loaded_model.h"
-#include "custom_logger.h"    // for custom_log_debug, custom_log_info, cust...
-#include "model_loader.h"     // for model_loader_load_model
-#include "shader.h"           // for transform, shader_set_mat4, shader_crea...
-#include "camera.h"           // for camera_fov, camera_set_view, camera_pos
+
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+
+#include <glad/glad.h>
+#include <cglm/affine.h>
+#include <cglm/affine-pre.h>
+#include <cglm/cam.h>
+#include <cglm/mat4.h>
+#include <cglm/util.h>
+#include <cglm/types.h>
+
+#include "custom_logger.h"
+#include "model_loader.h"
+#include "shader.h"
+#include "camera.h"
 
 static void draw(void* model) {
 	loaded_model_t* loaded_model;

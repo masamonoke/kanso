@@ -1,6 +1,6 @@
-#include <stdint.h>      // for int32_t
+#include <stdint.h>
 
-#include <GLFW/glfw3.h>  // for GLFWwindow
+#include <GLFW/glfw3.h>
 
 struct GLFWwindow;
 

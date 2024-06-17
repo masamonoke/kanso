@@ -1,16 +1,16 @@
-#include <stdlib.h>         // for free, malloc
-#include <string.h>         // for strcmp, memcpy
-
-#include "arraylist.h"      // for json-c array_list
-#include "json_object.h"    // for json_object_array_get_idx, json_object_ge...
-#include "json_util.h"      // for json_object_from_file
-
 #include "model.h"
-#include "custom_logger.h"  // for custom_log_error, custom_log_debug, custo...
-#include "loaded_model.h"   // for loaded_model_free, loaded_model_new, load...
-#include "log.h"            // for log_error
-#include "primitive.h"      // for primitive_type, primitive_free, primitive...
-#include "shader.h"         // for TRANSFORM_IDENTITY, transform
+
+#include <string.h>
+
+#include <arraylist.h>
+#include <json_object.h>
+#include <json_util.h>
+#include <cglm/types.h>
+
+#include "custom_logger.h"
+#include "loaded_model.h"
+#include "log.h"
+#include "primitive.h"
 
 struct json_object;
 

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <stddef.h>      // for size_t
-#include <stdint.h>      // for uint32_t, int32_t
+#include <stddef.h>
+#include <stdint.h>
 
-#include "cglm/types.h"  // for vec3
+#include <cglm/types.h>
 
-#include "shader.h"      // for transform
+#include "shader.h"
 
 enum model_type {
 	PRIMITVE_MODEL,
