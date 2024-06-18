@@ -1,10 +1,12 @@
 #include <stdint.h>
+#include <stdbool.h>
 
 #include <GLFW/glfw3.h>
 
 struct GLFWwindow;
 
-__attribute__((warn_unused_result)) int32_t glfw_context_create_window(GLFWwindow** window, void (*framebuffer_size_callback)(struct GLFWwindow*, int, int));
+__attribute__((warn_unused_result))
+bool glfw_context_create_window(GLFWwindow** window, void (*framebuffer_size_callback)(struct GLFWwindow*, int, int));
 
 float glfw_context_time(void);
 

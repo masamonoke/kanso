@@ -58,6 +58,14 @@ add_custom_command(TARGET cfg POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/cfg ${CMAKE_BINARY_DIR}/cfg
 )
 
+add_custom_target(
+	scene DEPENDS ${SCENE_FILES}
+)
+add_dependencies(${PROJECT_NAME} scene)
+add_custom_command(TARGET scene POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/scene ${CMAKE_BINARY_DIR}/scene
+)
+
 find_program(iwyu_path NAMES include-what-you-use iwyu)
 if (iwyu_path)
 	message(STATUS "Using include-what-you-see")
@@ -70,14 +78,17 @@ if (NOT MSVC)
 	target_compile_options(${PROJECT_NAME} PRIVATE -Waddress -Wall -Warray-bounds -Wbool-operation -Wchar-subscripts -Wcomment
 		-Wmisleading-indentation -Wparentheses -Wextra -pedantic -Wstrict-prototypes -Wshadow -Wconversion -Wvla -Wdouble-promotion -Wmissing-noreturn
 		-Wmissing-format-attribute -Wmissing-prototypes -Wunused-result)
-	if (NOT WIN32 AND ${CMAKE_BUILD_TYPE} MATCHES Debug)
+endif()
+
+if (${CMAKE_BUILD_TYPE} MATCHES Debug)
+	if (NOT WIN32)
 		message(STATUS "Using fsanitize")
 		target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address,undefined,null,bounds,leak)
-		target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG=ON)
-		target_compile_definitions(c_logger PUBLIC DEBUG=ON)
-		target_compile_definitions(c_logger PUBLIC LOG_FILE=ON)
-		target_compile_definitions(c_logger PUBLIC LOG_SYNC=ON)
 	endif()
+	target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG=ON)
+	target_compile_definitions(c_logger PUBLIC DEBUG=ON)
+	# target_compile_definitions(c_logger PUBLIC LOG_FILE=ON)
+	# target_compile_definitions(c_logger PUBLIC LOG_SYNC=ON)
 endif()
 
 target_link_libraries(${PROJECT_NAME} glfw OpenGL::GL cglm assimp json-c c_logger)

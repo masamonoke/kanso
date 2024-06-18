@@ -22,7 +22,7 @@ struct window {
 */
 static void framebuffer_size_callback(GLFWwindow* window, int32_t width, int32_t height);
 
-int32_t window_new(window_t** window) {
+bool window_new(window_t** window) {
 	return glfw_context_create_window((GLFWwindow**) window, framebuffer_size_callback);
 }
 

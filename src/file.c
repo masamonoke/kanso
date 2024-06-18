@@ -3,16 +3,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int32_t file_read(const char* filename, char** buf) {
+bool file_read(const char* filename, char** buf) {
 	FILE* fp;
 	size_t len;
-	int32_t status;
+	bool status;
 	char* tmp;
 
-	status = 0;
+	status = true;
 	fp = fopen(filename, "rb");
 	if (fp == NULL) {
-		return 1;
+		return false;
 	}
 
 	fseek(fp, 0, SEEK_END);
@@ -24,7 +24,7 @@ int32_t file_read(const char* filename, char** buf) {
 		tmp[len] = '\0';
 		*buf = tmp;
 	} else {
-		status = 1;
+		status = false;
 	}
 
 	fclose(fp);

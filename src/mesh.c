@@ -74,7 +74,7 @@ static void draw_mesh(mesh_t* mesh, uint32_t shader_program) {
 	glActiveTexture(GL_TEXTURE0);
 }
 
-int32_t mesh_new(mesh_t** mesh, vertex_vector_t vertices, int32_vector_t indices, texture_vector_t textures) {
+void mesh_new(mesh_t** mesh, vertex_vector_t vertices, int32_vector_t indices, texture_vector_t textures) {
 	*mesh = malloc(sizeof(mesh_t));
 	(*mesh)->vertices_vector = vertices;
 	(*mesh)->textures_vector = textures;
@@ -82,8 +82,6 @@ int32_t mesh_new(mesh_t** mesh, vertex_vector_t vertices, int32_vector_t indices
 	(*mesh)->draw = draw_mesh;
 
 	setup_vertex_objects(&(*mesh)->vo, (*mesh)->vertices_vector, (*mesh)->indices_vector);
-
-	return 0;
 }
 
 void mesh_delete(mesh_t** mesh) {

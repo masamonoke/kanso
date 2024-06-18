@@ -16,13 +16,13 @@ static void err_callback(int32_t code, const char* err_str) {
     fprintf(stderr, "GLFW Error: %s\n", err_str);
 }
 
-int32_t glfw_context_create_window(GLFWwindow** window, void (*framebuffer_size_callback)(struct GLFWwindow*, int, int)) {
-	int32_t status;
+bool glfw_context_create_window(GLFWwindow** window, void (*framebuffer_size_callback)(struct GLFWwindow*, int, int)) {
+	bool status;
 	int32_t framebuffer_width;
 	int32_t framebuffer_height;
 	struct json_object* j;
 
-	status = 0;
+	status = true;
 
 	glfwSetErrorCallback(err_callback);
 
@@ -59,7 +59,7 @@ int32_t glfw_context_create_window(GLFWwindow** window, void (*framebuffer_size_
 		json_object_object_get_ex(j, "height", &height_json);
 
 		if (width_json && height_json) {
-			*window = glfwCreateWindow(json_object_get_int(width_json), json_object_get_int(height_json),DEFAULT_TITLE, NULL, NULL);
+			*window = glfwCreateWindow(json_object_get_int(width_json), json_object_get_int(height_json), DEFAULT_TITLE, NULL, NULL);
 		} else {
 			log_error("Failed to read json height or width value");
 			json_object_put(j);
@@ -81,14 +81,14 @@ L_DEFAULT_WINDOW_INIT:
 	if (window == NULL) {
 		log_error("Failed to create GLFW window\n");
 		glfwTerminate();
-		status = -1;
+		status = false;
 		goto L_RETURN;
 	}
 	glfwMakeContextCurrent(*window);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		log_error("Failed to initialize GLAD\n");
-		status = -1;
+		status = false;
 		goto L_RETURN;
 	}
 

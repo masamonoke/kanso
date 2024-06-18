@@ -11,7 +11,7 @@ int32_t main(int32_t argc, char** argv) {
 		scene_path = argv[1];
 	}
 
-	if (app_new(&app_state, scene_path)) {
+	if (!app_new(&app_state, scene_path)) {
 		return 1;
 	}
 

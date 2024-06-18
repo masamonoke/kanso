@@ -40,7 +40,7 @@ __attribute__((nonnull(1, 5)))
 void model_new(model_t** model, enum model_type type, vec3* init_position, vec3* init_scale, const void* payload);
 
 __attribute__((warn_unused_result))
-int32_t models_from_json(const char* path, model_t** models_ptrs, size_t* length, size_t max_models);
+bool models_from_json(const char* path, model_t** models_ptrs, size_t* length, size_t max_models);
 
 /*! @brief Frees model memory. The type of passed model defined from model.common.type
  * @param[in] model_t** model: Model abstraction object which will hold all data about model like vertices, meshes etc

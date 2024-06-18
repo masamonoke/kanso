@@ -68,7 +68,7 @@ static struct model_cache cache = {
 
 static void share_ref(loaded_model_t** dest, loaded_model_t* ref);
 
-int32_t loaded_model_new(loaded_model_t** model, const char* path) {
+bool loaded_model_new(loaded_model_t** model, const char* path) {
 	size_t i;
 	volatile bool found;
 	static bool initialized_cache = false;
@@ -99,28 +99,37 @@ int32_t loaded_model_new(loaded_model_t** model, const char* path) {
 	}
 
 	if (!found) {
-		model_loader_load_model(*model, path);
+		bool set;
 
-		(*model)->common.type = LOADED_MODEL;
-		(*model)->common.draw = draw;
-		(*model)->model_data._ref_count = malloc(sizeof(uint32_t));
-		*(*model)->model_data._ref_count = 0;
-
+		set = false;
 		for (i = 0; i < MAX_CACHE_ENTRIES; i++) {
 			if (cache.models[i].model == NULL) {
+
+				model_loader_load_model(*model, path);
+
+				(*model)->common.type = LOADED_MODEL;
+				(*model)->common.draw = draw;
+				(*model)->model_data._ref_count = malloc(sizeof(uint32_t));
+				*(*model)->model_data._ref_count = 0;
+
 				cache.models[i].model = *model;
 				cache.models[i].path = path;
 				cache.len++;
+				set = true;
 				break;
 			}
 		}
+
+		if (!set) {
+			return false;
+		}
 	}
 
-	if (shader_create_program("shaders/backpack.vert", "shaders/backpack.frag", &(*model)->common.shader_program)) {
+	if (!shader_create_program("shaders/backpack.vert", "shaders/backpack.frag", &(*model)->common.shader_program)) {
 		log_error("Failed to compile model %s shader program", path);
 	}
 
-	return 0;
+	return true;
 }
 
 void loaded_model_free(loaded_model_t** model) {

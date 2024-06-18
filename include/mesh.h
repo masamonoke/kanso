@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #include <cglm/types.h>
 
@@ -40,7 +41,7 @@ typedef struct mesh {
 /*
 	Creates new mesh object. Mallocs memory and to clean it you need to call mesh_delete()
 */
-__attribute__((warn_unused_result)) int32_t mesh_new(mesh_t** mesh, vertex_vector_t vertices, int32_vector_t indices, texture_vector_t textures);
+void mesh_new(mesh_t** mesh, vertex_vector_t vertices, int32_vector_t indices, texture_vector_t textures);
 
 /*
 	Delete mesh object

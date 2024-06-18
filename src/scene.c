@@ -19,7 +19,7 @@ struct scene_ctx {
 
 static void draw(scene_t* scene);
 
-int32_t scene_new(scene_t** scene) {
+void scene_new(scene_t** scene) {
 	size_t i;
 
 	*scene = malloc(sizeof(scene_t));
@@ -36,8 +36,6 @@ int32_t scene_new(scene_t** scene) {
 	(*scene)->scn_ctx->light_count = 0;
 
 	(*scene)->draw = draw;
-
-	return 0;
 }
 
 void scene_free(scene_t** scene) {
@@ -81,23 +79,23 @@ void scene_free(scene_t** scene) {
 	*scene = NULL;
 }
 
-int32_t scene_add_model(scene_t* scene, model_t* model) {
+bool scene_add_model(scene_t* scene, model_t* model) {
 	size_t i;
 
 	for (i = 0; i < MAX_MODELS_COUNT; i++) {
 		if (scene->scn_ctx->models[i] == NULL) {
 			scene->scn_ctx->models[i] = model;
-			return 0;
+			return true;
 		}
 	}
 
 	log_error("Can't add new model to scene");
 
-	return -1;
+	return false;
 }
 
-int32_t scene_load_from_json(scene_t* scene, const char* path) {
-	int32_t status;
+bool scene_load_from_json(scene_t* scene, const char* path) {
+	bool status;
 
 	status = models_from_json(path, scene->scn_ctx->models, &scene->scn_ctx->model_count, MAX_MODELS_COUNT);
 	status = light_from_json(path, scene->scn_ctx->lights, &scene->scn_ctx->light_count, MAX_LIGHTS_COUNT);

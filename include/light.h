@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 #include <cglm/types.h>
 
@@ -28,4 +29,4 @@ void light_new(light_t** light, enum light_type type, vec3* ambient, vec3* diffu
 
 void light_free(light_t** light);
 
-int32_t light_from_json(const char* path, light_t** models_ptrs, size_t* length, size_t max_models);
+bool light_from_json(const char* path, light_t** models_ptrs, size_t* length, size_t max_models);

@@ -21,6 +21,6 @@ typedef struct loaded_model {
 } loaded_model_t;
 
 __attribute__((warn_unused_result))
-int32_t loaded_model_new(loaded_model_t** model, const char* path);
+bool loaded_model_new(loaded_model_t** model, const char* path);
 
 void loaded_model_free(loaded_model_t** model);

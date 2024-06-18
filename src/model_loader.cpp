@@ -132,12 +132,8 @@ namespace {
 		textures_v.size = textures.size();
 
 		mesh_t* m;
-		if (mesh_new(&m, vertices_v, indices_v, textures_v)) {
-			log_error("Failed to create mesh");
-			return NULL;
-		} else {
-			return m;
-		}
+		mesh_new(&m, vertices_v, indices_v, textures_v);
+		return m;
 	}
 
 	void collect_meshes(aiNode* node, const aiScene* scene, std::vector<aiMesh*>& meshes) { // NOLINT

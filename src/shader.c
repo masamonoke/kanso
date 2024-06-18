@@ -8,7 +8,7 @@
 
 #include "file.h"
 
-int32_t shader_create_program(const char* vertex_file, const char* frag_file, uint32_t* shader_program) { // NOLINT
+bool shader_create_program(const char* vertex_file, const char* frag_file, uint32_t* shader_program) { // NOLINT
 	char* vertex_shader_str;
 	char* frag_shader_str;
 	uint32_t vertex_shader;
@@ -17,14 +17,14 @@ int32_t shader_create_program(const char* vertex_file, const char* frag_file, ui
 	char info[512];
 
 	vertex_shader_str = NULL;
-	if (file_read(vertex_file, &vertex_shader_str) && !vertex_shader_str) {
+	if (!file_read(vertex_file, &vertex_shader_str) && !vertex_shader_str) {
 		log_error("Failed to read %s", vertex_file);
 		status = -1;
 		goto L_RETURN;
 	}
 
 	frag_shader_str = NULL;
-	if (file_read(frag_file, &frag_shader_str) && !frag_shader_str) {
+	if (!file_read(frag_file, &frag_shader_str) && !frag_shader_str) {
 		log_error("Failed to read %s", frag_file);
 		status = -1;
 		goto L_RETURN;
@@ -73,7 +73,7 @@ int32_t shader_create_program(const char* vertex_file, const char* frag_file, ui
 
 L_RETURN:
 
-	return status;
+	return status == 0 ? true : false;
 }
 
 void shader_set_bool(uint32_t shader_program, const char* name, bool value) {

@@ -32,8 +32,6 @@ void camera_init_callbacks(window_t* window) {
 }
 
 
-// ------------------------------------------------------[ static functions ]------------------------------------------------------
-
 static void input(GLFWwindow* window) {
 	static float last_frame = 0;
 	float cur_frame;

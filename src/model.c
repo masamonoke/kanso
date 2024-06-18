@@ -16,12 +16,12 @@ struct json_object;
 void model_new(model_t** model, enum model_type type, vec3* init_position, vec3* init_scale, const void* payload) { // NOLINT
 	switch (type) {
 		case LOADED_MODEL:
-			if (0 != loaded_model_new((loaded_model_t**) model, (const char*) payload)) {
+			if (!loaded_model_new((loaded_model_t**) model, (const char*) payload)) {
 				return;
 			}
 			break;
 		case PRIMITVE_MODEL:
-			if (0 != primitive_new((void**) model, *((enum primitive_type*) payload))) {
+			if (!primitive_new((void**) model, *((enum primitive_type*) payload))) {
 				return;
 			} else {
 				log_error("Null primitive model type passed");
@@ -65,25 +65,24 @@ void model_free(model_t** model) {
 }
 
 __attribute__((warn_unused_result))
-static int32_t get_type(struct json_object* model_jso, struct json_object** jso, const char* path, const char** ret_type);
+static bool get_type(struct json_object* model_jso, struct json_object** jso, const char* path, const char** ret_type);
 
 static void get_position(struct json_object* model_jso, struct json_object** jso, const char* path, vec3 position);
 
 static void get_scale(struct json_object* model_jso, struct json_object** jso, vec3 scale);
 
 __attribute__((warn_unused_result))
-static int32_t add_loaded_model(struct json_object* model_jso, struct json_object** jso, vec3* position, vec3* scale, model_t** models_ptrs,
-	size_t max_models, size_t* length);
+static bool add_loaded_model(vec3* position, vec3* scale, model_t** models_ptrs, size_t max_models, size_t* length, const char* model_path);
 
 __attribute__((warn_unused_result))
-static int32_t add_primitive_model(struct json_object* model_jso, struct json_object** jso, vec3* position, vec3* scale,
-		model_t** models_ptrs, size_t max_models, size_t* length);
+static bool add_primitive_model(struct json_object* model_jso, struct json_object** jso, vec3* position, vec3* scale,
+	model_t** models_ptrs, size_t max_models, size_t* length);
 
-int32_t models_from_json(const char* path, model_t** models_ptrs, size_t* length, size_t max_models) {
+bool models_from_json(const char* path, model_t** models_ptrs, size_t* length, size_t max_models) {
 	struct json_object* file_jso;
-	int32_t status;
+	bool status;
 
-	status = 0;
+	status = true;
 	file_jso = json_object_from_file(path);
 
 	if (file_jso) {
@@ -96,14 +95,15 @@ int32_t models_from_json(const char* path, model_t** models_ptrs, size_t* length
 		json_object_object_get_ex(file_jso, "models", &models_jso);
 		if (!models_jso) {
 			log_error("Failed to read models from %s", path);
-			status = -1;
+			status = false;
 			goto L_FREE_JSO;
 		}
 
 		// better not use struct arraylist* from json-c directly
-		if (!(array_len = json_object_get_array(models_jso)->length)) { // NOLINT
+		array_len = json_object_get_array(models_jso)->length;
+		if (!array_len) {
 			log_error("Failed to parse models from %s", path);
-			status = -1;
+			status = false;
 			goto L_FREE_JSO;
 		}
 
@@ -116,7 +116,7 @@ int32_t models_from_json(const char* path, model_t** models_ptrs, size_t* length
 
 			model_jso = json_object_array_get_idx(models_jso, i);
 
-			if (0 != get_type(model_jso, &jso, path, &type)) {
+			if (!get_type(model_jso, &jso, path, &type)) {
 				goto L_FREE_JSO;
 			}
 
@@ -125,9 +125,23 @@ int32_t models_from_json(const char* path, model_t** models_ptrs, size_t* length
 			get_scale(model_jso, &jso, scale);
 
 			if (0 == strcmp(type, "LOADED_MODEL")) {
-				(void) add_loaded_model(model_jso, &jso, &position, &scale, models_ptrs, max_models, length);
+				if (json_object_object_get_ex(model_jso, "path", &jso)) {
+					const char* model_path;
+
+					model_path = json_object_get_string(jso);
+
+					log_debug("Path is %s", model_path);
+
+					if (!add_loaded_model(&position, &scale, models_ptrs, max_models, length, model_path)) {
+						log_warn("Failed to add model %s", model_path);
+					}
+				} else {
+					log_warn("Failed to get model path field from json file");
+				}
 			} else if (0 == strcmp(type, "PRIMITIVE_MODEL")) {
-				(void) add_primitive_model(model_jso, &jso, &position, &scale, models_ptrs, max_models, length);
+				if (!add_primitive_model(model_jso, &jso, &position, &scale, models_ptrs, max_models, length)) {
+					log_warn("Failed to load primitive model");
+				}
 			} else {
 				log_error("Unknown model type: %s", type);
 			}
@@ -136,11 +150,11 @@ int32_t models_from_json(const char* path, model_t** models_ptrs, size_t* length
 L_FREE_JSO:
 		if (!json_object_put(file_jso)) {
 			log_error("Failed to free json object");
-			status = -1;
+			status = false;
 		}
 	} else {
 		log_error("Failed to load model from config %s", path);
-		status = -1;
+		status = false;
 	}
 
 	log_debug("Loaded models: %d", *length);
@@ -148,17 +162,15 @@ L_FREE_JSO:
 }
 
 
-// ------------------------------------------------------[ static functions ]------------------------------------------------------
-
-static int32_t get_type(struct json_object* model_jso, struct json_object** jso, const char* path, const char** ret_type) {
+static bool get_type(struct json_object* model_jso, struct json_object** jso, const char* path, const char** ret_type) {
 	if (!json_object_object_get_ex(model_jso, "model_type", jso)) {
 		log_error("Failed to get type of model from %s", path);
-		return -1;
+		return false;
 	}
 	*ret_type = json_object_get_string(*jso);
 	log_debug("Loading model %s", *ret_type);
 
-	return 0;
+	return true;
 }
 
 static void get_position(struct json_object* model_jso, struct json_object** jso, const char* path, vec3 position) {
@@ -187,40 +199,40 @@ static void get_scale(struct json_object* model_jso, struct json_object** jso, v
 	}
 }
 
-static int32_t add_loaded_model(struct json_object* model_jso, struct json_object** jso, vec3* position, vec3* scale, model_t** models_ptrs,
-		size_t max_models, size_t* length)
+static bool add_loaded_model(vec3* position, vec3* scale, model_t** models_ptrs,
+		size_t max_models, size_t* length, const char* model_path)
 {
-	const char* model_path;
+	bool set;
+	model_t* model;
 
-	if (!json_object_object_get_ex(model_jso, "path", jso)) {
-		log_error("Failed to get type of model from %s", model_path);
-		return -1;
-	} else {
-		model_t* model;
-
-		model_path = json_object_get_string(*jso);
-		log_debug("Path is %s", model_path);
-		model_new(&model, LOADED_MODEL, position, scale, model_path);
-		for (size_t j = 0; j < max_models; j++) {
-			if (models_ptrs[j] == NULL) {
-				models_ptrs[j] = model;
-				break;
-			}
+	model_new(&model, LOADED_MODEL, position, scale, model_path);
+	set = false;
+	for (size_t j = 0; j < max_models; j++) {
+		if (models_ptrs[j] == NULL) {
+			models_ptrs[j] = model;
+			set = true;
+			break;
 		}
+	}
+	if (!set) {
+		model_free(&model);
+	} else {
 		(*length)++;
 	}
 
-	return 0;
+	return set;
 }
 
-static int32_t add_primitive_model(struct json_object* model_jso, struct json_object** jso, vec3* position, vec3* scale, model_t** models_ptrs,
+static bool add_primitive_model(struct json_object* model_jso, struct json_object** jso, vec3* position, vec3* scale, model_t** models_ptrs,
 	size_t max_models, size_t* length)
 {
 	const char* primitive_type_str;
 	enum primitive_type primitive_type;
+	bool set;
+
 	if (!json_object_object_get_ex(model_jso, "primitive_type", jso)) {
 		log_error("Failed to get primitive type");
-		return -1;
+		return false;
 	} else {
 		model_t* model;
 
@@ -229,21 +241,27 @@ static int32_t add_primitive_model(struct json_object* model_jso, struct json_ob
 		if (0 == strcmp(primitive_type_str, "CUBE")) {
 			primitive_type = CUBE;
 		} else {
-			log_error("Failed to define type %s", primitive_type_str);
+			log_error("Failed to define primitive type %s", primitive_type_str);
 			primitive_type = UNDEFINED_PRIMITIVE;
 		}
 
+		set = false;
 		if (primitive_type != UNDEFINED_PRIMITIVE) {
 			model_new(&model, PRIMITVE_MODEL, position, scale, &primitive_type);
 			for (size_t j = 0; j < max_models; j++) {
 				if (models_ptrs[j] == NULL) {
 					models_ptrs[j] = model;
+					set = true;
 					break;
 				}
 			}
-			(*length)++;
+			if (set) {
+				(*length)++;
+			} else {
+				model_free(&model);
+			}
 		}
 	}
 
-	return 0;
+	return set;
 }

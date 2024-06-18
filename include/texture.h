@@ -8,4 +8,5 @@ typedef struct texture {
 	char* path;
 } texture_t;
 
-__attribute__((warn_unused_result)) int32_t texture_create_gl_texture(const char* texname);
+__attribute__((warn_unused_result))
+int32_t texture_create_gl_texture(const char* texname);

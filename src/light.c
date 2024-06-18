@@ -64,7 +64,7 @@ void light_free(light_t** light) {
 }
 
 __attribute__((warn_unused_result))
-static int32_t get_type(struct json_object* light_jso, struct json_object** jso, const char* path, const char** ret_type);
+static bool get_type(struct json_object* light_jso, struct json_object** jso, const char* path, const char** ret_type);
 
 static void get_common(struct json_object* light_jso, vec3 ambient, vec3 diffuse, vec3 specular);
 
@@ -76,11 +76,11 @@ static bool create_point_light(light_t** light, struct json_object* light_jso, v
 
 static void create_dir_light(light_t** light, struct json_object* light_jso, vec3* ambient, vec3* diffuse, vec3* specular);
 
-int32_t light_from_json(const char* path, light_t** lights_ptrs, size_t* length, size_t max_lights) {
+bool light_from_json(const char* path, light_t** lights_ptrs, size_t* length, size_t max_lights) {
 	struct json_object* file_jso;
-	int32_t status;
+	bool status;
 
-	status = 0;
+	status = true;
 	file_jso = json_object_from_file(path);
 
 	if (file_jso) {
@@ -93,14 +93,14 @@ int32_t light_from_json(const char* path, light_t** lights_ptrs, size_t* length,
 		json_object_object_get_ex(file_jso, "lights", &lights_jso);
 		if (!lights_jso) {
 			log_error("Failed to read lights from %s", path);
-			status = -1;
+			status = false;
 			goto L_FREE_JSO;
 		}
 
 		// better not use struct arraylist* from json-c directly
 		if (!(array_len = json_object_get_array(lights_jso)->length)) {
 			log_error("Failed to parse lights from %s", path);
-			status = -1;
+			status = false;
 			goto L_FREE_JSO;
 		}
 
@@ -114,7 +114,7 @@ int32_t light_from_json(const char* path, light_t** lights_ptrs, size_t* length,
 
 			light_jso = json_object_array_get_idx(lights_jso, i);
 
-			if (0 != get_type(light_jso, &jso, path, &type)) {
+			if (!get_type(light_jso, &jso, path, &type)) {
 				goto L_FREE_JSO;
 			}
 
@@ -139,11 +139,11 @@ int32_t light_from_json(const char* path, light_t** lights_ptrs, size_t* length,
 L_FREE_JSO:
 		if (!json_object_put(file_jso)) {
 			log_error("Failed to free json object");
-			status = -1;
+			status = false;
 		}
 	} else {
 		log_error("Failed to load model from config %s", path);
-		status = -1;
+		status = false;
 	}
 
 	log_debug("Loaded lights: %d", *length);
@@ -151,15 +151,16 @@ L_FREE_JSO:
 }
 
 
-__attribute__((warn_unused_result)) static int32_t get_type(struct json_object* light_jso, struct json_object** jso, const char* path, const char** ret_type) {
+__attribute__((warn_unused_result))
+static bool get_type(struct json_object* light_jso, struct json_object** jso, const char* path, const char** ret_type) {
 	if (!json_object_object_get_ex(light_jso, "light_type", jso)) {
 		log_error("Failed to get type of light from %s", path);
-		return -1;
+		return false;
 	}
 	*ret_type = json_object_get_string(*jso);
 	log_debug("Loading model %s", *ret_type);
 
-	return 0;
+	return true;
 }
 
 static void get_common(struct json_object* light_jso, vec3 ambient, vec3 diffuse, vec3 specular) {

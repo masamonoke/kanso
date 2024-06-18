@@ -7,7 +7,6 @@
 
 #include "camera.h"
 #include "keys.h"
-/* #include "custom_logger.h" */
 
 /*! @brief Reads key input
  *  @param[in] app_state_t** ctx: An app state which will hold all data about current context
@@ -28,39 +27,36 @@ static void draw(app_state_t* ctx);
 */
 static void update(app_state_t* ctx);
 
-static int32_t default_scene(scene_t* scene);
+static bool default_scene(scene_t* scene);
 
-static int32_t custom_scene(scene_t* scene, const char* scene_path);
+static bool custom_scene(scene_t* scene, const char* scene_path);
 
 /*! @brief Updates all states in context
  * @param[in] app_state_t** ctx: An app state which will hold all data about current context
 */
-int32_t app_new(app_state_t** ctx, const char* scene_path) {
+bool app_new(app_state_t** ctx, const char* scene_path) {
 	*ctx = malloc(sizeof(app_state_t));
 
-	if (window_new(&(*ctx)->window)) {
+	if (!window_new(&(*ctx)->window)) {
 		log_error("Failed to create window");
-		return -1;
+		return false;
 	}
 
-	if (scene_new(&(*ctx)->scene)) {
-		log_error("Failed to create scene");
-		return -1;
-	}
+	scene_new(&(*ctx)->scene);
 
 	if (scene_path) {
 		log_info("Loading scene %s", scene_path);
-		if (0 != custom_scene((*ctx)->scene, scene_path)) {
+		if (!custom_scene((*ctx)->scene, scene_path)) {
 			log_error("Failed to initialize scene %s. Shutting down", scene_path);
 			app_free(ctx);
-			return -1;
+			return false;
 		}
 	} else {
 		log_info("Loading default scene");
-		if (0 != default_scene((*ctx)->scene)) {
+		if (!default_scene((*ctx)->scene)) {
 			log_error("Failed to initialize default scene. Shutting down");
 			app_free(ctx);
-			return -1;
+			return false;
 		}
 	}
 
@@ -77,7 +73,7 @@ int32_t app_new(app_state_t** ctx, const char* scene_path) {
 
 	(*ctx)->close = false;
 
-	return 0;
+	return true;
 }
 
 void app_free(app_state_t** ctx) {
@@ -88,8 +84,6 @@ void app_free(app_state_t** ctx) {
 	log_info("All clear");
 }
 
-
-// ------------------------------------------------------[ static functions ]------------------------------------------------------
 
 static void input(app_state_t* state) {
 	if (window_is_key_pressed(state->window, ESCAPE_KEY)) {
@@ -123,10 +117,10 @@ static void update(app_state_t* ctx) {
 	draw(ctx);
 }
 
-static int32_t custom_scene(scene_t* scene, const char* scene_path) {
+static bool custom_scene(scene_t* scene, const char* scene_path) {
 	return scene_load_from_json(scene, scene_path);
 }
 
-static int32_t default_scene(scene_t* scene) {
-	return scene_load_from_json(scene, "cfg/default_scene.json");
+static bool default_scene(scene_t* scene) {
+	return scene_load_from_json(scene, "scene/default_scene.json");
 }

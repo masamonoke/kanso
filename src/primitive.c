@@ -18,9 +18,9 @@ struct cube {
 	vertex_object_t vo;
 };
 
-static int32_t create_cube(void** primitive);
+static bool create_cube(void** primitive);
 
-int32_t primitive_new(void** primitive, enum primitive_type type) {
+bool primitive_new(void** primitive, enum primitive_type type) {
 	switch (type) {
 		case CUBE:
 			return create_cube(primitive);
@@ -28,7 +28,7 @@ int32_t primitive_new(void** primitive, enum primitive_type type) {
 			log_error("Unknown primitive type: %d", type);
 	}
 
-	return 0;
+	return false;
 }
 
 static void draw_cube(void* primitive);
@@ -52,8 +52,6 @@ void primitive_free(void** primitive) {
 	}
 }
 
-
-// ------------------------------------------------------[ static functions ]------------------------------------------------------
 
 const float VERTICES[] = {
 	// positions          // normals           // texture coords
@@ -100,14 +98,15 @@ const float VERTICES[] = {
 	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
 };
 
-static int32_t create_cube(void** primitive) {
+static bool create_cube(void** primitive) {
 	primitive_model_t** cube;
 
 	cube = (primitive_model_t**) primitive;
 	*cube = malloc(sizeof(primitive_model_t));
 
-	if (shader_create_program("shaders/light_cube.vert", "shaders/light_cube.frag", &(*cube)->common.shader_program)) {
+	if (!shader_create_program("shaders/light_cube.vert", "shaders/light_cube.frag", &(*cube)->common.shader_program)) {
 		log_error("Failed to compile cube shader program");
+		return false;
 	}
 
 	glGenVertexArrays(1, &(*cube)->model_data.vo.vao);
@@ -130,7 +129,7 @@ static int32_t create_cube(void** primitive) {
 	(*cube)->model_data.primitive_type = CUBE;
 	(*cube)->common.type = PRIMITVE_MODEL;
 
-	return 0;
+	return true;
 }
 
 static void draw_cube(void* primitive) {
