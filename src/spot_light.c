@@ -16,6 +16,9 @@ void spot_light_new(light_t** light, void* specific_data) {
 	struct spot_light** spot_light;
 	struct spot_light_specific* spot_specific;
 
+	assert(light != NULL);
+	assert(specific_data != NULL);
+
 	spot_light = (spot_light_t**) light;
 	spot_specific = (struct spot_light_specific*) specific_data;
 
@@ -32,6 +35,7 @@ void spot_light_new(light_t** light, void* specific_data) {
 }
 
 void spot_light_free(light_t** light) {
+	assert(light != NULL);
 	free(*light);
 	*light = NULL;
 }

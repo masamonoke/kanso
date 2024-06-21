@@ -2,12 +2,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 bool file_read(const char* filename, char** buf) {
 	FILE* fp;
 	size_t len;
 	bool status;
 	char* tmp;
+
+	assert(filename != NULL);
+	assert(buf != NULL);
 
 	status = true;
 	fp = fopen(filename, "rb");

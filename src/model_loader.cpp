@@ -160,6 +160,9 @@ namespace {
 }
 
 void model_loader_load_model(loaded_model_t* model, const char* path) {
+	assert(model != NULL);
+	assert(path != NULL);
+
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {

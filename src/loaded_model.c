@@ -73,6 +73,9 @@ bool loaded_model_new(loaded_model_t** model, const char* path) {
 	volatile bool found;
 	static bool initialized_cache = false;
 
+	assert(model != NULL);
+	assert(path != NULL);
+
 	if (!initialized_cache) {
 		for (i = 0; i < MAX_CACHE_ENTRIES; i++) {
 			cache.models[i].model = NULL;
@@ -134,6 +137,8 @@ bool loaded_model_new(loaded_model_t** model, const char* path) {
 
 void loaded_model_free(loaded_model_t** model) {
 	size_t i;
+
+	assert(model != NULL);
 
 	if (!(*model)->model_data._ref_count) {
 		return;

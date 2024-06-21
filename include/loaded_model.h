@@ -20,7 +20,8 @@ typedef struct loaded_model {
 	struct loaded_model_data model_data;
 } loaded_model_t;
 
-__attribute__((warn_unused_result))
+__attribute__((nonnull(1, 2), warn_unused_result))
 bool loaded_model_new(loaded_model_t** model, const char* path);
 
+__attribute__((nonnull(1)))
 void loaded_model_free(loaded_model_t** model);

@@ -20,7 +20,8 @@ typedef struct primitive_model {
 	struct primitive_model_data model_data;
 } primitive_model_t;
 
-__attribute__((warn_unused_result))
+__attribute__((nonnull(1), warn_unused_result))
 bool primitive_new(void** primitive, enum primitive_type type);
 
+__attribute__((nonnull(1)))
 void primitive_free(void** primitive);

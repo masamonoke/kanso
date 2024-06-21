@@ -1,6 +1,7 @@
 #include "app.h"
 
 #include <stdlib.h>
+#include <assert.h>
 
 #include <glad/glad.h>
 #include <c_log.h>
@@ -35,6 +36,8 @@ static bool custom_scene(scene_t* scene, const char* scene_path);
  * @param[in] app_state_t** ctx: An app state which will hold all data about current context
 */
 bool app_new(app_state_t** ctx, const char* scene_path) {
+	assert(ctx != NULL);
+
 	*ctx = malloc(sizeof(app_state_t));
 
 	if (!window_new(&(*ctx)->window)) {
@@ -77,6 +80,8 @@ bool app_new(app_state_t** ctx, const char* scene_path) {
 }
 
 void app_free(app_state_t** ctx) {
+	assert(ctx != NULL);
+
 	window_free(&(*ctx)->window);
 	scene_free(&(*ctx)->scene);
 	free(*ctx);

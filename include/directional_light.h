@@ -14,6 +14,8 @@ typedef struct dir_light {
 	struct dir_light_specific specific_data;
 } dir_light_t;
 
+__attribute__((nonnull(1, 2)))
 void directional_light_new(light_t** light, void* specific_data);
 
+__attribute__((nonnull(1)))
 void directional_light_free(light_t** light);

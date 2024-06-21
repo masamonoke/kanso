@@ -41,9 +41,11 @@ typedef struct mesh {
 /*
 	Creates new mesh object. Mallocs memory and to clean it you need to call mesh_delete()
 */
+__attribute__((nonnull(1)))
 void mesh_new(mesh_t** mesh, vertex_vector_t vertices, int32_vector_t indices, texture_vector_t textures);
 
 /*
 	Delete mesh object
 */
+__attribute__((nonnull(1)))
 void mesh_delete(mesh_t** mesh);

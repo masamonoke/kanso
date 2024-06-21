@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <assert.h>
 
 #include <json_object.h>
 #include <json_util.h>
@@ -21,6 +22,9 @@ bool glfw_context_create_window(GLFWwindow** window, void (*framebuffer_size_cal
 	int32_t framebuffer_width;
 	int32_t framebuffer_height;
 	struct json_object* j;
+
+	assert(window != NULL);
+	assert(framebuffer_size_callback != NULL);
 
 	status = true;
 
@@ -78,7 +82,7 @@ L_DEFAULT_WINDOW_INIT:
 		*window = glfwCreateWindow(DEFAULT_WINDOW_SIZE, DEFAULT_TITLE, NULL, NULL);
 	}
 
-	if (window == NULL) {
+	if (*window == NULL) {
 		log_error("Failed to create GLFW window\n");
 		glfwTerminate();
 		status = false;
@@ -111,18 +115,23 @@ float glfw_context_time(void) {
 }
 
 void glfw_context_capture_cursor(GLFWwindow* window) {
+	assert(window != NULL);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 void glfw_context_set_cursor_pos_callback(GLFWwindow* window, void (*mouse_callback)(struct GLFWwindow*, double, double)) {
+	assert(window != NULL);
 	glfwSetCursorPosCallback(window, mouse_callback);
 }
 
 void glfw_context_set_scroll_callback(GLFWwindow* window, void (*scroll_callback)(struct GLFWwindow*, double, double)) {
+	assert(window != NULL);
+	assert(scroll_callback != NULL);
 	glfwSetScrollCallback(window, scroll_callback);
 }
 
-void glfw_context_update_window(GLFWwindow** window) {
-	glfwSwapBuffers(*window);
+void glfw_context_update_window(GLFWwindow* window) {
+	assert(window != NULL);
+	glfwSwapBuffers(window);
 	glfwPollEvents();
 }

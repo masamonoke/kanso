@@ -15,6 +15,9 @@ void directional_light_new(light_t** light, void* specific_data) {
 	struct dir_light** dir_light;
 	struct dir_light_specific* dir_specific;
 
+	assert(light != NULL);
+	assert(specific_data != NULL);
+
 	dir_light = (dir_light_t**) light;
 	dir_specific = (struct dir_light_specific*) specific_data;
 
@@ -24,6 +27,7 @@ void directional_light_new(light_t** light, void* specific_data) {
 }
 
 void directional_light_free(light_t** light) {
+	assert(light != NULL);
 	free(*light);
 	*light = NULL;
 }

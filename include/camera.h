@@ -21,6 +21,7 @@ typedef struct camera camera_t;
 /*! @brief Initiates all callbacks that camera needs like cursor position or scroll input
  *  @param[in] window_t* window: pointer to abstract window
 */
+__attribute__((nonnull(1)))
 void camera_init_callbacks(window_t* window);
 
 /*! @brief Gives camera object to get data from it
@@ -32,6 +33,7 @@ const camera_t* camera_get(void);
 /*! @brief Sets view 4x4 matrix from model-view-projection model
  * @param[in]: mat4 view: cglm/cglm.h mat4 object
 */
+__attribute__((nonnull(1)))
 void camera_set_view(mat4 view);
 
 /*! @brief Sets new fov
@@ -42,11 +44,13 @@ void camera_set_fov(float fov);
 /*! @brief Sets new front vector that consits of 3 components
  *  @param[in] float* front: float[3] array
 */
+__attribute__((nonnull(1)))
 void camera_set_front(float* front);
 
 /*! @brief Updates camera after user input and after window events
  *  @param[in] window_t* window: pointer to abstract window
 */
+__attribute__((nonnull(1)))
 void camera_update(window_t* window);
 
 /*! @brief Returns current camera's fov

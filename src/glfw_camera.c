@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <stdbool.h>
+#include <assert.h>
 
 #include <GLFW/glfw3.h>
 #include <cglm/types.h>
@@ -14,6 +15,7 @@
 static void input(GLFWwindow* window);
 
 void camera_update(window_t* window) {
+	assert(window != NULL);
 	input((GLFWwindow*) window);
 }
 
@@ -22,6 +24,8 @@ static void mouse_callback(GLFWwindow* window, double xpos_d, double ypos_d);
 static void change_fov_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 void camera_init_callbacks(window_t* window) {
+	assert(window != NULL);
+
 	void (*abstract_mouse_callback) (window_t* window, double xpos_d, double ypos_d);
 	void (*abstract_scroll_callback)(window_t*, double, double);
 

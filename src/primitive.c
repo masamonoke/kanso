@@ -21,6 +21,7 @@ struct cube {
 static bool create_cube(void** primitive);
 
 bool primitive_new(void** primitive, enum primitive_type type) {
+	assert(primitive != NULL);
 	switch (type) {
 		case CUBE:
 			return create_cube(primitive);
@@ -35,6 +36,8 @@ static void draw_cube(void* primitive);
 
 void primitive_free(void** primitive) {
 	primitive_model_t** model;
+
+	assert(primitive != NULL);
 
 	model = (primitive_model_t**) primitive;
 	switch ((*model)->model_data.primitive_type) {

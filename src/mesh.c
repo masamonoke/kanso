@@ -75,6 +75,8 @@ static void draw_mesh(mesh_t* mesh, uint32_t shader_program) {
 }
 
 void mesh_new(mesh_t** mesh, vertex_vector_t vertices, int32_vector_t indices, texture_vector_t textures) {
+	assert(mesh != NULL);
+
 	*mesh = malloc(sizeof(mesh_t));
 	(*mesh)->vertices_vector = vertices;
 	(*mesh)->textures_vector = textures;
@@ -86,6 +88,8 @@ void mesh_new(mesh_t** mesh, vertex_vector_t vertices, int32_vector_t indices, t
 
 void mesh_delete(mesh_t** mesh) {
 	size_t i;
+
+	assert(mesh != NULL);
 
 	glDeleteVertexArrays(1, &(*mesh)->vo.vao);
 	glDeleteBuffers(1, &(*mesh)->vo.vbo);

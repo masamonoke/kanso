@@ -15,6 +15,9 @@ void point_light_new(light_t** light, void* specific_data) {
 	struct point_light** point_light;
 	struct point_light_specific* point_specific;
 
+	assert(light != NULL);
+	assert(specific_data != NULL);
+
 	point_light = (point_light_t**) light;
 	point_specific = (struct point_light_specific*) specific_data;
 
@@ -27,6 +30,7 @@ void point_light_new(light_t** light, void* specific_data) {
 }
 
 void point_light_free(light_t** light) {
+	assert(light != NULL);
 	free(*light);
 	*light = NULL;
 }

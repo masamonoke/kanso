@@ -16,6 +16,10 @@ bool shader_create_program(const char* vertex_file, const char* frag_file, uint3
 	int32_t status;
 	char info[512];
 
+	assert(vertex_file != NULL);
+	assert(frag_file != NULL);
+	assert(shader_program != NULL);
+
 	vertex_shader_str = NULL;
 	if (!file_read(vertex_file, &vertex_shader_str) && !vertex_shader_str) {
 		log_error("Failed to read %s", vertex_file);
@@ -77,18 +81,22 @@ L_RETURN:
 }
 
 void shader_set_bool(uint32_t shader_program, const char* name, bool value) {
+	assert(name != NULL);
 	glUniform1i(glGetUniformLocation(shader_program, name), (int32_t) value);
 }
 
 void shader_set_int(uint32_t shader_program, const char* name, int32_t value) {
+	assert(name != NULL);
 	glUniform1i(glGetUniformLocation(shader_program, name), value);
 }
 
 void shader_set_float(uint32_t shader_program, const char* name, float value) {
+	assert(name != NULL);
 	glUniform1f(glGetUniformLocation(shader_program, name), value);
 }
 
 void shader_set_mat4(uint32_t shader_program, const char* name, mat4 mat) {
+	assert(name != NULL);
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, name), 1, GL_FALSE, mat[0]);
 }
 
@@ -99,5 +107,8 @@ void shader_set_transform(struct transform t, uint32_t shader_program) {
 }
 
 void shader_set_vec3(uint32_t shader_program, const char* name, float vec[3]) {
+	assert(name != NULL);
+	assert(vec != NULL);
+
 	glUniform3fv(glGetUniformLocation(shader_program, name), 1, vec);
 }

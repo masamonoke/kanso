@@ -55,7 +55,7 @@ void window_set_scroll(window_t* window, void (*scroll_callback)(window_t*, doub
 }
 
 void window_update(window_t* window) {
-	glfw_context_update_window((GLFWwindow**) &window);
+	glfw_context_update_window((GLFWwindow*) window);
 }
 
 bool window_is_key_pressed(window_t* window, int32_t key) {

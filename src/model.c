@@ -14,6 +14,9 @@
 struct json_object;
 
 void model_new(model_t** model, enum model_type type, vec3* init_position, vec3* init_scale, const void* payload) { // NOLINT
+	assert(model != NULL);
+	assert(payload != NULL);
+
 	switch (type) {
 		case LOADED_MODEL:
 			if (!loaded_model_new((loaded_model_t**) model, (const char*) payload)) {
@@ -49,6 +52,7 @@ void model_new(model_t** model, enum model_type type, vec3* init_position, vec3*
 }
 
 void model_free(model_t** model) {
+	assert(model != NULL);
 	switch ((*model)->common.type) {
 		case LOADED_MODEL:
 			loaded_model_free((loaded_model_t**) model);
@@ -82,6 +86,10 @@ bool models_from_json(const char* path, model_t** models_ptrs, size_t* length, s
 	struct json_object* file_jso;
 	bool status;
 
+	assert(path != NULL);
+	assert(models_ptrs != NULL);
+	assert(length != NULL);
+
 	status = true;
 	file_jso = json_object_from_file(path);
 
@@ -107,7 +115,7 @@ bool models_from_json(const char* path, model_t** models_ptrs, size_t* length, s
 			goto L_FREE_JSO;
 		}
 
-		for (i = 0, *length = 0; i < array_len; i++) {
+		for (i = 0, *length = 0; i < array_len && i < max_models; i++) {
 			struct json_object* model_jso;
 			struct json_object* jso;
 			const char* type;
@@ -135,6 +143,8 @@ bool models_from_json(const char* path, model_t** models_ptrs, size_t* length, s
 					if (!add_loaded_model(&position, &scale, models_ptrs, max_models, length, model_path)) {
 						log_warn("Failed to add model %s", model_path);
 					}
+
+					log_info("Loaded model %s", model_path);
 				} else {
 					log_warn("Failed to get model path field from json file");
 				}

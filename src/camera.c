@@ -96,6 +96,8 @@ const float* camera_front(void) {
 void camera_set_view(mat4 view) {
 	vec3 direction;
 
+	assert(view != NULL);
+
 	glm_vec3_add(camera.pos, camera.front, direction);
 	glm_lookat(camera.pos, direction, camera.up, view);
 }
@@ -113,5 +115,6 @@ void camera_set_fov(float fov) {
 }
 
 void camera_set_front(float* front) {
+	assert(front != NULL);
 	memcpy(camera.front, front, sizeof(float) * 3);
 }

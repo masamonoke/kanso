@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
+#include <assert.h>
 
 #include <cglm/types.h>
 #include <arraylist.h>
@@ -19,6 +20,12 @@
 struct json_object;
 
 void light_new(light_t** light, enum light_type type, vec3* ambient, vec3* diffuse, vec3* specular, void* specific_data) {
+	assert(light != NULL);
+	assert(ambient != NULL);
+	assert(diffuse != NULL);
+	assert(specular != NULL);
+	assert(specific_data != NULL);
+
 	switch (type) {
 		case LIGHT_SPOT:
 			spot_light_new(light, specific_data);
@@ -44,6 +51,8 @@ void light_new(light_t** light, enum light_type type, vec3* ambient, vec3* diffu
 }
 
 void light_free(light_t** light) {
+	assert(light != NULL);
+
 	switch ((*light)->common.type) {
 		case LIGHT_POINT:
 			point_light_free(light);
@@ -80,6 +89,10 @@ bool light_from_json(const char* path, light_t** lights_ptrs, size_t* length, si
 	struct json_object* file_jso;
 	bool status;
 
+	assert(path != NULL);
+	assert(lights_ptrs != NULL);
+	assert(length != NULL);
+
 	status = true;
 	file_jso = json_object_from_file(path);
 
@@ -98,13 +111,14 @@ bool light_from_json(const char* path, light_t** lights_ptrs, size_t* length, si
 		}
 
 		// better not use struct arraylist* from json-c directly
-		if (!(array_len = json_object_get_array(lights_jso)->length)) {
+		array_len = json_object_get_array(lights_jso)->length;
+		if (!array_len) {
 			log_error("Failed to parse lights from %s", path);
 			status = false;
 			goto L_FREE_JSO;
 		}
 
-		for (i = 0, *length = 0; i < array_len; i++) {
+		for (i = 0, *length = 0; i < array_len && i < max_lights; i++) {
 			struct json_object* light_jso;
 			struct json_object* jso;
 			const char* type;
@@ -163,7 +177,7 @@ static bool get_type(struct json_object* light_jso, struct json_object** jso, co
 	return true;
 }
 
-static void get_common(struct json_object* light_jso, vec3 ambient, vec3 diffuse, vec3 specular) {
+static void get_common(struct json_object* light_jso, vec3 ambient, vec3 diffuse, vec3 specular) { // NOLINT
 	struct json_object* jso;
 
 	if (!json_object_object_get_ex(light_jso, "ambient", &jso)) {

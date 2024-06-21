@@ -16,6 +16,8 @@ typedef struct point_light {
 	struct point_light_specific specific_data;
 } point_light_t;
 
+__attribute__((nonnull(1, 2)))
 void point_light_new(light_t** light, void* specific_data);
 
+__attribute__((nonnull(1)))
 void point_light_free(light_t** light);

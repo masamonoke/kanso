@@ -22,6 +22,8 @@ static void draw(scene_t* scene);
 void scene_new(scene_t** scene) {
 	size_t i;
 
+	assert(scene != NULL);
+
 	*scene = malloc(sizeof(scene_t));
 	(*scene)->scn_ctx = malloc(sizeof(scene_ctx_t));
 
@@ -42,6 +44,8 @@ void scene_free(scene_t** scene) {
 	size_t i;
 	size_t models_count_processed;
 	size_t lights_count_processed;
+
+	assert(scene != NULL);
 
 	for (i = 0, models_count_processed = 0; i < MAX_MODELS_COUNT && models_count_processed != (*scene)->scn_ctx->model_count; i++) {
 		if ((*scene)->scn_ctx->models[i] != NULL) {
@@ -82,6 +86,9 @@ void scene_free(scene_t** scene) {
 bool scene_add_model(scene_t* scene, model_t* model) {
 	size_t i;
 
+	assert(scene != NULL);
+	assert(model != NULL);
+
 	for (i = 0; i < MAX_MODELS_COUNT; i++) {
 		if (scene->scn_ctx->models[i] == NULL) {
 			scene->scn_ctx->models[i] = model;
@@ -96,6 +103,9 @@ bool scene_add_model(scene_t* scene, model_t* model) {
 
 bool scene_load_from_json(scene_t* scene, const char* path) {
 	bool status;
+
+	assert(scene != NULL);
+	assert(path != NULL);
 
 	status = models_from_json(path, scene->scn_ctx->models, &scene->scn_ctx->model_count, MAX_MODELS_COUNT);
 	status = light_from_json(path, scene->scn_ctx->lights, &scene->scn_ctx->light_count, MAX_LIGHTS_COUNT);

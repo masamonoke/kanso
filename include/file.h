@@ -9,5 +9,5 @@
  * @return int32_t status: 0 is success otherwise is failure
  * @pointer_lifetime Mallocs memory for *buf and caller should free it themself
 */
-__attribute__((warn_unused_result))
+__attribute__((nonnull(1, 2), warn_unused_result))
 bool file_read(const char* filename, char** buf);
