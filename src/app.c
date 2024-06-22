@@ -9,32 +9,18 @@
 #include "camera.h"
 #include "keys.h"
 
-/*! @brief Reads key input
- *  @param[in] app_state_t** ctx: An app state which will hold all data about current context
-*/
 static void input(app_state_t* state);
 
-/*! @brief Set default scene image to white fill
-*/
 static void clear(void);
 
-/*! @brief Draws scene with data from context
- * @param[in] app_state_t** ctx: An app state which will hold all data about current context
-*/
 static void draw(app_state_t* ctx);
 
-/*! @brief Updates all states in context
- * @param[in] app_state_t** ctx: An app state which will hold all data about current context
-*/
 static void update(app_state_t* ctx);
 
 static bool default_scene(scene_t* scene);
 
 static bool custom_scene(scene_t* scene, const char* scene_path);
 
-/*! @brief Updates all states in context
- * @param[in] app_state_t** ctx: An app state which will hold all data about current context
-*/
 bool app_new(app_state_t** ctx, const char* scene_path) {
 	assert(ctx != NULL);
 
@@ -96,27 +82,18 @@ static void input(app_state_t* state) {
 	}
 }
 
-/*! @brief Set default scene image to white fill
-*/
-
-#define CLEAR_COLOR 0.1f, 0.1f, 0.1f, 1.0f // grey
+#define CLEAR_COLOR 0.1f, 0.1f, 0.1f, 1.0f // dark gray
 static void clear(void) {
 	glClearColor(CLEAR_COLOR);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-/*! @brief Draws scene with data from context
- * @param[in] app_state_t** ctx: An app state which will hold all data about current context
-*/
 static void draw(app_state_t* ctx) {
 	camera_update(ctx->window);
 	ctx->scene->draw(ctx->scene);
 	window_update(ctx->window);
 }
 
-/*! @brief Updates all states in context
- * @param[in] app_state_t** ctx: An app state which will hold all data about current context
-*/
 static void update(app_state_t* ctx) {
 	clear();
 	draw(ctx);

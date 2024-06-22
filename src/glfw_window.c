@@ -15,11 +15,6 @@ struct window {
 	GLFWwindow* _glfw_ctx;
 };
 
-/*! @brief Callback for GLFW to update viewport after window resized
- *  @param[in] GLFWwindow* window: current GLFW window pointer
- *  @param[in] int32_t width: current width of GLFW window
- *  @param[in] int32_t height: current height of GLFW window
-*/
 static void framebuffer_size_callback(GLFWwindow* window, int32_t width, int32_t height);
 
 bool window_new(window_t** window) {
