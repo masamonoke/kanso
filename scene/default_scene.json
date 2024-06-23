@@ -3,48 +3,41 @@
 		{
 			"model_type": "LOADED_MODEL",
 			"path": "assets/table/OfficeTable.fbx",
-			"position": [ 0.0, 0.0, 2.0 ]
+			"position": [ 0.0, 3.0, 2.0 ],
+			"rotation": [ 90, 20, 30 ]
 		},
 		{
 			"model_type": "LOADED_MODEL",
 			"path": "assets/table/OfficeTable.fbx",
-			"position": [ 0.0, 0.0, 1.0 ]
+			"position": [ 0.0, 0.0, 3.0 ],
+			"rotation": [ -90, 0, 0]
 		},
 		{
 			"model_type": "LOADED_MODEL",
 			"path": "assets/royal_chair/CadeiraMadeiraFASE1.fbx",
-			"position": [ 2.0, 0.0, 2.0 ],
-			"scale": [ 0.5, 0.5, 0.5 ]
+			"position": [ 2.0, -0.3, 2.0 ],
+			"scale": [ 0.5, 0.5, 0.5 ],
+			"rotation": [ -180, -100, 0 ]
 		},
 		{
 			"model_type": "LOADED_MODEL",
 			"path": "assets/royal_chair/CadeiraMadeiraFASE1.fbx",
-			"position": [ 3.0, 0.0, 2.0 ],
-			"scale": [ 0.5, 0.5, 0.5 ]
+			"position": [ -2.0, -0.3, 2.0 ],
+			"scale": [ 0.5, 0.5, 0.5 ],
+			"rotation": [ -180, 100, 0 ]
 		},
 		{
 			"model_type": "LOADED_MODEL",
 			"path": "assets/royal_chair/CadeiraMadeiraFASE1.fbx",
-			"position": [ -2.0, 0.0, 2.0 ],
-			"scale": [ 0.5, 0.5, 0.5 ]
+			"position": [ 0.0, -0.3, 0.0 ],
+			"scale": [ 0.5, 0.5, 0.5 ],
+			"rotation": [ -180, -180, 0 ]
 		},
 		{
 			"model_type": "LOADED_MODEL",
-			"path": "assets/royal_chair/CadeiraMadeiraFASE1.fbx",
-			"position": [ -3.0, 0.0, 2.0 ],
-			"scale": [ 0.5, 0.5, 0.5 ]
-		},
-		{
-			"model_type": "LOADED_MODEL",
-			"path": "assets/royal_chair/CadeiraMadeiraFASE1.fbx",
-			"position": [ 0.0, 0.0, 0.0 ],
-			"scale": [ 0.5, 0.5, 0.5 ]
-		},
-		{
-			"model_type": "LOADED_MODEL",
-			"path": "assets/royal_chair/CadeiraMadeiraFASE1.fbx",
-			"position": [ 0.0, 0.0, -1.0 ],
-			"scale": [ 0.5, 0.5, 0.5 ]
+			"path": "assets/cube/cube.obj",
+			"position": [ 0.0, 5.0, 2.0 ],
+			"rotation": [ 90, 20, 30 ]
 		}
 	],
 	"lights": [

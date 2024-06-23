@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#ifdef __APPLE__
+#include <sys/_types/_seek_set.h>
+#endif
 
 bool file_read(const char* filename, char** buf) {
 	FILE* fp;

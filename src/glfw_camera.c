@@ -3,6 +3,9 @@
 #include <math.h>
 #include <stdbool.h>
 #include <assert.h>
+#ifdef DEBUG
+#include <stddef.h>
+#endif
 
 #include <GLFW/glfw3.h>
 #include <cglm/types.h>

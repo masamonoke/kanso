@@ -17,14 +17,14 @@
 #include "model_loader.h"
 #include "shader.h"
 #include "camera.h"
+#include "window.h"
 
 static void draw(void* model) {
 	loaded_model_t* loaded_model;
+	float w_width;
+	float w_height;
 
 	loaded_model = (loaded_model_t*) model;
-
-	camera_set_view(loaded_model->common.transform.view);
-	glm_perspective(glm_rad(camera_fov()), 600.0f / 800, 0.1f, 100.f, loaded_model->common.transform.proj);
 
 	glUseProgram(loaded_model->common.shader_program);
 
@@ -32,10 +32,18 @@ static void draw(void* model) {
 	glm_mat4_identity(loaded_model->common.transform.proj);
 	glm_mat4_identity(loaded_model->common.transform.view);
 
-	camera_set_view(loaded_model->common.transform.view);
-	glm_perspective(glm_rad(camera_fov()), 600.0f / 800, 0.1f, 100.f, loaded_model->common.transform.proj);
 	glm_translate(loaded_model->common.transform.model, loaded_model->common.position);
+
 	glm_scale(loaded_model->common.transform.model, loaded_model->common.scale);
+
+	glm_rotate(loaded_model->common.transform.model, glm_rad(loaded_model->common.rotation[0]), (float[]) { 1, 0, 0 });
+	glm_rotate(loaded_model->common.transform.model, glm_rad(loaded_model->common.rotation[1]), (float[]) { 0, 1, 0 });
+	glm_rotate(loaded_model->common.transform.model, glm_rad(loaded_model->common.rotation[2]), (float[]) { 0, 0, 1 });
+
+	camera_set_view(loaded_model->common.transform.view);
+	w_height = (float) window_height();
+	w_width = (float) window_width();
+	glm_perspective(glm_rad(camera_fov()), w_width / w_height, 0.1f, 100.f, loaded_model->common.transform.proj);
 
 	shader_set_mat4(loaded_model->common.shader_program, "model", loaded_model->common.transform.model);
 	shader_set_mat4(loaded_model->common.shader_program, "view", loaded_model->common.transform.view);
@@ -108,7 +116,11 @@ bool loaded_model_new(loaded_model_t** model, const char* path) {
 		for (i = 0; i < MAX_CACHE_ENTRIES; i++) {
 			if (cache.models[i].model == NULL) {
 
-				model_loader_load_model(*model, path);
+				if (!model_loader_load_model(*model, path)) {
+					free(*model);
+					*model = NULL;
+					return false;
+				}
 
 				(*model)->common.type = LOADED_MODEL;
 				(*model)->common.draw = draw;

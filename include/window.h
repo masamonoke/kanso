@@ -21,5 +21,9 @@ void window_set_scroll(window_t* window, void (*scroll_callback)(window_t*, doub
 
 void window_update(window_t* window);
 
+int32_t window_height(void);
+
+int32_t window_width(void);
+
 __attribute__((warn_unused_result))
 bool window_is_key_pressed(window_t* window, int32_t key);

@@ -1,6 +1,7 @@
 #include "shader.h"
 
 #include <stdlib.h>
+#include <assert.h>
 
 #include <glad/glad.h>
 #include <cglm/types.h>

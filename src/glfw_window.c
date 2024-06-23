@@ -57,6 +57,18 @@ bool window_is_key_pressed(window_t* window, int32_t key) {
 	return glfwGetKey((GLFWwindow*) window, key) == GLFW_PRESS;
 }
 
+int32_t window_height(void) {
+	const GLFWvidmode* ret;
+	ret = glfwGetVideoMode(glfwGetPrimaryMonitor());
+	return ret->height;
+}
+
+int32_t window_width(void) {
+	const GLFWvidmode* ret;
+	ret = glfwGetVideoMode(glfwGetPrimaryMonitor());
+	return ret->width;
+}
+
 static void framebuffer_size_callback(GLFWwindow* window, int32_t width, int32_t height) {
 	(void) window;
     glViewport(0, 0, width, height);

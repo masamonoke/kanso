@@ -1,6 +1,7 @@
 #include "model.h"
 
 #include <string.h>
+#include <assert.h>
 
 #include <arraylist.h>
 #include <json_object.h>
@@ -9,29 +10,18 @@
 #include <c_log.h>
 
 #include "loaded_model.h"
-#include "primitive.h"
 
 struct json_object;
 
-void model_new(model_t** model, enum model_type type, vec3* init_position, vec3* init_scale, const void* payload) { // NOLINT
+bool model_new(model_t** model, enum model_type type, vec3* init_position, vec3* init_scale, vec3* init_rotation, const void* payload) { // NOLINT
 	assert(model != NULL);
 	assert(payload != NULL);
 
 	switch (type) {
 		case LOADED_MODEL:
 			if (!loaded_model_new((loaded_model_t**) model, (const char*) payload)) {
-				return;
+				return false;
 			}
-			break;
-		case PRIMITVE_MODEL:
-			if (!primitive_new((void**) model, *((enum primitive_type*) payload))) {
-				return;
-			} else {
-				log_error("Null primitive model type passed");
-			}
-			break;
-		default:
-			log_error("Unknown model type: %d", (*model)->common.type);
 			break;
 	}
 
@@ -42,6 +32,7 @@ void model_new(model_t** model, enum model_type type, vec3* init_position, vec3*
 		(*model)->common.position[1] = 0.0f;
 		(*model)->common.position[2] = 0.0f;
 	}
+
 	if (init_scale) {
 		memcpy((*model)->common.scale, *init_scale, sizeof(vec3));
 	} else {
@@ -49,6 +40,16 @@ void model_new(model_t** model, enum model_type type, vec3* init_position, vec3*
 		(*model)->common.scale[1] = 1.0f;
 		(*model)->common.scale[2] = 1.0f;
 	}
+
+	if (init_rotation) {
+		memcpy((*model)->common.rotation, *init_rotation, sizeof(vec3));
+	} else {
+		(*model)->common.rotation[0] = 0.0f;
+		(*model)->common.rotation[1] = 0.0f;
+		(*model)->common.rotation[2] = 0.0f;
+	}
+
+	return true;
 }
 
 void model_free(model_t** model) {
@@ -56,9 +57,6 @@ void model_free(model_t** model) {
 	switch ((*model)->common.type) {
 		case LOADED_MODEL:
 			loaded_model_free((loaded_model_t**) model);
-			break;
-		case PRIMITVE_MODEL:
-			primitive_free((void**) model);
 			break;
 		default:
 			log_error("Unknown model type: %d", (*model)->common.type);
@@ -75,12 +73,10 @@ static void get_position(struct json_object* model_jso, struct json_object** jso
 
 static void get_scale(struct json_object* model_jso, struct json_object** jso, vec3 scale);
 
-__attribute__((warn_unused_result))
-static bool add_loaded_model(vec3* position, vec3* scale, model_t** models_ptrs, size_t max_models, size_t* length, const char* model_path);
+static void get_rotation(struct json_object* model_jso, struct json_object** jso, vec3 rotation);
 
 __attribute__((warn_unused_result))
-static bool add_primitive_model(struct json_object* model_jso, struct json_object** jso, vec3* position, vec3* scale,
-	model_t** models_ptrs, size_t max_models, size_t* length);
+static bool add_loaded_model(vec3* position, vec3* scale, vec3* rotation, model_t** models_ptrs, size_t max_models, size_t* length, const char* model_path);
 
 bool models_from_json(const char* path, model_t** models_ptrs, size_t* length, size_t max_models) {
 	struct json_object* file_jso;
@@ -98,7 +94,7 @@ bool models_from_json(const char* path, model_t** models_ptrs, size_t* length, s
 		size_t array_len;
 		size_t i;
 
-		log_debug("Reading model from config %s", path);
+		log_debug("Reading models from %s", path);
 
 		json_object_object_get_ex(file_jso, "models", &models_jso);
 		if (!models_jso) {
@@ -121,6 +117,7 @@ bool models_from_json(const char* path, model_t** models_ptrs, size_t* length, s
 			const char* type;
 			vec3 position;
 			vec3 scale;
+			vec3 rotation;
 
 			model_jso = json_object_array_get_idx(models_jso, i);
 
@@ -132,25 +129,21 @@ bool models_from_json(const char* path, model_t** models_ptrs, size_t* length, s
 
 			get_scale(model_jso, &jso, scale);
 
+			get_rotation(model_jso, &jso, rotation);
+
 			if (0 == strcmp(type, "LOADED_MODEL")) {
 				if (json_object_object_get_ex(model_jso, "path", &jso)) {
 					const char* model_path;
 
 					model_path = json_object_get_string(jso);
 
-					log_debug("Path is %s", model_path);
-
-					if (!add_loaded_model(&position, &scale, models_ptrs, max_models, length, model_path)) {
+					if (!add_loaded_model(&position, &scale, &rotation, models_ptrs, max_models, length, model_path)) {
 						log_warn("Failed to add model %s", model_path);
 					}
 
 					log_info("Loaded model %s", model_path);
 				} else {
 					log_warn("Failed to get model path field from json file");
-				}
-			} else if (0 == strcmp(type, "PRIMITIVE_MODEL")) {
-				if (!add_primitive_model(model_jso, &jso, &position, &scale, models_ptrs, max_models, length)) {
-					log_warn("Failed to load primitive model");
 				}
 			} else {
 				log_error("Unknown model type: %s", type);
@@ -178,7 +171,6 @@ static bool get_type(struct json_object* model_jso, struct json_object** jso, co
 		return false;
 	}
 	*ret_type = json_object_get_string(*jso);
-	log_debug("Loading model %s", *ret_type);
 
 	return true;
 }
@@ -209,13 +201,27 @@ static void get_scale(struct json_object* model_jso, struct json_object** jso, v
 	}
 }
 
-static bool add_loaded_model(vec3* position, vec3* scale, model_t** models_ptrs,
+static void get_rotation(struct json_object* model_jso, struct json_object** jso, vec3 rotation) {
+	if (!json_object_object_get_ex(model_jso, "rotation", jso)) {
+		rotation[0] = 0;
+		rotation[1] = 0;
+		rotation[2] = 0;
+	} else {
+		rotation[0] = (float) json_object_get_double(json_object_array_get_idx(*jso, 0));
+		rotation[1] = (float) json_object_get_double(json_object_array_get_idx(*jso, 1));
+		rotation[2] = (float) json_object_get_double(json_object_array_get_idx(*jso, 2));
+	}
+}
+
+static bool add_loaded_model(vec3* position, vec3* scale, vec3* rotation, model_t** models_ptrs,
 		size_t max_models, size_t* length, const char* model_path)
 {
 	bool set;
 	model_t* model;
 
-	model_new(&model, LOADED_MODEL, position, scale, model_path);
+	if (!model_new(&model, LOADED_MODEL, position, scale, rotation, model_path)) {
+		return false;
+	}
 	set = false;
 	for (size_t j = 0; j < max_models; j++) {
 		if (models_ptrs[j] == NULL) {
@@ -228,49 +234,6 @@ static bool add_loaded_model(vec3* position, vec3* scale, model_t** models_ptrs,
 		model_free(&model);
 	} else {
 		(*length)++;
-	}
-
-	return set;
-}
-
-static bool add_primitive_model(struct json_object* model_jso, struct json_object** jso, vec3* position, vec3* scale, model_t** models_ptrs,
-	size_t max_models, size_t* length)
-{
-	const char* primitive_type_str;
-	enum primitive_type primitive_type;
-	bool set;
-
-	if (!json_object_object_get_ex(model_jso, "primitive_type", jso)) {
-		log_error("Failed to get primitive type");
-		return false;
-	} else {
-		model_t* model;
-
-		primitive_type_str = json_object_get_string(*jso);
-		log_debug("Primitive type is %s", primitive_type_str);
-		if (0 == strcmp(primitive_type_str, "CUBE")) {
-			primitive_type = CUBE;
-		} else {
-			log_error("Failed to define primitive type %s", primitive_type_str);
-			primitive_type = UNDEFINED_PRIMITIVE;
-		}
-
-		set = false;
-		if (primitive_type != UNDEFINED_PRIMITIVE) {
-			model_new(&model, PRIMITVE_MODEL, position, scale, &primitive_type);
-			for (size_t j = 0; j < max_models; j++) {
-				if (models_ptrs[j] == NULL) {
-					models_ptrs[j] = model;
-					set = true;
-					break;
-				}
-			}
-			if (set) {
-				(*length)++;
-			} else {
-				model_free(&model);
-			}
-		}
 	}
 
 	return set;

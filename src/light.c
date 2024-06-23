@@ -101,7 +101,7 @@ bool light_from_json(const char* path, light_t** lights_ptrs, size_t* length, si
 		size_t array_len;
 		size_t i;
 
-		log_debug("Reading model from config %s", path);
+		log_debug("Reading lights from %s", path);
 
 		json_object_object_get_ex(file_jso, "lights", &lights_jso);
 		if (!lights_jso) {

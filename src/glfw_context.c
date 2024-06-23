@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
+#include <stdint.h>
 
 #include <json_object.h>
 #include <json_util.h>

@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
+#include <stdbool.h>
 
 #include <glad/glad.h>
 #include <c_log.h>
@@ -65,6 +67,12 @@ static void draw_mesh(mesh_t* mesh, uint32_t shader_program) {
 		strcat(name, number);
 		shader_set_uniform_primitive(shader_program, name, (int32_t) i);
 		glBindTexture(GL_TEXTURE_2D, mesh->textures_vector.textures[i].id);
+	}
+
+	if (mesh->textures_vector.size == 0) {
+		shader_set_bool(shader_program, "useTexture", false);
+	} else {
+		shader_set_bool(shader_program, "useTexture", true);
 	}
 
 	glBindVertexArray(mesh->vo.vao);

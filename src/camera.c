@@ -1,11 +1,11 @@
 #include "camera.h"
 
 #include <string.h>
+#include <assert.h>
 
 #include <cglm/cam.h>
 #include <cglm/types.h>
 #include <cglm/vec3.h>
-
 
 #define CAMERA_INIT { .pos = { 0.0f, 0.0f, 4.0f }, .front = { 0.0f, 0.0f, -1.0f }, .up = { 0.0f, 1.0f, 0.0f }, .fov = MIN_FOV }
 

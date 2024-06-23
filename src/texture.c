@@ -1,5 +1,10 @@
 #include "texture.h"
 
+#include <assert.h>
+#ifdef DEBUG
+#include <stddef.h>
+#endif
+
 #include <glad/glad.h>
 #include <c_log.h>
 #ifdef __clang__

@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <cassert>
 
 #include <assimp/material.h>
 #include <assimp/material.inl>
@@ -159,7 +160,7 @@ namespace {
 	}
 }
 
-void model_loader_load_model(loaded_model_t* model, const char* path) {
+bool model_loader_load_model(loaded_model_t* model, const char* path) {
 	assert(model != NULL);
 	assert(path != NULL);
 
@@ -167,7 +168,7 @@ void model_loader_load_model(loaded_model_t* model, const char* path) {
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
 		log_error("Error while loading model %s: %s", path, importer.GetErrorString());
-		return;
+		return false;
 	}
 
 	auto path_str = std::string(path);
@@ -181,10 +182,11 @@ void model_loader_load_model(loaded_model_t* model, const char* path) {
 
 	std::vector<mesh_t*> meshes;
 	meshes.resize(ai_meshes.size());
-	log_debug("Loading model %s", path);
 	process_meshes(model, scene, ai_meshes, meshes);
 
 	model->model_data.meshes = static_cast<mesh_t**>(malloc(sizeof(mesh_t*) * meshes.size()));
 	memcpy(model->model_data.meshes, meshes.data(), sizeof(mesh_t*) * meshes.size());
 	model->model_data.meshes_count = meshes.size();
+
+	return true;
 }
