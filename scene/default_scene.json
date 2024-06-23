@@ -35,7 +35,7 @@
 		},
 		{
 			"model_type": "LOADED_MODEL",
-			"path": "assets/cube/cube.obj",
+			"path": "assets/sphere/sphere.obj",
 			"position": [ 0.0, 5.0, 2.0 ],
 			"rotation": [ 90, 20, 30 ]
 		}
