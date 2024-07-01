@@ -14,7 +14,8 @@ enum model_type {
 
 struct model_common {
 	enum model_type type;
-	uint32_t shader_program;
+	uint32_t render_shader;
+	uint32_t outline_shader;
 	struct transform transform;
 	vec3 position;
 	vec3 scale;

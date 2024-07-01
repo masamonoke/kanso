@@ -19,43 +19,24 @@
 #include "camera.h"
 #include "window.h"
 
+static void draw_model(loaded_model_t* model, uint32_t shader);
+
 static void draw(void* model) {
 	loaded_model_t* loaded_model;
-	float w_width;
-	float w_height;
 
 	loaded_model = (loaded_model_t*) model;
 
-	glUseProgram(loaded_model->common.shader_program);
+	glStencilFunc(GL_ALWAYS, 1, 0xFF);
+	glStencilMask(0xFF);
+	draw_model(loaded_model, loaded_model->common.render_shader);
 
-	glm_mat4_identity(loaded_model->common.transform.model);
-	glm_mat4_identity(loaded_model->common.transform.proj);
-	glm_mat4_identity(loaded_model->common.transform.view);
-
-	glm_translate(loaded_model->common.transform.model, loaded_model->common.position);
-
-	glm_scale(loaded_model->common.transform.model, loaded_model->common.scale);
-
-	glm_rotate(loaded_model->common.transform.model, glm_rad(loaded_model->common.rotation[0]), (float[]) { 1, 0, 0 });
-	glm_rotate(loaded_model->common.transform.model, glm_rad(loaded_model->common.rotation[1]), (float[]) { 0, 1, 0 });
-	glm_rotate(loaded_model->common.transform.model, glm_rad(loaded_model->common.rotation[2]), (float[]) { 0, 0, 1 });
-
-	camera_set_view(loaded_model->common.transform.view);
-	w_height = (float) window_height();
-	w_width = (float) window_width();
-	glm_perspective(glm_rad(camera_fov()), w_width / w_height, 0.1f, 100.f, loaded_model->common.transform.proj);
-
-	shader_set_mat4(loaded_model->common.shader_program, "model", loaded_model->common.transform.model);
-	shader_set_mat4(loaded_model->common.shader_program, "view", loaded_model->common.transform.view);
-	shader_set_mat4(loaded_model->common.shader_program, "proj", loaded_model->common.transform.proj);
-
-	shader_set_vec3(loaded_model->common.shader_program, "viewPos", (float*) camera_pos());
-	shader_set_uniform_primitive(loaded_model->common.shader_program, "material.shininess", 32.0f);
-
-	for (size_t i = 0; i < loaded_model->model_data.meshes_count; i++) {
-		assert(loaded_model->model_data.meshes[i] != NULL);
-		loaded_model->model_data.meshes[i]->draw(loaded_model->model_data.meshes[i], loaded_model->common.shader_program);
-	}
+	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	glStencilMask(0x00);
+	glDisable(GL_DEPTH_TEST);
+	draw_model(loaded_model, loaded_model->common.outline_shader);
+	glStencilMask(0xFF);
+	glStencilFunc(GL_ALWAYS, 0, 0xFF);
+	glEnable(GL_DEPTH_TEST);
 }
 
 #define MAX_CACHE_ENTRIES 1024
@@ -140,7 +121,10 @@ bool loaded_model_new(loaded_model_t** model, const char* path) {
 		}
 	}
 
-	if (!shader_create_program("shaders/backpack.vert", "shaders/backpack.frag", &(*model)->common.shader_program)) {
+	if (!shader_create_program("shaders/default.vert", "shaders/default.frag", &(*model)->common.render_shader)) {
+		log_error("Failed to compile model %s render shader program", path);
+	}
+	if (!shader_create_program("shaders/outline.vert", "shaders/outline.frag", &(*model)->common.outline_shader)) {
 		log_error("Failed to compile model %s shader program", path);
 	}
 
@@ -197,4 +181,40 @@ static void share_ref(loaded_model_t** dest, loaded_model_t* ref) {
 	(*dest)->model_data.directory = ref->model_data.directory;
 	(*dest)->model_data.meshes = ref->model_data.meshes;
 	(*dest)->model_data.meshes_count = ref->model_data.meshes_count;
+}
+
+static void draw_model(loaded_model_t* model, uint32_t shader) {
+	float w_width;
+	float w_height;
+
+	glUseProgram(shader);
+
+	glm_mat4_identity(model->common.transform.model);
+	glm_mat4_identity(model->common.transform.proj);
+	glm_mat4_identity(model->common.transform.view);
+
+	glm_translate(model->common.transform.model, model->common.position);
+
+	glm_scale(model->common.transform.model, model->common.scale);
+
+	glm_rotate(model->common.transform.model, glm_rad(model->common.rotation[0]), (float[]) { 1, 0, 0 });
+	glm_rotate(model->common.transform.model, glm_rad(model->common.rotation[1]), (float[]) { 0, 1, 0 });
+	glm_rotate(model->common.transform.model, glm_rad(model->common.rotation[2]), (float[]) { 0, 0, 1 });
+
+	camera_set_view(model->common.transform.view);
+	w_height = (float) window_height();
+	w_width = (float) window_width();
+	glm_perspective(glm_rad(camera_fov()), w_width / w_height, 0.1f, 100.f, model->common.transform.proj);
+
+	shader_set_mat4(shader, "model", model->common.transform.model);
+	shader_set_mat4(shader, "view", model->common.transform.view);
+	shader_set_mat4(shader, "proj", model->common.transform.proj);
+
+	shader_set_vec3(shader, "viewPos", (float*) camera_pos());
+	shader_set_uniform_primitive(shader, "material.shininess", 32.0f);
+
+	for (size_t i = 0; i < model->model_data.meshes_count; i++) {
+		assert(model->model_data.meshes[i] != NULL);
+		model->model_data.meshes[i]->draw(model->model_data.meshes[i], shader);
+	}
 }

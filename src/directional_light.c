@@ -10,7 +10,7 @@
 
 #include "shader.h"
 
-static void bind_shader(void* light, uint32_t shader_program);
+static void load_data_to_shader(void* light, uint32_t shader_program);
 
 void directional_light_new(light_t** light, void* specific_data) {
 	struct dir_light** dir_light;
@@ -24,7 +24,7 @@ void directional_light_new(light_t** light, void* specific_data) {
 
 	*dir_light = malloc(sizeof(dir_light_t));
 	memcpy((*dir_light)->specific_data.direction, dir_specific->direction, sizeof(vec3));
-	(*dir_light)->common.bind_shader = bind_shader;
+	(*dir_light)->common.load_data_to_shader = load_data_to_shader;
 }
 
 void directional_light_free(light_t** light) {
@@ -34,7 +34,7 @@ void directional_light_free(light_t** light) {
 }
 
 
-static void bind_shader(void* light, uint32_t shader_program) {
+static void load_data_to_shader(void* light, uint32_t shader_program) {
 	dir_light_t* dir_light;
 
 	dir_light = (dir_light_t*) light;

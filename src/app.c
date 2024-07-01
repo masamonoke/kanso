@@ -56,9 +56,8 @@ bool app_new(app_state_t** ctx, const char* scene_path) {
 
 	log_debug("Initiated camera callbacks");
 
-	window_set_capture_cursor((*ctx)->window);
-
-	log_debug("Set window cursor mode to capture");
+	/* window_set_capture_cursor((*ctx)->window); */
+	/* log_debug("Set window cursor mode to capture"); */
 
 	(*ctx)->close = false;
 
@@ -85,7 +84,7 @@ static void input(app_state_t* state) {
 #define CLEAR_COLOR 0.1f, 0.1f, 0.1f, 1.0f // dark gray
 static void clear(void) {
 	glClearColor(CLEAR_COLOR);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
 static void draw(app_state_t* ctx) {

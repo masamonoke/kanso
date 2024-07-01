@@ -19,6 +19,8 @@ void window_set_cursor(window_t* window, void (*mouse_callback)(window_t*, doubl
 
 void window_set_scroll(window_t* window, void (*scroll_callback)(window_t*, double, double));
 
+void window_set_mouse_click(window_t* window, void (*mouse_click) (window_t* window, int, int, int));
+
 void window_update(window_t* window);
 
 int32_t window_height(void);

@@ -17,7 +17,7 @@ struct light_common {
 	vec3 diffuse;
 	vec3 specular;
 	enum light_type type;
-	void (*bind_shader) (void*, uint32_t);
+	void (*load_data_to_shader) (void*, uint32_t);
 };
 
 typedef struct light {

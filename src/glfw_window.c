@@ -49,6 +49,13 @@ void window_set_scroll(window_t* window, void (*scroll_callback)(window_t*, doub
 	glfw_context_set_scroll_callback((GLFWwindow*) window, glfw_scroll_callback);
 }
 
+void window_set_mouse_click(window_t* window, void (*mouse_click) (window_t* window, int, int, int)) {
+	void (*glfw_mouse_click_callback)(struct GLFWwindow *, int, int, int);
+
+	glfw_mouse_click_callback = (void (*)(struct GLFWwindow *, int, int, int)) mouse_click;
+	glfw_context_set_mouse_click_callback((GLFWwindow*) window, glfw_mouse_click_callback);
+}
+
 void window_update(window_t* window) {
 	glfw_context_update_window((GLFWwindow*) window);
 }

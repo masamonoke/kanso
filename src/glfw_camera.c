@@ -15,6 +15,8 @@
 #include "glfw_context.h"
 #include "window.h"
 
+#include "c_log.h"
+
 static void input(GLFWwindow* window);
 
 void camera_update(window_t* window) {
@@ -26,16 +28,30 @@ static void mouse_callback(GLFWwindow* window, double xpos_d, double ypos_d);
 
 static void change_fov_callback(GLFWwindow* window, double xoffset, double yoffset);
 
+static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+	(void) mods;
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+		double xpos, ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
+		log_warn("Mouse pos: %f, %f", xpos, ypos);
+	}
+}
+
 void camera_init_callbacks(window_t* window) {
 	assert(window != NULL);
 
 	void (*abstract_mouse_callback) (window_t* window, double xpos_d, double ypos_d);
-	void (*abstract_scroll_callback)(window_t*, double, double);
+	void (*abstract_scroll_callback) (window_t*, double, double);
+	void (*abstract_mouse_click_callback) (window_t* window, int button, int action, int mods);
 
 	abstract_mouse_callback = (void (*)(window_t*, double, double)) mouse_callback;
 	window_set_cursor(window, abstract_mouse_callback);
+
 	abstract_scroll_callback = (void (*)(window_t*, double, double)) change_fov_callback;
 	window_set_scroll(window, abstract_scroll_callback);
+
+	abstract_mouse_click_callback = (void (*)(window_t*, int, int, int)) mouse_button_callback;
+	window_set_mouse_click(window, abstract_mouse_click_callback);
 }
 
 
@@ -77,6 +93,7 @@ static void change_fov_callback(GLFWwindow* window, double xoffset, double yoffs
 	(void) window;
 	(void) xoffset;
 
+	// TODO: camera_get_fov()
 	camera = camera_get();
 
 	fov = camera->fov;

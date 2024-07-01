@@ -98,6 +98,10 @@ L_DEFAULT_WINDOW_INIT:
 	}
 
 	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	glEnable(GL_STENCIL_TEST);
+	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	glfwGetFramebufferSize(*window, &framebuffer_width, &framebuffer_height);
 	glViewport(0, 0, framebuffer_width, framebuffer_height);
@@ -129,6 +133,12 @@ void glfw_context_set_scroll_callback(GLFWwindow* window, void (*scroll_callback
 	assert(window != NULL);
 	assert(scroll_callback != NULL);
 	glfwSetScrollCallback(window, scroll_callback);
+}
+
+void glfw_context_set_mouse_click_callback(GLFWwindow* window, void (*mouse_click_callback)(struct GLFWwindow*, int, int, int)) {
+	assert(window != NULL);
+	assert(mouse_click_callback != NULL);
+	glfwSetMouseButtonCallback(window, mouse_click_callback);
 }
 
 void glfw_context_update_window(GLFWwindow* window) {

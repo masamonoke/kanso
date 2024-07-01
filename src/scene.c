@@ -125,7 +125,7 @@ static void draw (scene_t* scene) {
 
 			for (j = 0, lights_count = 0; j < MAX_LIGHTS_COUNT && lights_count < scene->scn_ctx->light_count; j++) {
 				if (scene->scn_ctx->lights[j] != NULL) {
-					scene->scn_ctx->lights[j]->common.bind_shader(scene->scn_ctx->lights[j], scene->scn_ctx->models[i]->common.shader_program);
+					scene->scn_ctx->lights[j]->common.load_data_to_shader(scene->scn_ctx->lights[j], scene->scn_ctx->models[i]->common.render_shader);
 					lights_count++;
 				}
 			}
