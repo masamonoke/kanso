@@ -6,8 +6,8 @@
 #include <glad/glad.h>
 #include <c_log.h>
 
-#include "camera.h"
 #include "keys.h"
+#include "control.h"
 
 static void input(app_state_t* state);
 
@@ -52,9 +52,7 @@ bool app_new(app_state_t** ctx, const char* scene_path) {
 	(*ctx)->update = update;
 	(*ctx)->input = input;
 
-	camera_init_callbacks((*ctx)->window);
-
-	log_debug("Initiated camera callbacks");
+	control_init((*ctx)->window);
 
 	/* window_set_capture_cursor((*ctx)->window); */
 	/* log_debug("Set window cursor mode to capture"); */
@@ -88,7 +86,7 @@ static void clear(void) {
 }
 
 static void draw(app_state_t* ctx) {
-	camera_update(ctx->window);
+	control_update(ctx->window);
 	ctx->scene->draw(ctx->scene);
 	window_update(ctx->window);
 }
