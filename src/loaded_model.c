@@ -8,7 +8,6 @@
 #include <glad/glad.h>
 #include <cglm/affine.h>
 #include <cglm/affine-pre.h>
-#include <cglm/cam.h>
 #include <cglm/mat4.h>
 #include <cglm/util.h>
 #include <cglm/types.h>
@@ -17,7 +16,6 @@
 #include "model_loader.h"
 #include "shader.h"
 #include "camera.h"
-#include "window.h"
 
 static void draw_model(loaded_model_t* model, uint32_t shader);
 
@@ -184,9 +182,6 @@ static void share_ref(loaded_model_t** dest, loaded_model_t* ref) {
 }
 
 static void draw_model(loaded_model_t* model, uint32_t shader) {
-	float w_width;
-	float w_height;
-
 	glUseProgram(shader);
 
 	glm_mat4_identity(model->common.transform.model);
@@ -201,10 +196,8 @@ static void draw_model(loaded_model_t* model, uint32_t shader) {
 	glm_rotate(model->common.transform.model, glm_rad(model->common.rotation[1]), (float[]) { 0, 1, 0 });
 	glm_rotate(model->common.transform.model, glm_rad(model->common.rotation[2]), (float[]) { 0, 0, 1 });
 
-	camera_set_view(model->common.transform.view);
-	w_height = (float) window_height();
-	w_width = (float) window_width();
-	glm_perspective(glm_rad(camera_fov()), w_width / w_height, 0.1f, 100.f, model->common.transform.proj);
+	camera_view(model->common.transform.view);
+	camera_projection(model->common.transform.proj);
 
 	shader_set_mat4(shader, "model", model->common.transform.model);
 	shader_set_mat4(shader, "view", model->common.transform.view);

@@ -18,7 +18,10 @@ __attribute__((warn_unused_result))
 const camera_t* camera_get(void);
 
 __attribute__((nonnull(1)))
-void camera_set_view(mat4 view);
+void camera_view(mat4 view);
+
+__attribute__((nonnull(1)))
+void camera_projection(mat4 projection);
 
 void camera_set_fov(float fov);
 

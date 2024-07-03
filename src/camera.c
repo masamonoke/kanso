@@ -10,7 +10,11 @@
 #include <cglm/vec3.h>
 #include "cglm/util.h"
 
+#include "window.h"
+
 #define CAMERA_INIT { .pos = { 0.0f, 0.0f, 4.0f }, .front = { 0.0f, 0.0f, -1.0f }, .up = { 0.0f, 1.0f, 0.0f }, .fov = MIN_FOV }
+#define FRUSTURM_NEAR 0.1f
+#define FRUSTURM_FAR 100.0f
 
 static struct camera camera = CAMERA_INIT;
 
@@ -92,7 +96,7 @@ const float* camera_front(void) {
 	return camera.front;
 }
 
-void camera_set_view(mat4 view) {
+void camera_view(mat4 view) {
 	vec3 direction;
 
 	assert(view != NULL);
@@ -162,4 +166,8 @@ void camera_change_view(float x, float y) { // NOLINT(*bugprone-easily-swappable
 
 	glm_normalize(front);
 	camera_set_front(front);
+}
+
+void camera_projection(mat4 projection) {
+	glm_perspective(glm_rad(camera_fov()), (float) window_width() / (float) window_height(), FRUSTURM_NEAR, FRUSTURM_FAR, projection);
 }
