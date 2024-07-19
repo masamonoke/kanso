@@ -13,55 +13,40 @@
 
 struct json_object;
 
-bool model_new(model_t** model, enum model_type type, vec3* init_position, vec3* init_scale, vec3* init_rotation, const void* payload) { // NOLINT
+bool model_new(model_t** model, vec3* init_position, vec3* init_scale, vec3* init_rotation, const void* payload) { // NOLINT
 	assert(model != NULL);
 	assert(payload != NULL);
 
-	switch (type) {
-		case LOADED_MODEL:
-			if (!loaded_model_new((loaded_model_t**) model, (const char*) payload)) {
-				return false;
-			}
-			break;
+	if (!loaded_model_new((loaded_model_t**) model, (const char*) payload)) {
+		return false;
 	}
 
 	if (init_position) {
 		memcpy((*model)->common.position, *init_position, sizeof(vec3));
 	} else {
-		(*model)->common.position[0] = 0.0f;
-		(*model)->common.position[1] = 0.0f;
-		(*model)->common.position[2] = 0.0f;
+		memcpy((*model)->common.position, (float[]) { 0.0f, 0.0f, 0.0f }, sizeof(vec3));
 	}
 
 	if (init_scale) {
 		memcpy((*model)->common.scale, *init_scale, sizeof(vec3));
 	} else {
-		(*model)->common.scale[0] = 1.0f;
-		(*model)->common.scale[1] = 1.0f;
-		(*model)->common.scale[2] = 1.0f;
+		memcpy((*model)->common.scale, (float[]) { 1.0f, 1.0f, 1.0f }, sizeof(vec3));
 	}
 
 	if (init_rotation) {
 		memcpy((*model)->common.rotation, *init_rotation, sizeof(vec3));
 	} else {
-		(*model)->common.rotation[0] = 0.0f;
-		(*model)->common.rotation[1] = 0.0f;
-		(*model)->common.rotation[2] = 0.0f;
+		memcpy((*model)->common.rotation, (float[]) { 0.0f, 0.0f, 0.0f }, sizeof(vec3));
 	}
+
+	(*model)->common.selected = false;
 
 	return true;
 }
 
 void model_free(model_t** model) {
 	assert(model != NULL);
-	switch ((*model)->common.type) {
-		case LOADED_MODEL:
-			loaded_model_free((loaded_model_t**) model);
-			break;
-		default:
-			log_error("Unknown model type: %d", (*model)->common.type);
-			break;
-	}
+	loaded_model_free((loaded_model_t**) model);
 
 	*model = NULL;
 }
@@ -219,7 +204,7 @@ static bool add_loaded_model(vec3* position, vec3* scale, vec3* rotation, model_
 	bool set;
 	model_t* model;
 
-	if (!model_new(&model, LOADED_MODEL, position, scale, rotation, model_path)) {
+	if (!model_new(&model, position, scale, rotation, model_path)) {
 		return false;
 	}
 	set = false;

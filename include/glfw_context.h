@@ -19,5 +19,8 @@ void glfw_context_set_cursor_pos_callback(GLFWwindow* window, void (*mouse_callb
 __attribute__((nonnull(1, 2)))
 void glfw_context_set_scroll_callback(GLFWwindow* window, void (*scroll_callback)(struct GLFWwindow*, double, double));
 
+__attribute__((nonnull(1, 2)))
+void glfw_context_set_mouse_click_callback(GLFWwindow* window, void (*mouse_click_callback)(struct GLFWwindow*, int, int, int));
+
 __attribute__((nonnull(1)))
 void glfw_context_update_window(GLFWwindow* window);

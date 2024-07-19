@@ -8,8 +8,6 @@
 #include <glad/glad.h>
 #include <cglm/affine.h>
 #include <cglm/affine-pre.h>
-#include <cglm/cam.h>
-#include <cglm/mat4.h>
 #include <cglm/util.h>
 #include <cglm/types.h>
 #include <c_log.h>
@@ -17,55 +15,17 @@
 #include "model_loader.h"
 #include "shader.h"
 #include "camera.h"
-#include "window.h"
-
-static void draw(void* model) {
-	loaded_model_t* loaded_model;
-	float w_width;
-	float w_height;
-
-	loaded_model = (loaded_model_t*) model;
-
-	glUseProgram(loaded_model->common.shader_program);
-
-	glm_mat4_identity(loaded_model->common.transform.model);
-	glm_mat4_identity(loaded_model->common.transform.proj);
-	glm_mat4_identity(loaded_model->common.transform.view);
-
-	glm_translate(loaded_model->common.transform.model, loaded_model->common.position);
-
-	glm_scale(loaded_model->common.transform.model, loaded_model->common.scale);
-
-	glm_rotate(loaded_model->common.transform.model, glm_rad(loaded_model->common.rotation[0]), (float[]) { 1, 0, 0 });
-	glm_rotate(loaded_model->common.transform.model, glm_rad(loaded_model->common.rotation[1]), (float[]) { 0, 1, 0 });
-	glm_rotate(loaded_model->common.transform.model, glm_rad(loaded_model->common.rotation[2]), (float[]) { 0, 0, 1 });
-
-	camera_set_view(loaded_model->common.transform.view);
-	w_height = (float) window_height();
-	w_width = (float) window_width();
-	glm_perspective(glm_rad(camera_fov()), w_width / w_height, 0.1f, 100.f, loaded_model->common.transform.proj);
-
-	shader_set_mat4(loaded_model->common.shader_program, "model", loaded_model->common.transform.model);
-	shader_set_mat4(loaded_model->common.shader_program, "view", loaded_model->common.transform.view);
-	shader_set_mat4(loaded_model->common.shader_program, "proj", loaded_model->common.transform.proj);
-
-	shader_set_vec3(loaded_model->common.shader_program, "viewPos", (float*) camera_pos());
-	shader_set_uniform_primitive(loaded_model->common.shader_program, "material.shininess", 32.0f);
-
-	for (size_t i = 0; i < loaded_model->model_data.meshes_count; i++) {
-		assert(loaded_model->model_data.meshes[i] != NULL);
-		loaded_model->model_data.meshes[i]->draw(loaded_model->model_data.meshes[i], loaded_model->common.shader_program);
-	}
-}
 
 #define MAX_CACHE_ENTRIES 1024
 
 struct model_cache_entry {
 	loaded_model_t* model;   // value
 	const char* path; // key
+	uint32_t ref_count;
 };
 
 struct model_cache {
+	// TODO: replace with map of struct model_cache_entry
 	struct model_cache_entry models[MAX_CACHE_ENTRIES];
 	size_t len;
 };
@@ -75,6 +35,8 @@ static struct model_cache cache = {
 };
 
 static void share_ref(loaded_model_t** dest, loaded_model_t* ref);
+
+static void draw(void* model);
 
 bool loaded_model_new(loaded_model_t** model, const char* path) {
 	size_t i;
@@ -121,14 +83,11 @@ bool loaded_model_new(loaded_model_t** model, const char* path) {
 					*model = NULL;
 					return false;
 				}
-
-				(*model)->common.type = LOADED_MODEL;
 				(*model)->common.draw = draw;
-				(*model)->model_data._ref_count = malloc(sizeof(uint32_t));
-				*(*model)->model_data._ref_count = 0;
-
 				cache.models[i].model = *model;
 				cache.models[i].path = path;
+				cache.models[i].ref_count = 0;
+				(*model)->model_data._ref_count = &cache.models[i].ref_count;
 				cache.len++;
 				set = true;
 				break;
@@ -140,7 +99,10 @@ bool loaded_model_new(loaded_model_t** model, const char* path) {
 		}
 	}
 
-	if (!shader_create_program("shaders/backpack.vert", "shaders/backpack.frag", &(*model)->common.shader_program)) {
+	if (!shader_create_program("shaders/default.vert", "shaders/default.frag", &(*model)->common.render_shader)) {
+		log_error("Failed to compile model %s render shader program", path);
+	}
+	if (!shader_create_program("shaders/outline.vert", "shaders/outline.frag", &(*model)->common.outline_shader)) {
 		log_error("Failed to compile model %s shader program", path);
 	}
 
@@ -152,13 +114,12 @@ void loaded_model_free(loaded_model_t** model) {
 
 	assert(model != NULL);
 
-	if (!(*model)->model_data._ref_count) {
+	if (*(*model)->model_data._ref_count < 0) {
 		return;
 	}
-	if (*(*model)->model_data._ref_count == 1) {
 
-		free((*model)->model_data._ref_count);
-		(*model)->model_data._ref_count = NULL;
+	if (*(*model)->model_data._ref_count == 0) {
+		*(*model)->model_data._ref_count -= 1;
 
 		for (i = 0; i < (*model)->model_data.meshes_count; i++) {
 			mesh_delete(&(*model)->model_data.meshes[i]);
@@ -183,18 +144,64 @@ void loaded_model_free(loaded_model_t** model) {
 }
 
 static void share_ref(loaded_model_t** dest, loaded_model_t* ref) {
-	struct transform t = TRANSFORM_IDENTITY;
-
-	(*dest)->common.type = ref->common.type;
 	(*dest)->common.draw = ref->common.draw;
 	memcpy((*dest)->common.position, ref->common.position, sizeof(vec3));
 	memcpy((*dest)->common.scale, ref->common.scale, sizeof(vec3));
-	(*dest)->common.transform = t;
 
-	ref->model_data._ref_count += 1;
+	*ref->model_data._ref_count += 1;
 	(*dest)->model_data._ref_count = ref->model_data._ref_count;
 
 	(*dest)->model_data.directory = ref->model_data.directory;
 	(*dest)->model_data.meshes = ref->model_data.meshes;
 	(*dest)->model_data.meshes_count = ref->model_data.meshes_count;
+}
+
+static void draw_model(loaded_model_t* model, uint32_t shader);
+
+static void draw(void* model) {
+	loaded_model_t* loaded_model;
+
+	loaded_model = (loaded_model_t*) model;
+
+	glStencilFunc(GL_ALWAYS, 1, 0xFF);
+	glStencilMask(0xFF);
+	draw_model(loaded_model, loaded_model->common.render_shader);
+
+	if (loaded_model->common.selected) {
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		glStencilMask(0x00);
+		glDisable(GL_DEPTH_TEST);
+		draw_model(loaded_model, loaded_model->common.outline_shader);
+		glStencilMask(0xFF);
+		glStencilFunc(GL_ALWAYS, 0, 0xFF);
+		glEnable(GL_DEPTH_TEST);
+	}
+}
+
+static void draw_model(loaded_model_t* model, uint32_t shader) {
+	struct transform model_transform = TRANSFORM_IDENTITY;
+	glUseProgram(shader);
+
+	glm_translate(model_transform.model, (float*) model->common.position);
+
+	glm_scale(model_transform.model, (float*) model->common.scale);
+
+	glm_rotate(model_transform.model, glm_rad(model->common.rotation[0]), (float[]) { 1, 0, 0 });
+	glm_rotate(model_transform.model, glm_rad(model->common.rotation[1]), (float[]) { 0, 1, 0 });
+	glm_rotate(model_transform.model, glm_rad(model->common.rotation[2]), (float[]) { 0, 0, 1 });
+
+	camera_view(model_transform.view);
+	camera_projection(model_transform.proj);
+
+	shader_set_mat4(shader, "model", model_transform.model);
+	shader_set_mat4(shader, "view", model_transform.view);
+	shader_set_mat4(shader, "proj", model_transform.proj);
+
+	shader_set_vec3(shader, "viewPos", (float*) camera_pos());
+	shader_set_uniform_primitive(shader, "material.shininess", 32.0f);
+
+	for (size_t i = 0; i < model->model_data.meshes_count; i++) {
+		assert(model->model_data.meshes[i] != NULL);
+		model->model_data.meshes[i]->draw(model->model_data.meshes[i], shader);
+	}
 }

@@ -10,7 +10,8 @@
 
 #include "shader.h"
 
-static void bind_shader(void* light, uint32_t shader_program);
+static void load_data_to_shader(void* light, uint32_t shader_program);
+
 
 void point_light_new(light_t** light, void* specific_data) {
 	struct point_light** point_light;
@@ -27,7 +28,7 @@ void point_light_new(light_t** light, void* specific_data) {
 	(*point_light)->specific_data.linear = point_specific->linear;
 	(*point_light)->specific_data.quadratic = point_specific->quadratic;
 	memcpy((*point_light)->specific_data.position, &point_specific->position, sizeof(vec3));
-	(*point_light)->common.bind_shader = bind_shader;
+	(*point_light)->common.load_data_to_shader = load_data_to_shader;
 }
 
 void point_light_free(light_t** light) {
@@ -36,10 +37,10 @@ void point_light_free(light_t** light) {
 	*light = NULL;
 }
 
-static void bind_shader(void* light, uint32_t shader_program) {
-	point_light_t* point_light;
+static void load_data_to_shader(void* light, uint32_t shader_program) {
+	const point_light_t* point_light;
 
-	point_light = (point_light_t*) light;
+	point_light = (const point_light_t*) light;
 
 	glUseProgram(shader_program);
 

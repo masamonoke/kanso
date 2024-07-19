@@ -96,7 +96,7 @@ void shader_set_float(uint32_t shader_program, const char* name, float value) {
 	glUniform1f(glGetUniformLocation(shader_program, name), value);
 }
 
-void shader_set_mat4(uint32_t shader_program, const char* name, mat4 mat) {
+void shader_set_mat4(uint32_t shader_program, const char* name, const mat4 mat) {
 	assert(name != NULL);
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, name), 1, GL_FALSE, mat[0]);
 }
@@ -107,7 +107,7 @@ void shader_set_transform(struct transform t, uint32_t shader_program) {
 	shader_set_mat4(shader_program, "proj", t.proj);
 }
 
-void shader_set_vec3(uint32_t shader_program, const char* name, float vec[3]) {
+void shader_set_vec3(uint32_t shader_program, const char* name, const float vec[3]) {
 	assert(name != NULL);
 	assert(vec != NULL);
 

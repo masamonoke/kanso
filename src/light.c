@@ -56,15 +56,12 @@ void light_free(light_t** light) {
 	switch ((*light)->common.type) {
 		case LIGHT_POINT:
 			point_light_free(light);
-			log_debug("Freed point light");
 			break;
 		case LIGHT_DIRECTIONAL:
 			directional_light_free(light);
-			log_debug("Freed directional light");
 			break;
 		case LIGHT_SPOT:
 			spot_light_free(light);
-			log_debug("Freed spot light");
 			break;
 		default:
 			log_error("Undefined light type");
@@ -172,7 +169,7 @@ static bool get_type(struct json_object* light_jso, struct json_object** jso, co
 		return false;
 	}
 	*ret_type = json_object_get_string(*jso);
-	log_debug("Loading model %s", *ret_type);
+	log_debug("Loading light %s", *ret_type);
 
 	return true;
 }

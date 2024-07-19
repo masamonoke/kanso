@@ -2,139 +2,45 @@
 
 #include <stdlib.h>
 #include <assert.h>
-#include <c_log.h>
 
 #include "model.h"
 #include "light.h"
-
-#define MAX_MODELS_COUNT 1024
-#define MAX_LIGHTS_COUNT 100
-
-struct scene_ctx {
-	size_t light_count;
-	size_t model_count;
-	model_t* models[MAX_MODELS_COUNT];
-	light_t* lights[MAX_LIGHTS_COUNT];
-};
+#include "world.h"
 
 static void draw(scene_t* scene);
 
-void scene_new(scene_t** scene) {
-	size_t i;
-
+void scene_new(scene_t** scene, const world_t* world) {
 	assert(scene != NULL);
 
 	*scene = malloc(sizeof(scene_t));
-	(*scene)->scn_ctx = malloc(sizeof(scene_ctx_t));
 
-	for (i = 0; i < MAX_MODELS_COUNT; i++) {
-		(*scene)->scn_ctx->models[i] = NULL;
-	}
-	(*scene)->scn_ctx->model_count = 0;
-
-	for (i = 0; i < MAX_LIGHTS_COUNT; i++) {
-		(*scene)->scn_ctx->lights[i] = NULL;
-	}
-	(*scene)->scn_ctx->light_count = 0;
+	world_models(world, &(*scene)->models, &(*scene)->model_count);
+	world_lights(world, &(*scene)->lights, &(*scene)->light_count);
 
 	(*scene)->draw = draw;
 }
 
 void scene_free(scene_t** scene) {
-	size_t i;
-	size_t models_count_processed;
-	size_t lights_count_processed;
-
 	assert(scene != NULL);
 
-	for (i = 0, models_count_processed = 0; i < MAX_MODELS_COUNT && models_count_processed != (*scene)->scn_ctx->model_count; i++) {
-		if ((*scene)->scn_ctx->models[i] != NULL) {
-			model_free(&(*scene)->scn_ctx->models[i]);
-			models_count_processed++;
-		}
-	}
-
-	for (i = 0, lights_count_processed = 0; i < MAX_LIGHTS_COUNT && lights_count_processed != (*scene)->scn_ctx->light_count; i++) {
-		if ((*scene)->scn_ctx->lights[i] != NULL) {
-			light_free(&(*scene)->scn_ctx->lights[i]);
-			lights_count_processed++;
-		}
-	}
-
-#ifdef DEBUG
-	assert(models_count_processed == (*scene)->scn_ctx->model_count);
-	assert(lights_count_processed == (*scene)->scn_ctx->light_count);
-
-	for (i = 0; i < MAX_MODELS_COUNT; i++) {
-		assert((*scene)->scn_ctx->models[i] == NULL);
-	}
-
-	for (i = 0; i < MAX_LIGHTS_COUNT; i++) {
-		assert((*scene)->scn_ctx->lights[i] == NULL);
-	}
-#endif
-
-	(*scene)->scn_ctx->model_count = 0;
-	(*scene)->scn_ctx->light_count = 0;
-
-	free((*scene)->scn_ctx);
-	(*scene)->scn_ctx = NULL;
 	free(*scene);
 	*scene = NULL;
 }
 
-bool scene_add_model(scene_t* scene, model_t* model) {
-	size_t i;
-
-	assert(scene != NULL);
-	assert(model != NULL);
-
-	for (i = 0; i < MAX_MODELS_COUNT; i++) {
-		if (scene->scn_ctx->models[i] == NULL) {
-			scene->scn_ctx->models[i] = model;
-			return true;
-		}
-	}
-
-	log_error("Can't add new model to scene");
-
-	return false;
-}
-
-bool scene_load_from_json(scene_t* scene, const char* path) {
-	bool status;
-
-	assert(scene != NULL);
-	assert(path != NULL);
-
-	status = models_from_json(path, scene->scn_ctx->models, &scene->scn_ctx->model_count, MAX_MODELS_COUNT);
-	status = light_from_json(path, scene->scn_ctx->lights, &scene->scn_ctx->light_count, MAX_LIGHTS_COUNT);
-
-	return status;
-}
-
-
 static void draw (scene_t* scene) {
 	size_t i;
 	size_t j;
-	size_t models_count;
-	size_t lights_count;
 
-	for (i = 0, models_count = 0; i < MAX_MODELS_COUNT; i++) {
-		if (scene->scn_ctx->models[i] != NULL) {
+	for (i = 0; i < scene->model_count; i++) {
+		if (scene->models[i] != NULL) {
 
-			for (j = 0, lights_count = 0; j < MAX_LIGHTS_COUNT && lights_count < scene->scn_ctx->light_count; j++) {
-				if (scene->scn_ctx->lights[j] != NULL) {
-					scene->scn_ctx->lights[j]->common.bind_shader(scene->scn_ctx->lights[j], scene->scn_ctx->models[i]->common.shader_program);
-					lights_count++;
+			for (j = 0; j < scene->light_count; j++) {
+				if (scene->lights[j] != NULL) {
+					scene->lights[j]->common.load_data_to_shader(scene->lights[j], scene->models[i]->common.render_shader);
 				}
 			}
 
-			scene->scn_ctx->models[i]->common.draw(scene->scn_ctx->models[i]);
-			models_count++;
-			if (models_count == scene->scn_ctx->model_count) {
-				break;
-			}
+			scene->models[i]->common.draw(scene->models[i]);
 		}
 	}
 }

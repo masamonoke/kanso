@@ -11,7 +11,7 @@
 #include "shader.h"
 #include "camera.h"
 
-static void bind_shader(void* light, uint32_t shader_program);
+static void load_data_to_shader(void* light, uint32_t shader_program);
 
 void spot_light_new(light_t** light, void* specific_data) {
 	struct spot_light** spot_light;
@@ -32,7 +32,7 @@ void spot_light_new(light_t** light, void* specific_data) {
 
 	memcpy((*spot_light)->specific_data.position, spot_specific->position, sizeof(vec3));
 	memcpy((*spot_light)->specific_data.direction, spot_specific->direction, sizeof(vec3));
-	(*spot_light)->common.bind_shader = bind_shader;
+	(*spot_light)->common.load_data_to_shader = load_data_to_shader;
 }
 
 void spot_light_free(light_t** light) {
@@ -41,7 +41,7 @@ void spot_light_free(light_t** light) {
 	*light = NULL;
 }
 
-static void bind_shader(void* light, uint32_t shader_program) {
+static void load_data_to_shader(void* light, uint32_t shader_program) {
 	spot_light_t* spot_light;
 
 	spot_light = (spot_light_t*) light;

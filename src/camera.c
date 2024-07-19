@@ -2,18 +2,21 @@
 
 #include <string.h>
 #include <assert.h>
+#include <math.h>
+#include <stdbool.h>
 
 #include <cglm/cam.h>
 #include <cglm/types.h>
 #include <cglm/vec3.h>
+#include "cglm/util.h"
+
+#include "window.h"
 
 #define CAMERA_INIT { .pos = { 0.0f, 0.0f, 4.0f }, .front = { 0.0f, 0.0f, -1.0f }, .up = { 0.0f, 1.0f, 0.0f }, .fov = MIN_FOV }
+#define FRUSTURM_NEAR 0.1f
+#define FRUSTURM_FAR 100.0f
 
 static struct camera camera = CAMERA_INIT;
-
-// window implementation specific functions
-extern void camera_mouse_callback(window_t* window, double xpos_d, double ypos_d);
-extern void camera_change_fov_callback(window_t* window, double xoffset, double yoffset);
 
 void camera_move_front(float camera_speed) {
 	vec3 tmp;
@@ -93,7 +96,7 @@ const float* camera_front(void) {
 	return camera.front;
 }
 
-void camera_set_view(mat4 view) {
+void camera_view(mat4 view) {
 	vec3 direction;
 
 	assert(view != NULL);
@@ -117,4 +120,54 @@ void camera_set_fov(float fov) {
 void camera_set_front(float* front) {
 	assert(front != NULL);
 	memcpy(camera.front, front, sizeof(float) * 3);
+}
+
+void camera_change_fov(float offset) {
+	camera.fov -= offset;
+	camera.fov = glm_clamp(camera.fov, MIN_FOV, MAX_FOV);
+}
+
+void camera_change_view(float x, float y) { // NOLINT(*bugprone-easily-swappable-parameters)
+	float xoffset;
+	float yoffset;
+	vec3 front;
+	const float SENSITIVITY = 0.1f;
+	static bool first_time = true;
+	static float last_x;
+	static float last_y;
+	static float yaw = -90.0f;
+	static float pitch = 0.0f;
+
+	if (first_time) {
+		last_x = x;
+		last_y = y;
+		first_time = false;
+	}
+
+	xoffset = (x - last_x) * SENSITIVITY;
+	yoffset = (last_y - y) * SENSITIVITY; // y coord goes from bottom to top
+
+	last_x = x;
+	last_y = y;
+
+	yaw += xoffset;
+	pitch += yoffset;
+
+	if (pitch > 89.0f) {
+		pitch = 89.0f;
+	}
+	if (pitch < -89.0f) {
+		pitch = -89.0f;
+	}
+
+	front[0] = cosf(glm_rad(yaw)) * cosf(glm_rad(pitch)); // x
+	front[1] = sinf(glm_rad(pitch));					  // y
+	front[2] = sinf(glm_rad(yaw)) * cosf(glm_rad(pitch)); // z
+
+	glm_normalize(front);
+	camera_set_front(front);
+}
+
+void camera_projection(mat4 projection) {
+	glm_perspective(glm_rad(camera_fov()), (float) window_width() / (float) window_height(), FRUSTURM_NEAR, FRUSTURM_FAR, projection);
 }
