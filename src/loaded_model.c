@@ -8,7 +8,6 @@
 #include <glad/glad.h>
 #include <cglm/affine.h>
 #include <cglm/affine-pre.h>
-#include <cglm/mat4.h>
 #include <cglm/util.h>
 #include <cglm/types.h>
 #include <c_log.h>
@@ -17,34 +16,16 @@
 #include "shader.h"
 #include "camera.h"
 
-static void draw_model(loaded_model_t* model, uint32_t shader);
-
-static void draw(void* model) {
-	loaded_model_t* loaded_model;
-
-	loaded_model = (loaded_model_t*) model;
-
-	glStencilFunc(GL_ALWAYS, 1, 0xFF);
-	glStencilMask(0xFF);
-	draw_model(loaded_model, loaded_model->common.render_shader);
-
-	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-	glStencilMask(0x00);
-	glDisable(GL_DEPTH_TEST);
-	draw_model(loaded_model, loaded_model->common.outline_shader);
-	glStencilMask(0xFF);
-	glStencilFunc(GL_ALWAYS, 0, 0xFF);
-	glEnable(GL_DEPTH_TEST);
-}
-
 #define MAX_CACHE_ENTRIES 1024
 
 struct model_cache_entry {
 	loaded_model_t* model;   // value
 	const char* path; // key
+	uint32_t ref_count;
 };
 
 struct model_cache {
+	// TODO: replace with map of struct model_cache_entry
 	struct model_cache_entry models[MAX_CACHE_ENTRIES];
 	size_t len;
 };
@@ -54,6 +35,8 @@ static struct model_cache cache = {
 };
 
 static void share_ref(loaded_model_t** dest, loaded_model_t* ref);
+
+static void draw(void* model);
 
 bool loaded_model_new(loaded_model_t** model, const char* path) {
 	size_t i;
@@ -100,14 +83,11 @@ bool loaded_model_new(loaded_model_t** model, const char* path) {
 					*model = NULL;
 					return false;
 				}
-
-				(*model)->common.type = LOADED_MODEL;
 				(*model)->common.draw = draw;
-				(*model)->model_data._ref_count = malloc(sizeof(uint32_t));
-				*(*model)->model_data._ref_count = 0;
-
 				cache.models[i].model = *model;
 				cache.models[i].path = path;
+				cache.models[i].ref_count = 0;
+				(*model)->model_data._ref_count = &cache.models[i].ref_count;
 				cache.len++;
 				set = true;
 				break;
@@ -134,13 +114,12 @@ void loaded_model_free(loaded_model_t** model) {
 
 	assert(model != NULL);
 
-	if (!(*model)->model_data._ref_count) {
+	if (*(*model)->model_data._ref_count < 0) {
 		return;
 	}
-	if (*(*model)->model_data._ref_count == 1) {
 
-		free((*model)->model_data._ref_count);
-		(*model)->model_data._ref_count = NULL;
+	if (*(*model)->model_data._ref_count == 0) {
+		*(*model)->model_data._ref_count -= 1;
 
 		for (i = 0; i < (*model)->model_data.meshes_count; i++) {
 			mesh_delete(&(*model)->model_data.meshes[i]);
@@ -165,15 +144,11 @@ void loaded_model_free(loaded_model_t** model) {
 }
 
 static void share_ref(loaded_model_t** dest, loaded_model_t* ref) {
-	struct transform t = TRANSFORM_IDENTITY;
-
-	(*dest)->common.type = ref->common.type;
 	(*dest)->common.draw = ref->common.draw;
 	memcpy((*dest)->common.position, ref->common.position, sizeof(vec3));
 	memcpy((*dest)->common.scale, ref->common.scale, sizeof(vec3));
-	(*dest)->common.transform = t;
 
-	ref->model_data._ref_count += 1;
+	*ref->model_data._ref_count += 1;
 	(*dest)->model_data._ref_count = ref->model_data._ref_count;
 
 	(*dest)->model_data.directory = ref->model_data.directory;
@@ -181,27 +156,46 @@ static void share_ref(loaded_model_t** dest, loaded_model_t* ref) {
 	(*dest)->model_data.meshes_count = ref->model_data.meshes_count;
 }
 
+static void draw_model(loaded_model_t* model, uint32_t shader);
+
+static void draw(void* model) {
+	loaded_model_t* loaded_model;
+
+	loaded_model = (loaded_model_t*) model;
+
+	glStencilFunc(GL_ALWAYS, 1, 0xFF);
+	glStencilMask(0xFF);
+	draw_model(loaded_model, loaded_model->common.render_shader);
+
+	if (loaded_model->common.selected) {
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		glStencilMask(0x00);
+		glDisable(GL_DEPTH_TEST);
+		draw_model(loaded_model, loaded_model->common.outline_shader);
+		glStencilMask(0xFF);
+		glStencilFunc(GL_ALWAYS, 0, 0xFF);
+		glEnable(GL_DEPTH_TEST);
+	}
+}
+
 static void draw_model(loaded_model_t* model, uint32_t shader) {
+	struct transform model_transform = TRANSFORM_IDENTITY;
 	glUseProgram(shader);
 
-	glm_mat4_identity(model->common.transform.model);
-	glm_mat4_identity(model->common.transform.proj);
-	glm_mat4_identity(model->common.transform.view);
+	glm_translate(model_transform.model, (float*) model->common.position);
 
-	glm_translate(model->common.transform.model, model->common.position);
+	glm_scale(model_transform.model, (float*) model->common.scale);
 
-	glm_scale(model->common.transform.model, model->common.scale);
+	glm_rotate(model_transform.model, glm_rad(model->common.rotation[0]), (float[]) { 1, 0, 0 });
+	glm_rotate(model_transform.model, glm_rad(model->common.rotation[1]), (float[]) { 0, 1, 0 });
+	glm_rotate(model_transform.model, glm_rad(model->common.rotation[2]), (float[]) { 0, 0, 1 });
 
-	glm_rotate(model->common.transform.model, glm_rad(model->common.rotation[0]), (float[]) { 1, 0, 0 });
-	glm_rotate(model->common.transform.model, glm_rad(model->common.rotation[1]), (float[]) { 0, 1, 0 });
-	glm_rotate(model->common.transform.model, glm_rad(model->common.rotation[2]), (float[]) { 0, 0, 1 });
+	camera_view(model_transform.view);
+	camera_projection(model_transform.proj);
 
-	camera_view(model->common.transform.view);
-	camera_projection(model->common.transform.proj);
-
-	shader_set_mat4(shader, "model", model->common.transform.model);
-	shader_set_mat4(shader, "view", model->common.transform.view);
-	shader_set_mat4(shader, "proj", model->common.transform.proj);
+	shader_set_mat4(shader, "model", model_transform.model);
+	shader_set_mat4(shader, "view", model_transform.view);
+	shader_set_mat4(shader, "proj", model_transform.proj);
 
 	shader_set_vec3(shader, "viewPos", (float*) camera_pos());
 	shader_set_uniform_primitive(shader, "material.shininess", 32.0f);

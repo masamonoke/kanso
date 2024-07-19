@@ -4,11 +4,13 @@
 
 #include "scene.h"
 #include "window.h"
+#include "world.h"
 
 typedef struct app_state app_state_t;
 
 struct app_state {
 	window_t* window;
+	world_t* world;
 	scene_t* scene;
 	bool close;
 	void (*update) (app_state_t* state);

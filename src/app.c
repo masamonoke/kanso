@@ -8,6 +8,9 @@
 
 #include "keys.h"
 #include "control.h"
+#include "world.h"
+
+#define DEFAULT_SCENE_PATH "scene/default_scene.json"
 
 static void input(app_state_t* state);
 
@@ -16,10 +19,6 @@ static void clear(void);
 static void draw(app_state_t* ctx);
 
 static void update(app_state_t* ctx);
-
-static bool default_scene(scene_t* scene);
-
-static bool custom_scene(scene_t* scene, const char* scene_path);
 
 bool app_new(app_state_t** ctx, const char* scene_path) {
 	assert(ctx != NULL);
@@ -31,31 +30,22 @@ bool app_new(app_state_t** ctx, const char* scene_path) {
 		return false;
 	}
 
-	scene_new(&(*ctx)->scene);
-
-	if (scene_path) {
-		log_info("Loading scene %s", scene_path);
-		if (!custom_scene((*ctx)->scene, scene_path)) {
-			log_error("Failed to initialize scene %s. Shutting down", scene_path);
-			app_free(ctx);
-			return false;
-		}
-	} else {
-		log_info("Loading default scene");
-		if (!default_scene((*ctx)->scene)) {
-			log_error("Failed to initialize default scene. Shutting down");
-			app_free(ctx);
-			return false;
-		}
+	if (!scene_path) {
+		scene_path = DEFAULT_SCENE_PATH;
 	}
+
+	if (!world_new(scene_path, &(*ctx)->world)) {
+		log_error("Failed to initialize scene %s. Shutting down", scene_path);
+		app_free(ctx);
+		return false;
+	}
+
+	scene_new(&(*ctx)->scene, (*ctx)->world);
 
 	(*ctx)->update = update;
 	(*ctx)->input = input;
 
-	control_init((*ctx)->window);
-
-	/* window_set_capture_cursor((*ctx)->window); */
-	/* log_debug("Set window cursor mode to capture"); */
+	control_init((*ctx)->window, (*ctx)->world);
 
 	(*ctx)->close = false;
 
@@ -66,6 +56,7 @@ void app_free(app_state_t** ctx) {
 	assert(ctx != NULL);
 
 	window_free(&(*ctx)->window);
+	world_free(&(*ctx)->world);
 	scene_free(&(*ctx)->scene);
 	free(*ctx);
 	*ctx = NULL;
@@ -86,20 +77,12 @@ static void clear(void) {
 }
 
 static void draw(app_state_t* ctx) {
+	clear();
 	control_update(ctx->window);
 	ctx->scene->draw(ctx->scene);
 	window_update(ctx->window);
 }
 
 static void update(app_state_t* ctx) {
-	clear();
 	draw(ctx);
-}
-
-static bool custom_scene(scene_t* scene, const char* scene_path) {
-	return scene_load_from_json(scene, scene_path);
-}
-
-static bool default_scene(scene_t* scene) {
-	return scene_load_from_json(scene, "scene/default_scene.json");
 }

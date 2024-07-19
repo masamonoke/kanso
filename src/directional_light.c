@@ -35,9 +35,9 @@ void directional_light_free(light_t** light) {
 
 
 static void load_data_to_shader(void* light, uint32_t shader_program) {
-	dir_light_t* dir_light;
+	const dir_light_t* dir_light;
 
-	dir_light = (dir_light_t*) light;
+	dir_light = (const dir_light_t*) light;
 
 	glUseProgram(shader_program);
 

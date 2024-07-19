@@ -13,7 +13,9 @@ void window_free(window_t** window);
 __attribute__((warn_unused_result))
 float window_context_time(void);
 
-void window_set_capture_cursor(window_t* window);
+void window_hide_cursor(window_t* window);
+
+void window_reset_cursor(window_t* window);
 
 void window_set_cursor(window_t* window, void (*mouse_callback)(window_t*, double, double));
 

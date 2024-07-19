@@ -1,24 +1,22 @@
 #pragma once
 
-#include <stdbool.h>
+#include <stddef.h>
 
 #include "model.h"
-
-typedef struct scene_ctx scene_ctx_t;
+#include "light.h"
+#include "world.h"
 
 typedef struct scene {
-	scene_ctx_t* scn_ctx;
+	size_t light_count;
+	size_t model_count;
+	size_t line_count;
+	model_t** models;
+	light_t** lights;
 	void (*draw) (struct scene*);
 } scene_t;
 
 __attribute__((nonnull(1)))
-void scene_new(scene_t** scene);
+void scene_new(scene_t** scene, const world_t* world);
 
 __attribute__((nonnull(1)))
 void scene_free(scene_t** scene);
-
-__attribute__((nonnull(1, 2), warn_unused_result))
-bool scene_add_model(scene_t* scene, model_t* model);
-
-__attribute__((nonnull(1, 2), warn_unused_result))
-bool scene_load_from_json(scene_t* scene, const char* path);

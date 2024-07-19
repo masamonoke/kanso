@@ -124,7 +124,6 @@ L_RETURN:
 	return status;
 }
 
-#include <stdlib.h>
 void window_free(window_t** window) {
 	glfwDestroyWindow((GLFWwindow*) *window);
 	glfwTerminate();
@@ -135,9 +134,14 @@ float window_context_time(void) {
 	return (float) glfwGetTime();
 }
 
-void window_set_capture_cursor(window_t* window) {
+void window_hide_cursor(window_t* window) {
 	assert(window != NULL);
-	glfwSetInputMode((GLFWwindow*) window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode((GLFWwindow*) window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+}
+
+void window_reset_cursor(window_t* window) {
+	assert(window != NULL);
+	glfwSetInputMode((GLFWwindow*) window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
 void window_set_cursor(window_t* window, void (*mouse_callback)(window_t*, double, double)) {

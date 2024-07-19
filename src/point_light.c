@@ -12,6 +12,7 @@
 
 static void load_data_to_shader(void* light, uint32_t shader_program);
 
+
 void point_light_new(light_t** light, void* specific_data) {
 	struct point_light** point_light;
 	struct point_light_specific* point_specific;
@@ -37,9 +38,9 @@ void point_light_free(light_t** light) {
 }
 
 static void load_data_to_shader(void* light, uint32_t shader_program) {
-	point_light_t* point_light;
+	const point_light_t* point_light;
 
-	point_light = (point_light_t*) light;
+	point_light = (const point_light_t*) light;
 
 	glUseProgram(shader_program);
 
