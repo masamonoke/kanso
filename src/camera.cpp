@@ -5,81 +5,57 @@
 
 namespace kanso {
 
-	constexpr glm::vec3 front(float scalar) {
-		return { 0.0f, 0.0f, -1.f * scalar };
-	}
-
-	constexpr glm::vec3 up(float scalar) {
-		return { 0.0f, 1.0f * scalar, 0.0f };
-	}
-
-	constexpr glm::vec3 front() {
-		return front(1);
-	}
-
-	constexpr glm::vec3 up() {
-		return up(1);
-	}
-
 	constexpr float MIN_FOV = 90.0f;
 	constexpr float MAX_FOV = 150.0f;
 
 	camera::camera(const glm::vec3& pos, float fov, float near, float far)
 	    : pos_(pos),
-	      front_(front()),
-	      up_(up()),
+	      front_(0.0f, 0.0f, -1.f),
+	      up_(0.0f, 1.0f, 0.0f),
 	      fov_(fov),
 	      far_(far),
 	      near_(near) {}
 
 	void camera::move_front(float speed) {
-		auto inc = front(speed);
-		pos_ += inc;
+		pos_ += front_ * speed;
 	}
 
 	void camera::move_back(float speed) {
-		auto inc = front(speed);
-		pos_ -= inc;
+		pos_ -= front_ * speed;
 	}
 
 	glm::vec3 camera::front_up_cross() {
-		static auto cross = glm::normalize(glm::cross(front_, up_));
+		static auto cross = glm::cross(front_, up_);
 		return cross;
 	}
 
 	void camera::move_left(float speed) {
-		auto cross = front_up_cross() * speed;
-		pos_ -= cross;
+		pos_ -= glm::cross(front_, up_) * speed;
 	}
 
 	void camera::move_right(float speed) {
-		auto cross = front_up_cross() * speed;
-		pos_ += cross;
+		pos_ += glm::cross(front_, up_) * speed;
 	}
 
 	void camera::move_up(float speed) {
-		auto inc = up(speed);
-		pos_ += inc;
+		pos_ += up_ * speed;
 	}
 
 	void camera::move_down(float speed) {
-		auto inc = up(speed);
-		pos_ -= inc;
+		pos_ -= up_ * speed;
 	}
 
 	void camera::update_view(float x, float y) {
-		float       xoffset{};
-		float       yoffset{};
 		const float SENSITIVITY = 0.1f;
 
 		if (update_first_time_) {
-			update_last_x_     = x;
-			update_last_y_     = y;
+			update_last_x_ = x;
+			update_last_y_ = y;
 			update_first_time_ = false;
 		}
 
-		xoffset = (x - update_last_x_) * SENSITIVITY;
-		yoffset = (update_last_y_ - y) * SENSITIVITY; // y coord goes from bottom to top
+		auto xoffset = (x - update_last_x_) * SENSITIVITY;
+		auto yoffset = (update_last_y_ - y) * SENSITIVITY; // y coord goes from bottom to top
 
 		update_last_x_ = x;
 		update_last_y_ = y;
@@ -94,9 +70,9 @@ namespace kanso {
 			update_pitch_ = -89.0f;
 		}
 
-		auto front_x = std::cos(glm::radians(update_yaw_) * std::cos(glm::radians(update_pitch_)));
-		auto front_y = std::sin(glm::radians(update_pitch_));
-		auto front_z = std::sin(glm::radians(update_yaw_)) * std::cos(glm::radians(update_pitch_));
+		const auto front_x = std::cos(glm::radians(update_yaw_)) * std::cos(glm::radians(update_pitch_));
+		const auto front_y = std::sin(glm::radians(update_pitch_));
+		const auto front_z = std::sin(glm::radians(update_yaw_)) * std::cos(glm::radians(update_pitch_));
 
 		const glm::vec3 front{ front_x, front_y, front_z };
 		front_ = glm::normalize(front);

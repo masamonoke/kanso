@@ -54,8 +54,7 @@ namespace kanso {
 
 		glfwMakeContextCurrent(window_);
 
-		if (0 == gladLoadGLLoader(reinterpret_cast<GLADloadproc>(
-		             glfwGetProcAddress))) { // NOLINT cppcoreguidelines-pro-type-reinterpret-cast
+		if (0 == gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) { // NOLINT cppcoreguidelines-pro-type-reinterpret-cast
 			glfwTerminate();
 			throw std::runtime_error("Failed to initialize GLAD");
 		}
