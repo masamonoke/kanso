@@ -1,73 +1,92 @@
 {
-	"models": [
-		{
-			"model_type": "LOADED_MODEL",
-			"path": "assets/table/OfficeTable.fbx",
-			"position": [ 0.0, 3.0, 2.0 ],
-			"rotation": [ 90, 20, 30 ]
-		},
-		{
-			"model_type": "LOADED_MODEL",
-			"path": "assets/table/OfficeTable.fbx",
-			"position": [ 0.0, 0.0, 3.0 ],
-			"rotation": [ -90, 0, 0]
-		},
-		{
-			"model_type": "LOADED_MODEL",
-			"path": "assets/royal_chair/CadeiraMadeiraFASE1.fbx",
-			"position": [ 2.0, -0.3, 2.0 ],
-			"scale": [ 0.5, 0.5, 0.5 ],
-			"rotation": [ -180, -100, 0 ]
-		},
-		{
-			"model_type": "LOADED_MODEL",
-			"path": "assets/royal_chair/CadeiraMadeiraFASE1.fbx",
-			"position": [ -2.0, -0.3, 2.0 ],
-			"scale": [ 0.5, 0.5, 0.5 ],
-			"rotation": [ -180, 100, 0 ]
-		},
-		{
-			"model_type": "LOADED_MODEL",
-			"path": "assets/royal_chair/CadeiraMadeiraFASE1.fbx",
-			"position": [ 0.0, -0.3, 0.0 ],
-			"scale": [ 0.5, 0.5, 0.5 ],
-			"rotation": [ -180, -180, 0 ]
-		},
-		{
-			"model_type": "LOADED_MODEL",
-			"path": "assets/sphere/sphere.obj",
-			"position": [ 0.0, 5.0, 2.0 ],
-			"rotation": [ 90, 20, 30 ]
-		}
-	],
-	"lights": [
-		{
-			"light_type": "DIRECTIONAL_LIGHT",
-			"ambient": [ 0.5, 0.5, 0.5 ],
-			"diffuse": [ 0.4, 0.4, 0.4 ],
-			"specular": [ 0.5, 0.5, 0.5 ],
-			"direction": [ -0.2, -1.0, -0.3 ]
-		},
-		{
-			"light_type": "SPOT_LIGHT",
-			"ambient": [ 0.0, 0.0, 0.0 ],
-			"diffuse": [ 1.0, 1.0, 1.0 ],
-			"specular": [ 1.0, 1.0, 1.0 ],
-			"constant": 1.0,
-			"linear": 0.09,
-			"quadratic": 0.000032,
-			"inner_cut_off_angle": 12.5,
-			"outer_cut_off_angle": 15.0
-		},
-		{
-			"light_type": "POINT_LIGHT",
-			"ambient": [ 0.05, 0.05, 0.05 ],
-			"diffuse": [ 0.8, 0.8, 0.8 ],
-			"specular": [ 1.0, 1.0, 1.0 ],
-			"constant": 1.0,
-			"linear": 0.09,
-			"quadratic": 0.032,
-			"position": [ 0.7, 0.2, 2.0 ]
-		}
-	]
+	"camera": {
+		"type": "camera",
+		"position": [0.0, 1.0, 7.0],
+		"fov": 90.0,
+		"near": 0.1,
+		"far": 100.0
+	},
+	"models": {
+		"type": "model",
+		"values": [
+			{
+				"model_type": "LOADED_MODEL",
+				"path": "assets/table/OfficeTable.fbx",
+				"position": [ 0.0, 3.0, 2.0 ],
+				"rotation": [ 90, 20, 30 ],
+				"render_shader": "default",
+				"outline_shader": "outline"
+			},
+			{
+				"model_type": "LOADED_MODEL",
+				"path": "assets/table/OfficeTable.fbx",
+				"position": [ 0.0, 0.0, 3.0 ],
+				"rotation": [ -90, 0, 0],
+				"render_shader": "default",
+				"outline_shader": "outline"
+			},
+			{
+				"model_type": "LOADED_MODEL",
+				"path": "assets/royal_chair/CadeiraMadeiraFASE1.fbx",
+				"position": [ 2.0, -0.3, 2.0 ],
+				"scale": [ 0.5, 0.5, 0.5 ],
+				"rotation": [ -180, -100, 0 ],
+				"render_shader": "default",
+				"outline_shader": "outline"
+			},
+			{
+				"model_type": "LOADED_MODEL",
+				"path": "assets/royal_chair/CadeiraMadeiraFASE1.fbx",
+				"position": [ -2.0, -0.3, 2.0 ],
+				"scale": [ 0.5, 0.5, 0.5 ],
+				"rotation": [ -180, 100, 0 ],
+				"render_shader": "default",
+				"outline_shader": "outline"
+			},
+			{
+				"model_type": "LOADED_MODEL",
+				"path": "assets/royal_chair/CadeiraMadeiraFASE1.fbx",
+				"position": [ 0.0, -0.3, 0.0 ],
+				"scale": [ 0.5, 0.5, 0.5 ],
+				"rotation": [ -180, -180, 0 ],
+				"render_shader": "default",
+				"outline_shader": "outline"
+			}
+		]
+	},
+	"lights": {
+		"type": "light",
+		"values": [
+			{
+				"light_type": "DIRECTIONAL_LIGHT",
+				"ambient": [ 0.5, 0.5, 0.5 ],
+				"diffuse": [ 0.4, 0.4, 0.4 ],
+				"specular": [ 0.5, 0.5, 0.5 ],
+				"direction": [ -0.2, -1.0, -0.3 ]
+			},
+			{
+				"light_type": "SPOT_LIGHT",
+				"ambient": [ 0.0, 0.0, 0.0 ],
+				"diffuse": [ 1.0, 1.0, 1.0 ],
+				"specular": [ 1.0, 1.0, 1.0 ],
+				"constant": 1.0,
+				"linear": 0.09,
+				"quadratic": 0.000032,
+				"inner_cut_off_angle": 12.5,
+				"outer_cut_off_angle": 15.0,
+				"position": [0.0, 0.0, -4.0],
+				"direction": [ 1.0, 1.0, 1.0 ]
+			},
+			{
+				"light_type": "POINT_LIGHT",
+				"ambient": [ 0.05, 0.005, 0.05 ],
+				"diffuse": [ 0.8, 0.8, 0.8 ],
+				"specular": [ 1.0, 1.0, 1.0 ],
+				"constant": 1.0,
+				"linear": 0.09,
+				"quadratic": 0.032,
+				"position": [ 0.7, 0.2, 2.0 ]
+			}
+		]
+	}
 }
