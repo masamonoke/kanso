@@ -1,223 +1,132 @@
-#include <stdlib.h>              // for malloc, free
-#include <cassert>               // for assert
-#include <cstring>               // for size_t, strcpy, memcpy, strcmp, strlen
-#include <string>                // for basic_string, allocator, char_traits
-#include <vector>                // for vector
+#include "model.hpp"
+#include "thread_pool.hpp"
+#include "shader.hpp"
 
-#include "assimp/material.h"     // for aiTextureType, aiMaterial
-#include "assimp/material.inl"   // for aiMaterial::GetTexture, aiMaterial::...
-#include "assimp/mesh.h"         // for aiMesh, aiFace
-#include "assimp/types.h"        // for aiString
-#include <assimp/Importer.hpp>   // for Importer
-#include <assimp/postprocess.h>  // for aiPostProcessSteps
-#include <assimp/scene.h>        // for aiScene, aiNode, AI_SCENE_FLAGS_INCO...
+#include "glad/glad.h"
+#include <glm/gtc/matrix_transform.hpp>
+#include <assimp/material.h>
+#include <assimp/material.inl>
+#include <assimp/mesh.h>
+#include <assimp/types.h>
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include <spdlog/spdlog.h>
 
-#ifdef __cplusplus
-extern "C" {
-#include "model.h"
-#include "texture.h"             // for texture_t, texture_create_gl_texture
-#include "shader.h"
+#include <stack>
+#include <map>
 
-#include <log.h>                 // for log_error, log_info
-#ifdef __cplusplus
-}
-#endif
-#endif
+namespace kanso {
 
-namespace {
+	namespace {
 
-	std::vector<texture_t> load_material_textures(model_t* model, aiMaterial* mat, aiTextureType ai_type, const std::string& type_name,
-		std::vector<texture_t>& loaded_textures)
-	{
-		std::vector<texture_t> textures;
+		struct tex_data {
+				uint8_t*    bytes;
+				int32_t     width;
+				int32_t     height;
+				int32_t     nr_channels;
+				std::string path;
+				std::string type;
+		};
 
-		for (uint32_t i = 0; i < mat->GetTextureCount(ai_type); i++) {
-			aiString filename;
-			mat->GetTexture(ai_type, i, &filename);
+		void collect_ai_meshes_data(aiNode* root_node, const aiScene* scene, std::vector<aiMesh*>& meshes) {
+			if (root_node == nullptr || scene == nullptr) {
+				return;
+			}
 
+			std::stack<aiNode*> node_stack;
+			node_stack.push(root_node);
 
-			auto skip = false;
-			for (const auto& tex : loaded_textures) {
-				if (0 == std::strcmp(tex.path, filename.C_Str())) {
-					textures.push_back(tex);
-					skip = true;
-					break;
+			while (!node_stack.empty()) {
+				aiNode* current_node = node_stack.top();
+				node_stack.pop();
+
+				for (size_t i = 0; i < current_node->mNumMeshes; i++) {
+					aiMesh* mesh =
+					    scene->mMeshes[current_node
+					                       ->mMeshes[i]]; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+					meshes.push_back(mesh);
+				}
+
+				for (size_t i = 0; i < current_node->mNumChildren; i++) {
+					node_stack.push(
+					    current_node->mChildren[i]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 				}
 			}
-
-			if (!skip) {
-				auto str = std::string(model->directory) + '/' + std::string(filename.C_Str());
-				texture_t t;
-				auto tex_id = texture_create_gl_texture(str.c_str());
-				if (tex_id >= 0) {
-					t.id = static_cast<uint32_t>(tex_id);
-				} else {
-					log_error("Failed to create texture");
-					continue;
-				}
-				t.type = static_cast<char*>(malloc((sizeof(char) * type_name.length()) + 1));
-				std::strcpy(t.type, type_name.c_str());
-				t.path = static_cast<char*>(malloc(sizeof(char) * strlen(str.c_str()) + 1));
-				std::strcpy(t.path, str.c_str());
-				textures.push_back(t);
-				loaded_textures.push_back(t);
-			}
 		}
+	} // anonymous namespace
 
-		return textures;
+	model_data::model_data(std::string path) : model_name_(std::move(path)) {
+		load();
 	}
 
-	mesh_t* process_mesh(model_t* model, aiMesh* mesh, const aiScene* scene) {
-		std::vector<vertex_t> vertices;
-		std::vector<int32_t> indices;
-		std::vector<texture_t> textures;
-		std::vector<texture_t> loaded_textures;
-
-		for (size_t i = 0; i < mesh->mNumVertices; i++) {
-			vertex_t vertex;
-
-			vertex.pos[0] = mesh->mVertices[i].x;
-			vertex.pos[1] = mesh->mVertices[i].y;
-			vertex.pos[2] = mesh->mVertices[i].z;
-
-			if (mesh->HasNormals()) {
-				vertex.normal[0] = mesh->mNormals[i].x;
-				vertex.normal[1] = mesh->mNormals[i].y;
-				vertex.normal[2] = mesh->mNormals[i].z;
-			}
-
-			if (mesh->mTextureCoords[0]) {
-				vertex.tex_coords[0] = mesh->mTextureCoords[0][i].x;
-				vertex.tex_coords[1] = mesh->mTextureCoords[0][i].y;
-			} else {
-				vertex.tex_coords[0] = 0.0f;
-				vertex.tex_coords[1] = 0.0f;
-			}
-
-			vertices.push_back(vertex);
-		}
-
-		for (size_t i = 0; i < mesh->mNumFaces; i++) {
-			auto face = mesh->mFaces[i];
-			for (size_t j = 0; j < face.mNumIndices; j++) {
-				indices.push_back(static_cast<int32_t>(face.mIndices[j]));
-			}
-		}
-
-		if (mesh->mMaterialIndex >= 0) {
-			auto material = scene->mMaterials[mesh->mMaterialIndex];
-			auto diffuse_map = load_material_textures(model, material, aiTextureType_DIFFUSE, "texture_diffuse", loaded_textures);
-			textures.insert(textures.end(), diffuse_map.begin(), diffuse_map.end());
-			auto specular_maps = load_material_textures(model, material, aiTextureType_SPECULAR, "texture_specular", loaded_textures);
-			textures.insert(textures.end(), specular_maps.begin(), specular_maps.end());
-			auto normal_maps = load_material_textures(model, material, aiTextureType_NORMALS, "texture_normal", loaded_textures);
-			textures.insert(textures.end(), normal_maps.begin(), normal_maps.end());
-			auto height_maps = load_material_textures(model, material, aiTextureType_HEIGHT, "texture_height", loaded_textures);
-			textures.insert(textures.end(), height_maps.begin(), height_maps.end());
-		}
-
-		vertex_vector_t vertices_v;
-		vertices_v.vertices = static_cast<vertex_t*>(malloc(sizeof(vertex_t) * vertices.size()));
-		memcpy(vertices_v.vertices, vertices.data(), sizeof(vertex_t) * vertices.size());
-		vertices_v.size = vertices.size();
-
-		int32_vector_t indices_v;
-		indices_v.array= static_cast<int32_t*>(malloc(sizeof(int32_t) * indices.size()));
-		memcpy(indices_v.array, indices.data(), sizeof(int32_t) * indices.size());
-		indices_v.size = indices.size();
-
-		texture_vector_t textures_v;
-		textures_v.textures = static_cast<texture_t*>(malloc(sizeof(texture_t) * textures.size()));
-		memcpy(textures_v.textures, textures.data(), sizeof(texture_t) * textures.size());
-		textures_v.size = textures.size();
-
-		mesh_t* m;
-		if (mesh_new(&m, vertices_v, indices_v, textures_v)) {
-			log_error("Failed to create mesh");
-			return NULL;
-		} else {
-			return m;
-		}
+	void model_data::load() {
+		load(model_name_);
 	}
 
-	void collect_meshes(aiNode* node, const aiScene* scene, std::vector<aiMesh*>& meshes) { // NOLINT
-		for (size_t i = 0; i < node->mNumMeshes; i++) {
-			auto* mesh = scene->mMeshes[node->mMeshes[i]];
-			meshes.push_back(mesh);
-		}
+	void model_data::load(const std::string& path) {
+		spdlog::debug("Loading {} model", path);
 
-		for (size_t i = 0; i < node->mNumChildren; i++) {
-			collect_meshes(node->mChildren[i], scene, meshes);
-		}
-	}
-
-	std::vector<mesh_t*> process_meshes(model_t* model, const aiScene* scene, const std::vector<aiMesh*>& ai_meshes, std::vector<mesh_t*>& meshes) {
-		for (size_t i = 0; i < ai_meshes.size(); i++) {
-			auto m = process_mesh(model, ai_meshes[i], scene);
-			if (m) {
-				meshes[i] = m;
-			}
-		}
-
-		return meshes;
-	}
-
-	void draw(const model_t* model) {
-		for (size_t i = 0; i < model->meshes_count; i++) {
-			assert(model->meshes[i] != nullptr);
-			model->meshes[i]->draw(model->meshes[i], model->shader_program);
-		}
-	}
-
-	void load_model(model_t* model, const char* path) {
 		Assimp::Importer importer;
-		const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
-		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-			log_error("Error while loading model %s: %s", path, importer.GetErrorString());
-			return;
+		const aiScene*   scene = importer.ReadFile(path.c_str(), aiProcess_Triangulate | aiProcess_FlipUVs |
+		                                                             aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
+		if (scene == nullptr || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0 ||
+		    scene->mRootNode == nullptr) { // NOLINT(hicpp-signed-bitwise)
+			throw exception::model_load_exception("Failed to open file " + path);
 		}
-
-		auto path_str = std::string(path);
-		path_str = path_str.substr(0, path_str.find_last_of('/')).c_str();
-		char* tmp = static_cast<char*>(malloc((sizeof(char) * path_str.length()) + 1));
-		std::strcpy(tmp, path_str.c_str());
-		model->directory = tmp;
 
 		std::vector<aiMesh*> ai_meshes;
-		collect_meshes(scene->mRootNode, scene, ai_meshes);
+		collect_ai_meshes_data(scene->mRootNode, scene, ai_meshes);
 
-		std::vector<mesh_t*> meshes;
-		meshes.resize(ai_meshes.size());
-		log_info("Loading model %s", path);
-		process_meshes(model, scene, ai_meshes, meshes);
-
-		model->meshes = static_cast<mesh_t**>(malloc(sizeof(mesh_t*) * meshes.size()));
-		memcpy(model->meshes, meshes.data(), sizeof(mesh_t*) * meshes.size());
-		model->meshes_count = meshes.size();
-		model->draw = draw;
-	}
-}
-
-int32_t model_new(model_t** model, const char* path) {
-	*model = static_cast<model_t*>(malloc(sizeof(model_t)));
-	load_model(*model, path);
-
-	if (shader_create_program("shaders/backpack.vert", "shaders/backpack.frag", &(*model)->shader_program)) {
-		log_error("Failed to compile model %s shader program", path);
+		auto dir = path.substr(0, path.find_last_of('/'));
+		for (const auto& ai_mesh : ai_meshes) {
+			meshes_.emplace_back(dir, ai_mesh, scene);
+		}
 	}
 
-	return 0;
-}
+	loaded_model::loaded_model(const shader& render_shader, const shader& outline_shader, const glm::vec3& pos,
+	                           const glm::vec3& scale, const glm::vec3& rot, std::shared_ptr<model_data> data)
+	    : scene_model(render_shader, outline_shader, pos, scale, rot),
+	      data_(std::move(data)) {}
 
-void model_free(model_t** model) {
-	for (size_t i = 0; i < (*model)->meshes_count; i++) {
-		mesh_delete(&(*model)->meshes[i]);
+	void loaded_model::draw(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos) {
+		glStencilFunc(GL_ALWAYS, 1, 0xff);
+		glStencilMask(0xff);
+		draw_model(get_render_shader(), view, proj, camera_pos);
+
+		if (is_selected()) {
+			glStencilFunc(GL_NOTEQUAL, 1, 0xff);
+			glStencilMask(0x00);
+			glDisable(GL_DEPTH_TEST);
+			draw_model(get_outline_shader(), view, proj, camera_pos);
+			glStencilMask(0xff);
+			glStencilFunc(GL_ALWAYS, 0, 0xff);
+			glEnable(GL_DEPTH_TEST);
+		}
 	}
-	free((*model)->meshes);
-	(*model)->meshes = NULL;
-	free(const_cast<char*>((*model)->directory));
-	(*model)->directory = NULL;
-	free(*model);
-	*model = NULL;
-	log_debug("Freed model");
-}
+
+	void loaded_model::draw_model(uint shader, const glm::mat4& view, const glm::mat4& proj,
+	                              const glm::vec3& camera_pos) {
+		glUseProgram(shader);
+
+		glm::mat4 model{ 1 };
+		model = glm::translate(model, get_pos());
+		model = glm::scale(model, get_scale());
+
+		model = glm::rotate(model, glm::radians(get_rot()[0]), { 1, 0, 0 });
+		model = glm::rotate(model, glm::radians(get_rot()[1]), { 0, 1, 0 });
+		model = glm::rotate(model, glm::radians(get_rot()[2]), { 0, 0, 1 });
+
+		shader::set_uniform(shader, "model", model);
+		shader::set_uniform(shader, "view", view);
+		shader::set_uniform(shader, "proj", proj);
+
+		shader::set_uniform(shader, "viewPos", camera_pos);
+		shader::set_uniform(shader, "material.shininess", 32.0f);
+
+		for (auto it = data_->meshes_begin(), end = data_->meshes_end(); it != end; ++it) {
+			it->draw(shader);
+		}
+	}
+
+} // namespace kanso
