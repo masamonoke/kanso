@@ -3,22 +3,12 @@
 #include <string>
 
 #include "drawable.hpp"
-#include "mesh.hpp"
-#include "exception.hpp"
 #include "shader.hpp"
+#include "model_data_loader.hpp"
 
 #include <glm/vec3.hpp>
 
 namespace kanso {
-
-	namespace exception {
-
-		class model_load_exception : public base_kanso_exception {
-			public:
-				model_load_exception(std::string&& msg) : base_kanso_exception(std::move(msg)) {}
-		};
-
-	} // namespace exception
 
 	class scene_model : public drawable {
 		public:
@@ -71,26 +61,6 @@ namespace kanso {
 			glm::vec3 scale_;
 			glm::vec3 rotation_;
 			bool      selected_ = false;
-	};
-
-	class model_data {
-		public:
-			model_data(std::string path);
-
-			std::vector<mesh>::iterator meshes_begin() {
-				return meshes_.begin();
-			}
-
-			std::vector<mesh>::iterator meshes_end() {
-				return meshes_.end();
-			}
-
-		private:
-			void load(const std::string& path);
-			void load();
-
-			std::vector<mesh> meshes_;
-			std::string       model_name_;
 	};
 
 	class loaded_model : public scene_model {

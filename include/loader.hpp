@@ -4,8 +4,6 @@
 #include <fstream>
 
 #include "model.hpp"
-#include "light.hpp"
-#include "thread_pool.hpp"
 #include "scene.hpp"
 #include "camera.hpp"
 
@@ -35,12 +33,13 @@ namespace kanso {
 			std::shared_ptr<camera> make_camera();
 
 		private:
-			void init_load();
+			std::map<std::string, std::shared_ptr<model_data>> init_load();
 
 			nlohmann::json                                     json_;
 			std::map<std::string, std::shared_ptr<model_data>> models_;
 
-			void load_models_data(const nlohmann::json& models_json);
+			static std::map<std::string, std::shared_ptr<model_data>>
+			     load_models_data(const nlohmann::json& models_json);
 			void load_models(const nlohmann::json&                       models_json,
 			                 std::vector<std::shared_ptr<loaded_model>>& loaded_models);
 	};
