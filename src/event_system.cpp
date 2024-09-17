@@ -32,36 +32,39 @@ namespace kanso {
 	glfw_wrapper::mouse_pos_evt_callback(const std::shared_ptr<window>& w, const std::shared_ptr<camera>& camera) {
 
 		return [this, w, camera](void* ctx, double xpos, double ypos) {
-			/* if (is_key_pressed(ctx, KANSO_MOUSE_BUTTON_RIGHT)) { */
-			/* 	if (!cursor_set_) { */
-			/* 		w->hide_cursor(); */
-			/* 		cursor_set_ = true; */
-			/* 	} */
+			if (is_key_pressed(ctx, KANSO_MOUSE_BUTTON_RIGHT)) {
+				float x_shift{};
+				float y_shift{};
 
-			/* 	if (prev_point_.x == -1.0f) { */
-			/* 		prev_point_.x = static_cast<float>(xpos); */
-			/* 		prev_point_.y = static_cast<float>(ypos); */
-			/* 	} */
+				if (!cursor_set_) {
+					w->hide_cursor();
+					cursor_set_ = true;
+				}
 
-			/* 	auto xshift = prev_point_.x - static_cast<float>(xpos); */
-			/* 	auto yshift = prev_point_.y - static_cast<float>(ypos); */
+				if (prev_point_.x == -1.0f) {
+					prev_point_.x = static_cast<float>(xpos);
+					prev_point_.y = static_cast<float>(ypos);
+				}
 
-			/* 	camera_point_.x -= xshift; */
-			/* 	camera_point_.y -= yshift; */
-				camera->update_view(xpos, ypos);
+				x_shift = prev_point_.x - static_cast<float>(xpos);
+				y_shift = prev_point_.y - static_cast<float>(ypos);
 
-/* 				prev_point_.x = static_cast<float>(xpos); */
-/* 				prev_point_.y = static_cast<float>(ypos); */
-/* 				return; */
-/* 			} */
+				camera_point_.x -= x_shift;
+				camera_point_.y -= y_shift;
+				camera->update_view(camera_point_.x, camera_point_.y);
 
-/* 			if (cursor_set_) { */
-/* 				cursor_set_ = false; */
-/* 				w->show_cursor(); */
-/* 			} */
+				prev_point_.x = static_cast<float>(xpos);
+				prev_point_.y = static_cast<float>(ypos);
+				return;
+			}
 
-/* 			prev_point_.x = -1.0f; */
-/* 			prev_point_.y = -1.0f; */
+			if (cursor_set_) {
+				cursor_set_ = false;
+				w->show_cursor();
+			}
+
+			prev_point_.x = -1.0f;
+			prev_point_.y = -1.0f;
 		};
 	}
 

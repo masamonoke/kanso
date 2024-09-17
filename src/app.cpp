@@ -1,6 +1,5 @@
 #include "glad/glad.h"
 #include "app.hpp"
-#include "core.hpp"
 
 #include <spdlog/spdlog.h>
 

@@ -10,6 +10,7 @@ Checks: >
   cert*,
   misc-include-cleaner-*,
   readability-identifier-naming,
+  -misc-non-private-member-variables-in-classes,
   -google-readability-namespace-comments,
   -google-runtime-int,
   -google-runtime-references,

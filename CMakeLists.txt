@@ -41,6 +41,7 @@ add_executable(${PROJECT_NAME}
 	src/shader.cpp
 	src/texture.cpp
 	src/window.cpp
+	src/model_data_loader.cpp
 )
 
 add_custom_target(

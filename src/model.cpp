@@ -1,88 +1,10 @@
 #include "model.hpp"
-#include "thread_pool.hpp"
 #include "shader.hpp"
 
 #include "glad/glad.h"
 #include <glm/gtc/matrix_transform.hpp>
-#include <assimp/material.h>
-#include <assimp/material.inl>
-#include <assimp/mesh.h>
-#include <assimp/types.h>
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
-#include <assimp/scene.h>
-#include <spdlog/spdlog.h>
-
-#include <stack>
-#include <map>
 
 namespace kanso {
-
-	namespace {
-
-		struct tex_data {
-				uint8_t*    bytes;
-				int32_t     width;
-				int32_t     height;
-				int32_t     nr_channels;
-				std::string path;
-				std::string type;
-		};
-
-		void collect_ai_meshes_data(aiNode* root_node, const aiScene* scene, std::vector<aiMesh*>& meshes) {
-			if (root_node == nullptr || scene == nullptr) {
-				return;
-			}
-
-			std::stack<aiNode*> node_stack;
-			node_stack.push(root_node);
-
-			while (!node_stack.empty()) {
-				aiNode* current_node = node_stack.top();
-				node_stack.pop();
-
-				for (size_t i = 0; i < current_node->mNumMeshes; i++) {
-					aiMesh* mesh =
-					    scene->mMeshes[current_node
-					                       ->mMeshes[i]]; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-					meshes.push_back(mesh);
-				}
-
-				for (size_t i = 0; i < current_node->mNumChildren; i++) {
-					node_stack.push(
-					    current_node->mChildren[i]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-				}
-			}
-		}
-	} // anonymous namespace
-
-	model_data::model_data(std::string path) : model_name_(std::move(path)) {
-		load();
-	}
-
-	void model_data::load() {
-		load(model_name_);
-	}
-
-	void model_data::load(const std::string& path) {
-		spdlog::debug("Loading {} model", path);
-
-		Assimp::Importer importer;
-		const aiScene*   scene = importer.ReadFile(path.c_str(), aiProcess_Triangulate | aiProcess_FlipUVs |
-		                                                             aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
-		if (scene == nullptr || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0 ||
-		    scene->mRootNode == nullptr) { // NOLINT(hicpp-signed-bitwise)
-			throw exception::model_load_exception("Failed to open file " + path);
-		}
-
-		std::vector<aiMesh*> ai_meshes;
-		collect_ai_meshes_data(scene->mRootNode, scene, ai_meshes);
-
-		auto dir = path.substr(0, path.find_last_of('/'));
-		for (const auto& ai_mesh : ai_meshes) {
-			meshes_.emplace_back(dir, ai_mesh, scene);
-		}
-	}
 
 	loaded_model::loaded_model(const shader& render_shader, const shader& outline_shader, const glm::vec3& pos,
 	                           const glm::vec3& scale, const glm::vec3& rot, std::shared_ptr<model_data> data)

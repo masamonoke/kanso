@@ -4,9 +4,7 @@
 #include <string>
 
 #include "app.hpp"
-#include "exception.hpp"
 
-#include <nlohmann/json_fwd.hpp>
 #ifdef DEBUG
 #include <spdlog/common.h>
 #include <spdlog/spdlog.h>

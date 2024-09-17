@@ -1,5 +1,5 @@
 #include "loader.hpp"
-#include "exception.hpp"
+#include "model_data_loader.hpp"
 
 #include <memory>
 #include <iostream>
@@ -8,9 +8,7 @@
 
 namespace kanso {
 
-	loader::loader(nlohmann::json&& json) : json_(std::move(json)) {
-		init_load();
-	}
+	loader::loader(nlohmann::json&& json) : json_(std::move(json)), models_(init_load()) {}
 
 	namespace {
 		void load_light(const nlohmann::json& lights_json, std::vector<std::shared_ptr<light>>& lights);
@@ -18,17 +16,19 @@ namespace kanso {
 		glm::vec3                 from_json_to_vec3(const nlohmann::json& j, const std::string& name);
 	} // namespace
 
-	void loader::init_load() {
+	std::map<std::string, std::shared_ptr<model_data>> loader::init_load() {
 		for (const auto& j : json_) {
 			try {
 				if (j["type"] == "model") {
-					load_models_data(j);
+					return load_models_data(j);
 				}
 			} catch (const nlohmann::json::type_error& e) {
 				spdlog::error(e.what());
 				throw exception::bad_scene_file_exception("Passed scene file is in wrong format");
 			}
 		}
+
+		return {};
 	}
 
 	std::unique_ptr<scene> loader::make_scene() {
@@ -74,23 +74,14 @@ namespace kanso {
 		throw exception::camera_not_found_exception("Scene file has no definition for camera");
 	}
 
-	void loader::load_models_data(const nlohmann::json& models_json) {
-		for (const auto& model_json : models_json["values"]) {
-			try {
-				if (!models_.contains(model_json["path"])) {
-					models_.emplace(model_json["path"], std::make_shared<model_data>(model_json["path"]));
-				}
-			} catch (const exception::model_load_exception& e) {
-				if (model_json["path"].is_string()) {
-					if (model_json["path"].is_string()) {
-						spdlog::error("Failed to load model {}", std::string{ model_json["path"] });
-					} else {
-						spdlog::error("Failed to load model and path is not even string");
-					}
-				}
-				continue;
-			}
+	std::map<std::string, std::shared_ptr<model_data>> loader::load_models_data(const nlohmann::json& models_json) {
+		std::vector<std::string> paths;
+		for (const auto& json : models_json["values"]) {
+			paths.emplace_back(json["path"]);
 		}
+
+		const model_data_loader loader{ paths };
+		return loader.get_models_data();
 	}
 
 	void loader::load_models(const nlohmann::json&                       models_json,
