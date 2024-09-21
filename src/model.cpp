@@ -1,7 +1,6 @@
 #include "model.hpp"
 #include "shader.hpp"
 
-#include "glad/glad.h"
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace kanso {
@@ -12,24 +11,19 @@ namespace kanso {
 	      data_(std::move(data)) {}
 
 	void loaded_model::draw(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos) {
-		glStencilFunc(GL_ALWAYS, 1, 0xff);
-		glStencilMask(0xff);
+		renderer::reset_stencil_test();
 		draw_model(get_render_shader(), view, proj, camera_pos);
 
 		if (is_selected()) {
-			glStencilFunc(GL_NOTEQUAL, 1, 0xff);
-			glStencilMask(0x00);
-			glDisable(GL_DEPTH_TEST);
+			renderer::enable_stencil_test();
 			draw_model(get_outline_shader(), view, proj, camera_pos);
-			glStencilMask(0xff);
-			glStencilFunc(GL_ALWAYS, 0, 0xff);
-			glEnable(GL_DEPTH_TEST);
+			renderer::reset_stencil_test();
 		}
 	}
 
 	void loaded_model::draw_model(uint shader, const glm::mat4& view, const glm::mat4& proj,
 	                              const glm::vec3& camera_pos) {
-		glUseProgram(shader);
+		shader::use(shader);
 
 		glm::mat4 model{ 1 };
 		model = glm::translate(model, get_pos());

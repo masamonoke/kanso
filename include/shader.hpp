@@ -42,6 +42,7 @@ namespace kanso {
 			static void set_uniform(uint shader, const std::string& name, bool val);
 			static void set_uniform(uint shader, const std::string& name, int val);
 			static void set_uniform(uint shader, const std::string& name, float val);
+			static void use(uint shader);
 
 		private:
 			uint id_;

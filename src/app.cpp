@@ -1,4 +1,3 @@
-#include "glad/glad.h"
 #include "app.hpp"
 
 #include <spdlog/spdlog.h>
@@ -14,8 +13,7 @@ namespace kanso {
 	}
 
 	void app::update() {
-		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		renderer::clear(0.5f, 0.5f, 0.5f);
 
 		scene_->draw(*camera_, *window_);
 		window_->update();

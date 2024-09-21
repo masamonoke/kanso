@@ -136,7 +136,7 @@ namespace kanso {
 	}
 
 	void model_data_loader::load(const std::vector<std::string>& paths) {
-		const std::set<std::string> unique_paths{ paths.begin(), paths.end() };
+		const std::unordered_set<std::string> unique_paths{ paths.begin(), paths.end() };
 
 		{
 			thread_pool pool{ 4 };

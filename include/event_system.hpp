@@ -13,12 +13,12 @@ namespace kanso {
 			virtual ~event_wrapper() = default;
 
 			virtual std::function<void(void*, double, double)>
-				mouse_pos_evt_callback(const std::shared_ptr<window>& w, const std::shared_ptr<camera>& camera)       = 0;
+			mouse_pos_evt_callback(const std::shared_ptr<window>& w, const std::shared_ptr<camera>& camera)       = 0;
 			virtual std::function<void(void*, enum mouse_button, enum button_status)> mouse_button_evt_callback() = 0;
 			virtual std::function<void(void*)> keyboard_evt_callback(const std::shared_ptr<window>& w,
 			                                                         const std::shared_ptr<camera>& camera)       = 0;
 			virtual std::function<void(void*, double, double)>
-				scroll_evt_callback(const std::shared_ptr<camera>& camera) = 0;
+			scroll_evt_callback(const std::shared_ptr<camera>& camera) = 0;
 	};
 
 	class event_system {
@@ -34,12 +34,12 @@ namespace kanso {
 			glfw_wrapper();
 
 			std::function<void(void*, double, double)>
-				mouse_pos_evt_callback(const std::shared_ptr<window>& w, const std::shared_ptr<camera>& camera) override;
+			mouse_pos_evt_callback(const std::shared_ptr<window>& w, const std::shared_ptr<camera>& camera) override;
 			std::function<void(void*, enum mouse_button, enum button_status)> mouse_button_evt_callback() override;
 			std::function<void(void*)> keyboard_evt_callback(const std::shared_ptr<window>& w,
 			                                                 const std::shared_ptr<camera>& camera) override;
 			std::function<void(void*, double, double)>
-				scroll_evt_callback(const std::shared_ptr<camera>& camera) override;
+			scroll_evt_callback(const std::shared_ptr<camera>& camera) override;
 
 		private:
 			struct mouse_pos {
@@ -51,7 +51,7 @@ namespace kanso {
 			std::map<enum key_button, int>   key_buttons_map_;
 			bool                             cursor_set_ = false;
 			struct mouse_pos                 camera_point_ {
-				- 1.0f, -1.0f
+                    - 1.0f, -1.0f
 			};
 			struct mouse_pos prev_point_ {
 					- 1.0f, -1.0f

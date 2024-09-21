@@ -41,7 +41,7 @@ namespace kanso {
 					cursor_set_ = true;
 				}
 
-				if (prev_point_.x == -1.0f) {
+				if (prev_point_.x < 0.0f) {
 					prev_point_.x = static_cast<float>(xpos);
 					prev_point_.y = static_cast<float>(ypos);
 				}

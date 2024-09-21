@@ -18,7 +18,7 @@ namespace kanso {
 			light(light_data&& common_part);
 			virtual ~light() = default;
 
-			virtual void load_to(uint shader) = 0;
+			virtual void bind_to(uint shader) = 0;
 
 		protected:
 			[[nodiscard]] const light_data& common_data() const {
@@ -41,7 +41,7 @@ namespace kanso {
 			point_light(const light_data& common_part, const point_light_data& point_light_part);
 			point_light(light_data&& common_part, point_light_data&& point_light_part);
 
-			void load_to(uint shader) override;
+			void bind_to(uint shader) override;
 
 		private:
 			point_light_data point_light_part_;
@@ -52,7 +52,7 @@ namespace kanso {
 			directional_light(const light_data& common, const glm::vec3& direction);
 			directional_light(light_data&& common, glm::vec3&& direction);
 
-			void load_to(uint shader) override;
+			void bind_to(uint shader) override;
 
 		private:
 			glm::vec3 direction_;
@@ -70,7 +70,7 @@ namespace kanso {
 			spot_light(const light_data& common_part, const spot_light_data& spot_light_part);
 			spot_light(light_data&& common_part, spot_light_data&& spot_light_part);
 
-			void load_to(uint shader) override;
+			void bind_to(uint shader) override;
 
 		private:
 			spot_light_data spot_light_part_;

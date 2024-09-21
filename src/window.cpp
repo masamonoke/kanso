@@ -1,7 +1,7 @@
 #include "glad/glad.h"
 #include "window.hpp"
 #include "core.hpp"
-#include "event_system.hpp"
+#include "renderer.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -54,32 +54,25 @@ namespace kanso {
 
 		glfwMakeContextCurrent(window_);
 
-		if (0 == gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) { // NOLINT cppcoreguidelines-pro-type-reinterpret-cast
+		if (0 == gladLoadGLLoader(reinterpret_cast<GLADloadproc>( // NOLINT cppcoreguidelines-pro-type-reinterpret-cast
+		             glfwGetProcAddress))) {
 			glfwTerminate();
 			throw std::runtime_error("Failed to initialize GLAD");
 		}
 
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LESS);
-		glEnable(GL_STENCIL_TEST);
-		const int fill_stencil = 0xFF;
-		glStencilFunc(GL_NOTEQUAL, 1, fill_stencil);
-		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+		renderer::enable_depth();
+		renderer::enable_stencil(0xff);
 
 		glfwGetFramebufferSize(window_, &framebuf_width, &framebuf_height);
-		glViewport(0, 0, framebuf_width, framebuf_height);
+		renderer::set_viewport(framebuf_width, framebuf_height);
 
 		auto framebuffer_size_callback = [](GLFWwindow* window, int width, int height) {
 			(void)window;
-			glViewport(0, 0, width, height);
+			renderer::set_viewport(width, height);
 		};
 
 		glfwSetFramebufferSizeCallback(window_, framebuffer_size_callback);
 
-		// TODO:
-		// hardcoded construct
-		// if new button added then this method will be updated
-		// that violates single responsibility
 		mouse_buttons_map_[GLFW_MOUSE_BUTTON_LEFT]  = KANSO_MOUSE_BUTTON_LEFT;
 		mouse_buttons_map_[GLFW_MOUSE_BUTTON_RIGHT] = KANSO_MOUSE_BUTTON_RIGHT;
 

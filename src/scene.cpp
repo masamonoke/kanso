@@ -13,7 +13,7 @@ namespace kanso {
 
 		for (const auto& model : models_) {
 			for (const auto& light : lights_) {
-				light->load_to(model->get_render_shader());
+				light->bind_to(model->get_render_shader());
 			}
 			model->draw(view, proj, camera_pos);
 		}

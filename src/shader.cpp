@@ -111,4 +111,9 @@ namespace kanso {
 	void shader::set_uniform(uint shader, const std::string& name, const glm::mat4& matrix) {
 		glUniformMatrix4fv(glGetUniformLocation(shader, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
 	}
+
+	void shader::use(uint shader) {
+		glUseProgram(shader);
+	}
+
 }; // namespace kanso
