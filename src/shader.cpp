@@ -10,8 +10,7 @@
 namespace kanso {
 
 	namespace {
-		std::pair<std::string, std::string> load_shaders(const std::string& vert_file, const std::string& frag_file) {
-			spdlog::debug("Loading shaders: {}, {}", vert_file, frag_file);
+		std::pair<std::string, std::string> load_shaders(std::string_view vert_file, std::string_view frag_file) {
 			std::ifstream vert_fs;
 			std::ifstream frag_fs;
 			std::string   vert_code;
@@ -58,7 +57,7 @@ namespace kanso {
 			return vert;
 		}
 
-		uint create_shader(const std::string& vert_file, const std::string& frag_file) {
+		uint create_shader(std::string_view vert_file, std::string_view frag_file) {
 			auto code_pair = load_shaders(vert_file, frag_file);
 
 			const char* vert_str = code_pair.first.c_str();
@@ -89,27 +88,28 @@ namespace kanso {
 		}
 	} // namespace
 
-	shader::shader(const std::string& vert_file, const std::string& frag_file)
+	// TODO: shader failed loading is not held anywhere
+	shader::shader(std::string_view vert_file, std::string_view frag_file)
 	    : id_(create_shader(vert_file, frag_file)) {}
 
-	void shader::set_uniform(uint shader, const std::string& name, const glm::vec3& vector) {
-		glUniform3fv(glGetUniformLocation(shader, name.c_str()), 1, &vector[0]);
+	void shader::set_uniform(uint shader, std::string_view name, const glm::vec3& vector) {
+		glUniform3fv(glGetUniformLocation(shader, name.data()), 1, &vector[0]);
 	}
 
-	void shader::set_uniform(uint shader, const std::string& name, bool val) {
-		glUniform1i(glGetUniformLocation(shader, name.c_str()), static_cast<int>(val));
+	void shader::set_uniform(uint shader, std::string_view name, bool val) {
+		glUniform1i(glGetUniformLocation(shader, name.data()), static_cast<int>(val));
 	}
 
-	void shader::set_uniform(uint shader, const std::string& name, int val) {
-		glUniform1i(glGetUniformLocation(shader, name.c_str()), val);
+	void shader::set_uniform(uint shader, std::string_view name, int val) {
+		glUniform1i(glGetUniformLocation(shader, name.data()), val);
 	}
 
-	void shader::set_uniform(uint shader, const std::string& name, float val) {
-		glUniform1f(glGetUniformLocation(shader, name.c_str()), val);
+	void shader::set_uniform(uint shader, std::string_view name, float val) {
+		glUniform1f(glGetUniformLocation(shader, name.data()), val);
 	}
 
-	void shader::set_uniform(uint shader, const std::string& name, const glm::mat4& matrix) {
-		glUniformMatrix4fv(glGetUniformLocation(shader, name.c_str()), 1, GL_FALSE, &matrix[0][0]);
+	void shader::set_uniform(uint shader, std::string_view name, const glm::mat4& matrix) {
+		glUniformMatrix4fv(glGetUniformLocation(shader, name.data()), 1, GL_FALSE, &matrix[0][0]);
 	}
 
 	void shader::use(uint shader) {

@@ -36,13 +36,16 @@ add_executable(${PROJECT_NAME}
 	src/loader.cpp
 	src/main.cpp
 	src/mesh.cpp
-	src/model.cpp
+	src/loaded_model.cpp
 	src/scene.cpp
 	src/shader.cpp
 	src/texture.cpp
 	src/window.cpp
 	src/model_data_loader.cpp
 	src/renderer.cpp
+	src/starter.cpp
+	src/raycast.cpp
+	src/primitive.cpp
 )
 
 add_custom_target(

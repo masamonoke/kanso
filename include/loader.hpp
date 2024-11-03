@@ -25,6 +25,9 @@ namespace kanso {
 
 	} // namespace exception
 
+	template<typename Value>
+	using back_inserter = std::back_insert_iterator<std::vector<Value>>;
+
 	class loader {
 		public:
 			loader(nlohmann::json&& json);
@@ -33,15 +36,17 @@ namespace kanso {
 			std::shared_ptr<camera> make_camera();
 
 		private:
-			std::map<std::string, std::shared_ptr<model_data>> init_load();
+			template<typename OutputIt>
+			void init_load(OutputIt out_it);
 
 			nlohmann::json                                     json_;
-			std::map<std::string, std::shared_ptr<model_data>> models_;
+			std::map<std::string, std::shared_ptr<model_data>> models_{};
 
-			static std::map<std::string, std::shared_ptr<model_data>>
-			     load_models_data(const nlohmann::json& models_json);
-			void load_models(const nlohmann::json&                       models_json,
-			                 std::vector<std::shared_ptr<loaded_model>>& loaded_models);
+			template<typename OutputIt>
+			static void load_models_data(const nlohmann::json& models_json, OutputIt out_map);
+
+
+			void load_models(const nlohmann::json& models_json, back_inserter<std::shared_ptr<model>> inserter);
 	};
 
 } // namespace kanso

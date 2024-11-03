@@ -79,7 +79,7 @@ namespace kanso {
 	}
 
 	glm::mat4 camera::get_proj(const window& w) const {
-		auto aspect = static_cast<float>(w.width()) / static_cast<float>(w.height());
+		auto aspect = static_cast<float>(w.get_real_width()) / static_cast<float>(w.get_real_height());
 		return glm::perspective(glm::radians(fov_), aspect, near_, far_);
 	}
 

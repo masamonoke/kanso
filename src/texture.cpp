@@ -19,9 +19,9 @@ namespace kanso {
 	tex_map::tex_map(const raw_tex& data)
 	    : type_(data.type),
 	      path_(data.path),
-	      id_(renderer::load_texture(data.bytes, data.nr_channels, data.width, data.height)) {}
+	      id_(renderer_factory::make_renderer()->load_texture(data.bytes, data.nr_channels, data.width, data.height)) {}
 
-	texture::texture(const std::vector<raw_tex>& raw_textures) {
+	texture::texture(const std::vector<raw_tex>& raw_textures) : renderer_(renderer_factory::make_renderer()) {
 		maps_.reserve(raw_textures.size());
 		for (auto&& raw : raw_textures) {
 			maps_.emplace_back(raw);
@@ -45,7 +45,7 @@ namespace kanso {
 
 		for (const auto& map : maps_) {
 
-			renderer::bind_texture(shader, map.type(), map.id(), diffuse_nr, specular_nr, height_nr, normal_nr, number,
+			renderer_->bind_texture(shader, map.type(), map.id(), diffuse_nr, specular_nr, height_nr, normal_nr, number,
 			                       index);
 
 			index++;

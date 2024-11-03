@@ -16,9 +16,11 @@ namespace kanso {
 
 	} // namespace exception
 
+	// TODO: very strange class
 	class model_data {
 		public:
-			model_data(std::string model_name, std::vector<mesh_data> meshes_data);
+			template<typename InputIt>
+			model_data(std::string model_name, InputIt begin, InputIt end);
 
 			std::vector<mesh>::iterator meshes_begin() {
 				return meshes_.begin();
@@ -28,17 +30,30 @@ namespace kanso {
 				return meshes_.end();
 			}
 
+			[[nodiscard]] glm::vec3 get_aabb_max() const {
+				return aabb_max_;
+			}
+
+			[[nodiscard]] glm::vec3 get_aabb_min() const {
+				return aabb_min_;
+			}
+
 		private:
 			std::vector<mesh> meshes_;
 			std::string       model_name_;
+			glm::vec3 aabb_max_{ std::numeric_limits<float>::min() };
+			glm::vec3 aabb_min_{ std::numeric_limits<float>::max()};
 	};
 
 	class model_data_loader {
 		public:
-			model_data_loader(const std::vector<std::string>& paths);
+			model_data_loader(std::vector<std::string>::iterator paths_begin, std::vector<std::string>::iterator paths_end);
 
-			[[nodiscard]] std::map<std::string, std::shared_ptr<model_data>> get_models_data() const {
-				return models_data_;
+			template<typename OutputIt>
+			void get_models_data(OutputIt out) const {
+				std::for_each(models_data_.begin(), models_data_.end(), [&out](auto& it) {
+					*out++ = it;
+				});
 			}
 
 		private:
@@ -46,9 +61,11 @@ namespace kanso {
 
 			std::vector<std::pair<std::string, raw_model_data>> raw_models_data_;
 			std::map<std::string, std::shared_ptr<model_data>>  models_data_;
-			std::mutex                                          mut_;
+			std::mutex mut_;
 
-			void load(const std::vector<std::string>& paths);
-			void load_raw_model(const std::string& path);
+			template<typename InputIt>
+			void load(InputIt paths_begin, InputIt paths_end);
+
+			void load_raw_model(std::string_view path);
 	};
 } // namespace kanso

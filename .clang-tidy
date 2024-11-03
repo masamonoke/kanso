@@ -31,7 +31,9 @@ Checks: >
   -hicpp-explicit-conversions,
   -hicpp-special-member-functions,
   -cppcoreguidelines-special-member-functions,
-  -hicpp-signed-bitwise
+  -hicpp-signed-bitwise,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -google-default-arguments
 
 WarningsAsErrors: true
 

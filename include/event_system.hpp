@@ -5,6 +5,7 @@
 
 #include "window.hpp"
 #include "camera.hpp"
+#include "scene.hpp"
 
 namespace kanso {
 
@@ -12,18 +13,16 @@ namespace kanso {
 		public:
 			virtual ~event_wrapper() = default;
 
-			virtual std::function<void(void*, double, double)>
-			mouse_pos_evt_callback(const std::shared_ptr<window>& w, const std::shared_ptr<camera>& camera)       = 0;
+			virtual std::function<void(void*, double, double)>                        mouse_pos_evt_callback()    = 0;
 			virtual std::function<void(void*, enum mouse_button, enum button_status)> mouse_button_evt_callback() = 0;
-			virtual std::function<void(void*)> keyboard_evt_callback(const std::shared_ptr<window>& w,
-			                                                         const std::shared_ptr<camera>& camera)       = 0;
-			virtual std::function<void(void*, double, double)>
-			scroll_evt_callback(const std::shared_ptr<camera>& camera) = 0;
+			virtual std::function<void(void*)>                                        keyboard_evt_callback()     = 0;
+			virtual std::function<void(void*, double, double)>                        scroll_evt_callback()       = 0;
 	};
 
 	class event_system {
 		public:
-			event_system(const std::shared_ptr<window>& w, const std::shared_ptr<camera>& camera);
+			event_system(const std::shared_ptr<window>& w, const std::shared_ptr<camera>& camera,
+			             const std::shared_ptr<scene>& scene);
 
 		private:
 			std::unique_ptr<event_wrapper> event_wrapper_;
@@ -31,15 +30,12 @@ namespace kanso {
 
 	class glfw_wrapper : public event_wrapper {
 		public:
-			glfw_wrapper();
+			glfw_wrapper(std::shared_ptr<camera> camera, std::shared_ptr<window> window, std::shared_ptr<scene> scene);
 
-			std::function<void(void*, double, double)>
-			mouse_pos_evt_callback(const std::shared_ptr<window>& w, const std::shared_ptr<camera>& camera) override;
+			std::function<void(void*, double, double)>                        mouse_pos_evt_callback() override;
 			std::function<void(void*, enum mouse_button, enum button_status)> mouse_button_evt_callback() override;
-			std::function<void(void*)> keyboard_evt_callback(const std::shared_ptr<window>& w,
-			                                                 const std::shared_ptr<camera>& camera) override;
-			std::function<void(void*, double, double)>
-			scroll_evt_callback(const std::shared_ptr<camera>& camera) override;
+			std::function<void(void*)>                                        keyboard_evt_callback() override;
+			std::function<void(void*, double, double)>                        scroll_evt_callback() override;
 
 		private:
 			struct mouse_pos {
@@ -50,12 +46,11 @@ namespace kanso {
 			std::map<enum mouse_button, int> mouse_buttons_map_;
 			std::map<enum key_button, int>   key_buttons_map_;
 			bool                             cursor_set_ = false;
-			struct mouse_pos                 camera_point_ {
-                    - 1.0f, -1.0f
-			};
-			struct mouse_pos prev_point_ {
-					- 1.0f, -1.0f
-			};
+			mouse_pos                        camera_point_{ -1.0f, -1.0f };
+			mouse_pos                        prev_point_{ -1.0f, -1.0f };
+			std::shared_ptr<camera>          camera_;
+			std::shared_ptr<window>          window_;
+			std::shared_ptr<scene>           scene_;
 
 			template <typename KeyType>
 			bool is_key_pressed(void* ctx, KeyType key) {

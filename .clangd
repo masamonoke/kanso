@@ -1,6 +1,2 @@
-Diagnostics:
-  UnusedIncludes: Strict
-  MissingIncludes: Strict
-
 InlayHints:
   Designators: No

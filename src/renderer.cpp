@@ -22,16 +22,28 @@ namespace kanso {
 		}
 	} // namespace
 
-	renderer::renderer(const std::vector<mesh_vertex>& vertices, const std::vector<int>& indices)
-	    : vo_{ gen_vao(), gen_buf(), gen_buf() },
+	opengl_renderer::opengl_renderer(const glm::vec3& start, const glm::vec3& end) : vao_(gen_vao()), vbo_(gen_buf()) {
+		glBindVertexArray(vao_);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_);
+		const std::array<glm::vec3, 2> points{ start, end };
+		glBufferData(GL_ARRAY_BUFFER, sizeof(points), points.data(), GL_STATIC_DRAW);
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+		glEnableVertexAttribArray(0);
+	}
+
+	opengl_renderer::opengl_renderer(const std::vector<mesh_vertex>& vertices, const std::vector<int>& indices)
+	    : vao_(gen_vao()),
+	      vbo_(gen_buf()),
+	      ebo_(gen_buf()),
 	      indices_count_(static_cast<int>(indices.size())) {
-		glBindVertexArray(vo_.vao);
-		glBindBuffer(GL_ARRAY_BUFFER, vo_.vbo);
+		glBindVertexArray(vao_);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_);
 
 		glBufferData(GL_ARRAY_BUFFER, static_cast<int>(vertices.size() * sizeof(mesh_vertex)), vertices.data(),
 		             GL_STATIC_DRAW);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vo_.ebo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<int>(indices.size() * sizeof(int)), indices.data(),
 		             GL_STATIC_DRAW);
 
@@ -47,21 +59,28 @@ namespace kanso {
 		glBindVertexArray(0);
 	}
 
-	renderer::~renderer() {
-		glDeleteVertexArrays(1, &vo_.vao);
-		glDeleteBuffers(1, &vo_.vbo);
-		glDeleteBuffers(1, &vo_.ebo);
+	opengl_renderer::~opengl_renderer() {
+		glDeleteVertexArrays(1, &vao_);
+		glDeleteBuffers(1, &vbo_);
+		glDeleteBuffers(1, &ebo_);
 	}
 
-	void renderer::draw_triangles() const {
-		glBindVertexArray(vo_.vao);
+	void opengl_renderer::draw_triangles() {
+		glBindVertexArray(vao_);
 		glDrawElements(GL_TRIANGLES, indices_count_, GL_UNSIGNED_INT, nullptr);
 
 		glBindVertexArray(0);
 		glActiveTexture(GL_TEXTURE0);
 	}
 
-	uint renderer::load_texture(uint8_t* bytes, int nr_channels, int width, int height) {
+	void opengl_renderer::draw_line() {
+		glEnableVertexAttribArray(0);
+		glBindVertexArray(vao_);
+		glDrawArrays(GL_LINES, 0, 2);
+		glBindVertexArray(0);
+	}
+
+	uint opengl_renderer::load_texture(uint8_t* bytes, int nr_channels, int width, int height) {
 		if (bytes == nullptr) {
 			throw std::invalid_argument("Texture binary data is nullptr");
 		}
@@ -97,7 +116,7 @@ namespace kanso {
 		return texture_id;
 	}
 
-	void renderer::bind_texture(uint shader, const std::string& type, uint id, uint& diffuse_nr, uint& specular_nr,
+	void opengl_renderer::bind_texture(uint shader, const std::string& type, uint id, uint& diffuse_nr, uint& specular_nr,
 	                            uint& height_nr, uint& normal_nr, uint& number, uint index) {
 		glActiveTexture(GL_TEXTURE0 + index);
 		auto name = type;
@@ -118,35 +137,36 @@ namespace kanso {
 		glBindTexture(GL_TEXTURE_2D, id);
 	}
 
-	void renderer::reset_stencil_test() {
+	void opengl_renderer::reset_stencil_test() {
 		glStencilFunc(GL_ALWAYS, 1, 0xff);
 		glStencilMask(0xff);
 		glEnable(GL_DEPTH_TEST);
 	}
 
-	void renderer::enable_stencil_test() {
+	void opengl_renderer::enable_stencil_test() {
 		glStencilFunc(GL_NOTEQUAL, 1, 0xff);
 		glStencilMask(0x00);
 		glDisable(GL_DEPTH_TEST);
 	}
 
-	void renderer::clear(float red, float green, float blue, float alpha) {
+	void opengl_renderer::clear(float red, float green, float blue, float alpha) {
 		glClearColor(red, green, blue, alpha);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
 
-	void renderer::enable_depth() {
+	void opengl_renderer::enable_depth() {
 		glEnable(GL_DEPTH_TEST);
 	}
 
-	void renderer::enable_stencil(uint fill) {
+	void opengl_renderer::enable_stencil(uint fill) {
 		glDepthFunc(GL_LESS);
 		glEnable(GL_STENCIL_TEST);
 		glStencilFunc(GL_NOTEQUAL, 1, fill);
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 	}
 
-	void renderer::set_viewport(int width, int height) {
+	void opengl_renderer::set_viewport(int width, int height) {
 		glViewport(0, 0, width, height);
 	}
+
 } // namespace kanso

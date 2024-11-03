@@ -5,8 +5,8 @@
 #include "core.hpp"
 #include "exception.hpp"
 
-#include <glm/vec3.hpp>
-#include <glm/matrix.hpp>
+#include "glm/vec3.hpp"
+#include "glm/matrix.hpp"
 
 namespace kanso {
 
@@ -31,17 +31,17 @@ namespace kanso {
 
 	class shader {
 		public:
-			shader(const std::string& vert_file, const std::string& frag_file);
+			shader(std::string_view vert_file, std::string_view frag_file);
 
 			[[nodiscard]] uint get_id() const {
 				return id_;
 			}
 
-			static void set_uniform(uint shader, const std::string& name, const glm::vec3& vector);
-			static void set_uniform(uint shader, const std::string& name, const glm::mat4& matrix);
-			static void set_uniform(uint shader, const std::string& name, bool val);
-			static void set_uniform(uint shader, const std::string& name, int val);
-			static void set_uniform(uint shader, const std::string& name, float val);
+			static void set_uniform(uint shader, std::string_view name, const glm::vec3& vector);
+			static void set_uniform(uint shader, std::string_view name, const glm::mat4& matrix);
+			static void set_uniform(uint shader, std::string_view name, bool val);
+			static void set_uniform(uint shader, std::string_view name, int val);
+			static void set_uniform(uint shader, std::string_view name, float val);
 			static void use(uint shader);
 
 		private:

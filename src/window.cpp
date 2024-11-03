@@ -13,7 +13,7 @@ namespace kanso {
 
 	void parse_json(int& framebuf_width, int& framebuf_height, std::string& title);
 
-	glfw_window::glfw_window() {
+	glfw_window::glfw_window() : renderer_(renderer_factory::make_renderer()) {
 		auto err_callback = [](int code, const char* err_str) {
 			std::cerr << "GLFW error: (" << code << "): " << err_str << std::endl;
 		};
@@ -46,6 +46,8 @@ namespace kanso {
 		parse_json(framebuf_width, framebuf_height, title);
 
 		window_ = glfwCreateWindow(framebuf_width, framebuf_height, title.c_str(), nullptr, nullptr);
+		width_ = framebuf_width;
+		height_ = framebuf_height;
 
 		if (window_ == nullptr) {
 			glfwTerminate();
@@ -60,15 +62,37 @@ namespace kanso {
 			throw std::runtime_error("Failed to initialize GLAD");
 		}
 
-		renderer::enable_depth();
-		renderer::enable_stencil(0xff);
+		renderer_->enable_depth();
+		renderer_->enable_stencil(0xff);
 
 		glfwGetFramebufferSize(window_, &framebuf_width, &framebuf_height);
-		renderer::set_viewport(framebuf_width, framebuf_height);
+		renderer_->set_viewport(framebuf_width, framebuf_height);
+		real_width_ = framebuf_width;
+		real_height_ = framebuf_height;
 
+		 glfwSetWindowUserPointer(window_, this);
 		auto framebuffer_size_callback = [](GLFWwindow* window, int width, int height) {
-			(void)window;
-			renderer::set_viewport(width, height);
+			auto* window_obj = static_cast<glfw_window*>(glfwGetWindowUserPointer(window));
+
+			const float height_diff_ratio = static_cast<float>(height - window_obj->real_height_) / static_cast<float>(window_obj->real_height_);
+			const float width_diff_ratio = static_cast<float>(width - window_obj->real_width_) / static_cast<float>(window_obj->real_width_);
+
+			if (width_diff_ratio >= 0) {
+				window_obj->width_ += static_cast<int>(std::ceil(static_cast<float>(window_obj->width_) * width_diff_ratio));
+			} else {
+				window_obj->width_ = static_cast<int>(std::floor(std::max(50.f, static_cast<float>(window_obj->width_) * (1 + width_diff_ratio))));
+			}
+
+			if (height_diff_ratio >= 0) {
+				window_obj->height_ += static_cast<int>(std::ceil(static_cast<float>(window_obj->height_) * height_diff_ratio));
+			} else {
+				window_obj->height_ = static_cast<int>(std::floor(std::max(50.f, static_cast<float>(window_obj->height_) * (1 + height_diff_ratio))));
+			}
+
+			window_obj->real_height_ = height;
+			window_obj->real_width_ = width;
+
+			window_obj->renderer_->set_viewport(width, height);
 		};
 
 		glfwSetFramebufferSizeCallback(window_, framebuffer_size_callback);
@@ -183,12 +207,12 @@ namespace kanso {
 		return static_cast<float>(glfwGetTime());
 	}
 
-	int glfw_window::height() const {
+	int glfw_window::get_real_height() const {
 		const auto* ret = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		return ret->height;
 	}
 
-	int glfw_window::width() const {
+	int glfw_window::get_real_width() const {
 		const auto* ret = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		return ret->width;
 	}
@@ -233,5 +257,13 @@ namespace kanso {
 
 	bool glfw_window::should_close() const {
 		return is_key_pressed(GLFW_KEY_ESCAPE);
+	}
+
+	int glfw_window::get_width() const {
+		return width_;
+	}
+
+	int glfw_window::get_height() const {
+		return height_;
 	}
 } // namespace kanso

@@ -1,10 +1,9 @@
 #pragma once
 
-#include <glm/vec3.hpp>
-#include <glm/matrix.hpp>
+#include "glm/vec3.hpp"
+#include "glm/matrix.hpp"
 
 #include "window.hpp"
-#include "exception.hpp"
 
 namespace kanso {
 

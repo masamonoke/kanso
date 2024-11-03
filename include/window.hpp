@@ -6,6 +6,7 @@
 
 #include "GLFW/glfw3.h"
 #include "core.hpp"
+#include "renderer.hpp"
 
 namespace kanso {
 
@@ -15,7 +16,6 @@ namespace kanso {
 			virtual ~window() = default;
 
 			virtual void hide_cursor() = 0;
-			// TODO: probably rename to show_cursor
 			virtual void show_cursor() = 0;
 
 			virtual void subsribe_on_mouse_pos_change(std::function<void(void*, double, double)> mouse_callback) = 0;
@@ -32,8 +32,10 @@ namespace kanso {
 			virtual void update() = 0;
 
 			[[nodiscard]] virtual float context_time() const          = 0;
-			[[nodiscard]] virtual int   height() const                = 0;
-			[[nodiscard]] virtual int   width() const                 = 0;
+			[[nodiscard]] virtual int   get_real_height() const                = 0;
+			[[nodiscard]] virtual int   get_real_width() const                 = 0;
+			[[nodiscard]] virtual int   get_height() const                = 0;
+			[[nodiscard]] virtual int   get_width() const                 = 0;
 			[[nodiscard]] virtual bool  is_key_pressed(int key) const = 0;
 			[[nodiscard]] virtual bool  should_close() const          = 0;
 	};
@@ -60,13 +62,20 @@ namespace kanso {
 			void update() override;
 
 			[[nodiscard]] float context_time() const override;
-			[[nodiscard]] int   height() const override;
-			[[nodiscard]] int   width() const override;
+			[[nodiscard]] int   get_real_height() const override;
+			[[nodiscard]] int   get_real_width() const override;
+			[[nodiscard]] int   get_height() const override;
+			[[nodiscard]] int   get_width() const override;
 			[[nodiscard]] bool  is_key_pressed(int key) const override;
 			[[nodiscard]] bool  should_close() const override;
 
 		private:
 			GLFWwindow* window_ = nullptr;
+			int width_{};
+			int height_{};
+			int real_width_{};
+			int real_height_{};
+			std::unique_ptr<renderer> renderer_;
 
 			std::map<int, enum mouse_button>   mouse_buttons_map_;
 			std::map<int, enum key_button>     key_buttons_map_;

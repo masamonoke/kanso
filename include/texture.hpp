@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "core.hpp"
+#include "renderer.hpp"
 
 namespace kanso {
 
@@ -18,7 +19,7 @@ namespace kanso {
 
 	class tex_map {
 		public:
-			explicit tex_map(const raw_tex& data);
+			tex_map(const raw_tex& data);
 
 			[[nodiscard]] std::string type() const {
 				return type_;
@@ -42,6 +43,7 @@ namespace kanso {
 
 		private:
 			std::vector<tex_map> maps_;
+			std::unique_ptr<renderer> renderer_;
 	};
 
 } // namespace kanso

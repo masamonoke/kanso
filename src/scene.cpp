@@ -2,7 +2,7 @@
 
 namespace kanso {
 
-	scene::scene(std::vector<std::shared_ptr<loaded_model>> models, std::vector<std::shared_ptr<light>> lights)
+	scene::scene(std::vector<std::shared_ptr<model>> models, std::vector<std::shared_ptr<light>> lights)
 	    : models_(std::move(models)),
 	      lights_(std::move(lights)) {}
 
@@ -18,5 +18,10 @@ namespace kanso {
 			model->draw(view, proj, camera_pos);
 		}
 	}
+
+	void scene::add_model(std::unique_ptr<model> model) {
+		models_.emplace_back(std::move(model));
+	}
+
 
 } // namespace kanso

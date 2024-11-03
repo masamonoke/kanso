@@ -1,5 +1,6 @@
 #include "loader.hpp"
 #include "model_data_loader.hpp"
+#include "loaded_model.hpp"
 
 #include <memory>
 #include <iostream>
@@ -8,61 +9,65 @@
 
 namespace kanso {
 
-	loader::loader(nlohmann::json&& json) : json_(std::move(json)), models_(init_load()) {}
+	loader::loader(nlohmann::json&& json) : json_(std::move(json)) {
+		init_load(std::inserter(models_, models_.end()));
+	}
 
 	namespace {
-		void load_light(const nlohmann::json& lights_json, std::vector<std::shared_ptr<light>>& lights);
-		std::pair<shader, shader> create_shader(const std::string& render_path, const std::string& outline_path);
-		glm::vec3                 from_json_to_vec3(const nlohmann::json& j, const std::string& name);
+		void load_light(const nlohmann::json& lights_json, back_inserter<std::shared_ptr<light>> inserter);
+
+		std::pair<shader, shader> create_shader(std::string_view render_path, std::string_view outline_path);
+
+		glm::vec3                 from_json_to_vec3(const nlohmann::json& j, std::string_view name);
 	} // namespace
 
-	std::map<std::string, std::shared_ptr<model_data>> loader::init_load() {
-		for (const auto& j : json_) {
-			try {
-				if (j["type"] == "model") {
-					return load_models_data(j);
-				}
-			} catch (const nlohmann::json::type_error& e) {
-				spdlog::error(e.what());
-				throw exception::bad_scene_file_exception("Passed scene file is in wrong format");
-			}
+	template<typename OutputIt>
+	void loader::init_load(OutputIt out_it) {
+		auto it = std::find_if(json_.begin(), json_.end(), [](const auto& item) {
+			return item["type"] == "model";
+		});
+		if (it != json_.end()) {
+			load_models_data(*it, out_it);
 		}
-
-		return {};
 	}
 
 	std::unique_ptr<scene> loader::make_scene() {
 		spdlog::debug("Making scene");
 
-		std::vector<std::shared_ptr<light>>        lights;
-		std::vector<std::shared_ptr<loaded_model>> models;
+		std::vector<std::shared_ptr<light>> lights;
+		std::vector<std::shared_ptr<model>> models;
 
-		for (const auto& j : json_) {
+		std::for_each(json_.begin(), json_.end(), [this, &models, &lights] (const auto& json) {
 			try {
-				if (j["type"] == "model") {
-					load_models(j, models);
-				} else if (j["type"] == "light") {
-					load_light(j, lights);
+				if (json["type"] == "model") {
+					load_models(json, std::back_inserter(models));
+				} else if (json["type"] == "light") {
+					load_light(json, std::back_inserter(lights));
 				}
 			} catch (const nlohmann::json::type_error& e) {
 				spdlog::error(e.what());
 				throw exception::bad_scene_file_exception("Passed scene file is in wrong format");
 			}
-		}
+		});
 
-		return std::make_unique<scene>(models, lights);
+		return std::make_unique<scene>(std::move(models), std::move(lights));
 	}
 
 	std::shared_ptr<camera> loader::make_camera() {
 		spdlog::debug("Making camera");
 
-		for (const auto& j : json_) {
+		auto it = std::find_if(json_.begin(), json_.end(), [](const auto& json) {
+			return json["type"] == "camera";
+		});
+
+		if (it != json_.end()) {
+			auto json = *it;
 			try {
-				if (j["type"] == "camera") {
-					const glm::vec3 pos  = from_json_to_vec3(j, "position");
-					const float     fov  = j["fov"];
-					const float     near = j["near"];
-					const float     far  = j["far"];
+				if (json["type"] == "camera") {
+					const glm::vec3 pos  = from_json_to_vec3(json, "position");
+					const float     fov  = json["fov"];
+					const float     near = json["near"];
+					const float     far  = json["far"];
 					return std::make_shared<camera>(pos, fov, near, far);
 				}
 			} catch (const nlohmann::json::type_error& e) {
@@ -74,18 +79,21 @@ namespace kanso {
 		throw exception::camera_not_found_exception("Scene file has no definition for camera");
 	}
 
-	std::map<std::string, std::shared_ptr<model_data>> loader::load_models_data(const nlohmann::json& models_json) {
+	template<typename OutputIt>
+	void loader::load_models_data(const nlohmann::json& models_json, OutputIt out_map) {
 		std::vector<std::string> paths;
-		for (const auto& json : models_json["values"]) {
-			paths.emplace_back(json["path"]);
-		}
 
-		const model_data_loader loader{ paths };
-		return loader.get_models_data();
+		const auto& values = models_json["values"];
+		paths.reserve(values.size());
+		std::for_each(values.begin(), values.end(), [&paths] (const auto& value) {
+			paths.emplace_back(value["path"]);
+		});
+
+		const model_data_loader loader{ paths.begin(), paths.end() };
+		loader.get_models_data(out_map);
 	}
 
-	void loader::load_models(const nlohmann::json&                       models_json,
-	                         std::vector<std::shared_ptr<loaded_model>>& loaded_models) {
+	void loader::load_models(const nlohmann::json& models_json, back_inserter<std::shared_ptr<model>> inserter) {
 		for (const auto& model_json : models_json["values"]) {
 			try {
 				auto      data = models_[model_json["path"]];
@@ -107,9 +115,10 @@ namespace kanso {
 				} else {
 					rot = { 0, 0, 0 };
 				}
-				auto shaders = create_shader(model_json["render_shader"], model_json["outline_shader"]);
-				loaded_models.emplace_back(
-				    std::make_shared<loaded_model>(shaders.first, shaders.second, pos, scale, rot, data));
+				auto shaders = create_shader(model_json["render_shader"].get<std::string>(), model_json["outline_shader"].get<std::string>());
+
+				*inserter++ = std::make_shared<loaded_model>(shaders.first, shaders.second, pos, scale, rot, data);
+
 			} catch (const exception::model_load_exception& e) {
 				if (model_json["path"].is_string()) {
 					if (model_json["path"].is_string()) {
@@ -155,28 +164,31 @@ namespace kanso {
 			return { point_part, direction, inner_cut_off, outer_cut_off };
 		}
 
-		void load_light(const nlohmann::json& lights_json, std::vector<std::shared_ptr<light>>& lights) {
+		void load_light(const nlohmann::json& lights_json, back_inserter<std::shared_ptr<light>> inserter) {
 			for (const auto& light_json : lights_json["values"]) {
 				if (light_json["light_type"] == "POINT_LIGHT") {
 					auto light_common = make_common_light(light_json);
 					auto point_data   = make_point_light(light_json);
-					lights.emplace_back(std::make_shared<point_light>(light_common, point_data));
+
+					*inserter++  = std::make_shared<point_light>(light_common, point_data);
 				} else if (light_json["light_type"] == "SPOT_LIGHT") {
 					auto light_common = make_common_light(light_json);
 					auto spot_data    = make_spot_light(light_json);
-					lights.emplace_back(std::make_shared<spot_light>(light_common, spot_data));
+
+					*inserter++ = std::make_shared<spot_light>(light_common, spot_data);
 				} else if (light_json["light_type"] == "DIRECTIONAL_LIGHT") {
 					auto dir          = from_json_to_vec3(light_json, "direction");
 					auto light_common = make_common_light(light_json);
-					lights.emplace_back(std::make_shared<directional_light>(light_common, dir));
+
+					*inserter++ = std::make_shared<directional_light>(light_common, dir);
 				} else {
 					spdlog::warn("Unknow light type: {}", std::string{ light_json["light_type"] });
 				}
 			}
 		}
 
-		std::pair<shader, shader> create_shader(const std::string& render_path, const std::string& outline_path) {
-			// NOTE:
+		std::pair<shader, shader> create_shader(std::string_view render_path, std::string_view outline_path) {
+			// BUG:
 			// There is some bug in clang-tidy that falsely detects "No member named 'format' in namespace 'std'"
 			// so i used fmt version from transitive dependency of spdlog that is fmt library.
 			// If you use std::format it compiles.
@@ -189,7 +201,7 @@ namespace kanso {
 			return { { render_vert, render_frag }, { outline_vert, outline_frag } };
 		}
 
-		glm::vec3 from_json_to_vec3(const nlohmann::json& j, const std::string& name) {
+		glm::vec3 from_json_to_vec3(const nlohmann::json& j, std::string_view name) {
 			return { j[name][0], j[name][1], j[name][2] };
 		}
 
