@@ -5,8 +5,8 @@
 #include "core.hpp"
 #include "exception.hpp"
 
-#include "glm/vec3.hpp"
-#include "glm/matrix.hpp"
+#include <glm/vec3.hpp>
+#include <glm/matrix.hpp>
 
 namespace kanso {
 
@@ -33,7 +33,7 @@ namespace kanso {
 		public:
 			shader(std::string_view vert_file, std::string_view frag_file);
 
-			[[nodiscard]] uint get_id() const {
+			uint id() const {
 				return id_;
 			}
 

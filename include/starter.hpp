@@ -8,12 +8,12 @@ namespace kanso {
 		public:
 			starter(int argc, char** argv);
 
-			[[nodiscard]] std::unique_ptr<app> make_app();
+			std::unique_ptr<app> make_app();
 
 		private:
-			int argc_;
+			int    argc_;
 			char** argv_;
-			bool init_ = false;
+			bool   init_ = false;
 	};
 
-};
+}; // namespace kanso

@@ -24,10 +24,10 @@ namespace kanso {
 			std::queue<std::function<void()>> tasks_;
 			std::mutex                        queue_mutex_;
 			std::condition_variable           condition_;
-			bool                              stop_;
+			bool                              stop_ = false;
 	};
 
-	inline thread_pool::thread_pool(size_t threads) : stop_(false) {
+	inline thread_pool::thread_pool(size_t threads) {
 		for (size_t i = 0; i < threads; ++i) {
 			workers_.emplace_back([this] {
 				for (;;) {

@@ -46,4 +46,4 @@ namespace kanso {
 		}
 	}
 
-}
+} // namespace kanso

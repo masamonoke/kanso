@@ -116,8 +116,8 @@ namespace kanso {
 		return texture_id;
 	}
 
-	void opengl_renderer::bind_texture(uint shader, const std::string& type, uint id, uint& diffuse_nr, uint& specular_nr,
-	                            uint& height_nr, uint& normal_nr, uint& number, uint index) {
+	void opengl_renderer::bind_texture(uint shader, const std::string& type, uint id, uint& diffuse_nr,
+	                                   uint& specular_nr, uint& height_nr, uint& normal_nr, uint& number, uint index) {
 		glActiveTexture(GL_TEXTURE0 + index);
 		auto name = type;
 		if (name == "texture_diffuse") {

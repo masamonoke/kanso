@@ -1,6 +1,7 @@
 #pragma once
 
-#include "glm/glm.hpp"
+#include <glm/glm.hpp>
+
 #include <utility>
 
 namespace kanso {
@@ -10,15 +11,7 @@ namespace kanso {
 			raycast(const glm::vec3& origin, const glm::vec3& direction);
 			raycast(float mouse_x, float mouse_y, int screen_width, int screen_height, const glm::mat4& view, const glm::mat4& proj);
 
-			[[nodiscard]] bool is_intersects(const glm::vec3& aabb_min, const glm::vec3& aabb_max, const glm::mat4& model) const;
-
-			[[nodiscard]] glm::vec3 get_origin() const {
-				return ray_origin_;
-			}
-
-			[[nodiscard]] glm::vec3 get_dir() const {
-				return ray_direction_;
-			}
+			bool is_intersects(const glm::vec3& aabb_min, const glm::vec3& aabb_max) const;
 
 		private:
 			glm::vec3 ray_origin_{};

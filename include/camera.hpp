@@ -1,7 +1,7 @@
 #pragma once
 
-#include "glm/vec3.hpp"
-#include "glm/matrix.hpp"
+#include <glm/vec3.hpp>
+#include <glm/matrix.hpp>
 
 #include "window.hpp"
 
@@ -11,12 +11,12 @@ namespace kanso {
 		public:
 			camera(const glm::vec3& pos, float fov, float near, float far);
 
-			[[nodiscard]] glm::mat4 get_proj(const window& w) const;
-			[[nodiscard]] glm::mat4 get_view() const;
-			[[nodiscard]] glm::vec3 get_pos() const;
-			[[nodiscard]] float     get_fov() const;
+			glm::mat4 proj(const window& w) const;
+			glm::mat4 view() const;
+			glm::vec3 pos() const;
+			float     fov() const;
 
-			void set_fov(float fov);
+			void fov(float fov);
 
 			void move_front(float speed);
 			void move_left(float speed);

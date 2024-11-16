@@ -33,7 +33,8 @@ Checks: >
   -cppcoreguidelines-special-member-functions,
   -hicpp-signed-bitwise,
   -cppcoreguidelines-non-private-member-variables-in-classes,
-  -google-default-arguments
+  -google-default-arguments,
+  -modernize-use-nodiscard
 
 WarningsAsErrors: true
 

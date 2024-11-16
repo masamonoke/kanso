@@ -1,6 +1,7 @@
 #pragma once
 
 #include "model.hpp"
+#include "renderer.hpp"
 
 namespace kanso {
 

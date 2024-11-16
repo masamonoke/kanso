@@ -4,7 +4,6 @@
 #include "light.hpp"
 #include "camera.hpp"
 #include "window.hpp"
-#include "exception.hpp"
 
 namespace kanso {
 
@@ -16,11 +15,11 @@ namespace kanso {
 
 			void add_model(std::unique_ptr<model> model);
 
-			[[nodiscard]] std::vector<std::shared_ptr<model>>::iterator begin() {
+			std::vector<std::shared_ptr<model>>::iterator begin() {
 				return models_.begin();
 			}
 
-			[[nodiscard]] std::vector<std::shared_ptr<model>>::iterator end() {
+			std::vector<std::shared_ptr<model>>::iterator end() {
 				return models_.end();
 			}
 

@@ -49,8 +49,8 @@ namespace kanso {
 		const float SENSITIVITY = 0.1f;
 
 		if (update_first_time_) {
-			update_last_x_ = x;
-			update_last_y_ = y;
+			update_last_x_     = x;
+			update_last_y_     = y;
 			update_first_time_ = false;
 		}
 
@@ -78,25 +78,25 @@ namespace kanso {
 		front_ = glm::normalize(front);
 	}
 
-	glm::mat4 camera::get_proj(const window& w) const {
-		auto aspect = static_cast<float>(w.get_real_width()) / static_cast<float>(w.get_real_height());
+	glm::mat4 camera::proj(const window& w) const {
+		auto aspect = static_cast<float>(w.real_width()) / static_cast<float>(w.real_height());
 		return glm::perspective(glm::radians(fov_), aspect, near_, far_);
 	}
 
-	glm::mat4 camera::get_view() const {
+	glm::mat4 camera::view() const {
 		auto dir = pos_ + front_;
 		return glm::lookAt(pos_, dir, up_);
 	}
 
-	glm::vec3 camera::get_pos() const {
+	glm::vec3 camera::pos() const {
 		return pos_;
 	}
 
-	float camera::get_fov() const {
+	float camera::fov() const {
 		return fov_;
 	}
 
-	void camera::set_fov(float fov) {
+	void camera::fov(float fov) {
 		fov_ = glm::clamp(fov, MIN_FOV, MAX_FOV);
 	}
 

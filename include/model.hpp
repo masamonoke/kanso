@@ -3,9 +3,8 @@
 #include <string>
 
 #include "shader.hpp"
-#include "model_data_loader.hpp"
 
-#include "glm/vec3.hpp"
+#include <glm/vec3.hpp>
 
 namespace kanso {
 
@@ -17,20 +16,26 @@ namespace kanso {
 
 	class model : public drawable {
 		public:
-			model(const shader& render_shader, const glm::vec3& pos) : render_shader_(render_shader), model_matrix_(1), pos_(pos) {}
-			model(const glm::vec3& pos, std::string_view vert_file, std::string_view frag_file) : render_shader_(shader(vert_file, frag_file)), model_matrix_(1), pos_(pos) {}
+			model(const shader& render_shader, const glm::vec3& pos)
+			    : render_shader_(render_shader),
+			      model_matrix_(1),
+			      pos_(pos) {}
+			model(const glm::vec3& pos, std::string_view vert_file, std::string_view frag_file)
+			    : render_shader_(shader(vert_file, frag_file)),
+			      model_matrix_(1),
+			      pos_(pos) {}
 
 			virtual void select_toggle() = 0;
 
-			[[nodiscard]] uint get_render_shader() const {
-				return render_shader_.get_id();
+			uint render_shader() {
+				return render_shader_.id();
 			}
 
-			[[nodiscard]] glm::mat4 get_model_matrix() const {
+			glm::mat4 model_matrix() const {
 				return model_matrix_;
 			}
 
-			[[nodiscard]] glm::vec3 get_pos() const {
+			glm::vec3 pos() const {
 				return pos_;
 			}
 
@@ -43,30 +48,19 @@ namespace kanso {
 	class scene_model : public model {
 		public:
 			scene_model(const shader& render_shader, const shader& outline_shader, const glm::vec3& pos,
-			            const glm::vec3& scale, const glm::vec3& rot, const glm::vec3& aabb_min, const glm::vec3& aabb_max)
+			            const glm::vec3& scale, const glm::vec3& rot, const glm::vec3& aabb_min,
+			            const glm::vec3& aabb_max)
 			    : model(render_shader, pos),
 			      outline_shader_(outline_shader),
 			      position_(pos),
 			      scale_(scale),
 			      rotation_(rot),
-				  aabb_min_(aabb_min),
-				  aabb_max_(aabb_max) {}
+			      aabb_min_(aabb_min),
+			      aabb_max_(aabb_max) {}
 
-			[[nodiscard]] uint get_outline_shader() const {
-				return outline_shader_.get_id();
-			}
+			virtual glm::vec3 aabb_min() = 0;
 
-			[[nodiscard]] bool is_selected() const {
-				return selected_;
-			}
-
-			void set_render_shader(const shader& shader) {
-				render_shader_ = shader;
-			}
-
-			void set_outline_shader(const shader& shader) {
-				outline_shader_ = shader;
-			}
+			virtual glm::vec3 aabb_max() = 0;
 
 			void select_toggle() override {
 				selected_ = !selected_;

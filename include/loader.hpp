@@ -11,6 +11,8 @@
 
 namespace kanso {
 
+	class model_data;
+
 	namespace exception {
 
 		class bad_scene_file_exception : public base_kanso_exception {

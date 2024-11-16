@@ -1,7 +1,7 @@
 #include "event_system.hpp"
 #include "GLFW/glfw3.h"
 #include "raycast.hpp"
-#include "primitive.hpp"
+/* #include "primitive.hpp" */
 
 #include <spdlog/spdlog.h>
 
@@ -83,34 +83,31 @@ namespace kanso {
 	glfw_wrapper::mouse_button_evt_callback() {
 
 		return [this](void* ctx, enum mouse_button b, enum button_status action) {
-			const auto camera_view = camera_->get_view();
-			const auto camera_proj = camera_->get_proj(*window_);
+			const auto camera_view = camera_->view();
+			const auto camera_proj = camera_->proj(*window_);
 
-			const auto screen_width  = window_->get_width();
-			const auto screen_height = window_->get_height();
+			const auto screen_width  = window_->width();
+			const auto screen_height = window_->height();
 
 			if (b == KANSO_MOUSE_BUTTON_LEFT && action == KANSO_STATUS_PRESS) {
 				double xpos{};
 				double ypos{};
 				glfwGetCursorPos(static_cast<GLFWwindow*>(ctx), &xpos, &ypos);
 
-				const glm::vec3 aabb_min{ -0.5f, -0.5f, -0.5f };
-				const glm::vec3 aabb_max{ 0.5f, 0.5f, 0.5f };
-				const raycast   ray{ static_cast<float>(xpos),
-                                   static_cast<float>(ypos),
-                                   screen_width,
-                                   screen_height,
-                                   camera_view,
-                                   camera_proj };
+				const raycast ray{ static_cast<float>(xpos),
+					               static_cast<float>(ypos),
+					               screen_width,
+					               screen_height,
+					               camera_view,
+					               camera_proj };
 
-				/* auto            displacement = ray.get_dir() * 50.0f; */
-				// TODO: lines should be gone after some time
-				/* scene_->add_model(std::make_unique<line>(ray.get_origin() + glm::vec3 {0, 0, -0.5 }, ray.get_origin() + displacement)); */
+				/* auto displacement = ray.get_dir() * 50.0f; */
+				/* scene_->add_model(std::make_unique<line>(ray.get_origin() + glm::vec3{ 0, 0, -0.5 }, */
+				/*                                          ray.get_origin() + displacement)); */
 
-				auto it = std::find_if(scene_->begin(), scene_->end(), [ray, aabb_min, aabb_max](const auto& model) {
-					const auto model_matrix = model->get_model_matrix();
-					// TODO: models bounding boxes are too big
-					return ray.is_intersects(aabb_min, aabb_max, model_matrix);
+				auto it = std::find_if(scene_->begin(), scene_->end(), [ray](const auto& model) {
+					auto       sm           = std::static_pointer_cast<scene_model>(model);
+					return ray.is_intersects(sm->aabb_min(), sm->aabb_max());
 				});
 				if (it != scene_->end()) {
 					(*it)->select_toggle();
@@ -162,9 +159,9 @@ namespace kanso {
 			(void)ctx;
 			(void)xoffset;
 
-			auto fov = camera_->get_fov();
+			auto fov = camera_->fov();
 			fov -= static_cast<float>(yoffset);
-			camera_->set_fov(fov);
+			camera_->fov(fov);
 		};
 	}
 

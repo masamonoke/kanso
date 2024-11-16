@@ -6,7 +6,7 @@ namespace kanso {
 	    : vertices_(std::move(data.vertices)),
 	      indices_(std::move(data.indices)),
 	      texture_(data.raw_maps),
-		  renderer_(renderer_factory::make_renderer(vertices_, indices_)) {}
+	      renderer_(renderer_factory::make_renderer(vertices_, indices_)) {}
 
 	void mesh::draw(uint shader) {
 

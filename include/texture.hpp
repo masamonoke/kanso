@@ -21,11 +21,11 @@ namespace kanso {
 		public:
 			tex_map(const raw_tex& data);
 
-			[[nodiscard]] std::string type() const {
+			std::string type() const {
 				return type_;
 			}
 
-			[[nodiscard]] uint id() const {
+			uint id() const {
 				return id_;
 			}
 
@@ -42,7 +42,7 @@ namespace kanso {
 			void bind(uint shader) const;
 
 		private:
-			std::vector<tex_map> maps_;
+			std::vector<tex_map>      maps_;
 			std::unique_ptr<renderer> renderer_;
 	};
 

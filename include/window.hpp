@@ -31,13 +31,13 @@ namespace kanso {
 
 			virtual void update() = 0;
 
-			[[nodiscard]] virtual float context_time() const          = 0;
-			[[nodiscard]] virtual int   get_real_height() const                = 0;
-			[[nodiscard]] virtual int   get_real_width() const                 = 0;
-			[[nodiscard]] virtual int   get_height() const                = 0;
-			[[nodiscard]] virtual int   get_width() const                 = 0;
-			[[nodiscard]] virtual bool  is_key_pressed(int key) const = 0;
-			[[nodiscard]] virtual bool  should_close() const          = 0;
+			virtual float context_time() const          = 0;
+			virtual int   real_height() const           = 0;
+			virtual int   real_width() const            = 0;
+			virtual int   height() const                = 0;
+			virtual int   width() const                 = 0;
+			virtual bool  is_key_pressed(int key) const = 0;
+			virtual bool  should_close() const          = 0;
 	};
 
 	class glfw_window : public window {
@@ -61,20 +61,20 @@ namespace kanso {
 
 			void update() override;
 
-			[[nodiscard]] float context_time() const override;
-			[[nodiscard]] int   get_real_height() const override;
-			[[nodiscard]] int   get_real_width() const override;
-			[[nodiscard]] int   get_height() const override;
-			[[nodiscard]] int   get_width() const override;
-			[[nodiscard]] bool  is_key_pressed(int key) const override;
-			[[nodiscard]] bool  should_close() const override;
+			float context_time() const override;
+			int   real_height() const override;
+			int   real_width() const override;
+			int   height() const override;
+			int   width() const override;
+			bool  is_key_pressed(int key) const override;
+			bool  should_close() const override;
 
 		private:
-			GLFWwindow* window_ = nullptr;
-			int width_{};
-			int height_{};
-			int real_width_{};
-			int real_height_{};
+			GLFWwindow*               window_ = nullptr;
+			int                       width_{};
+			int                       height_{};
+			int                       real_width_{};
+			int                       real_height_{};
 			std::unique_ptr<renderer> renderer_;
 
 			std::map<int, enum mouse_button>   mouse_buttons_map_;

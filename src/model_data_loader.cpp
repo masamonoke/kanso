@@ -135,14 +135,12 @@ namespace kanso {
 	{
 		meshes_.reserve(std::distance(begin, end));
 		std::for_each(std::make_move_iterator(begin), std::make_move_iterator(end), [this](auto&& data) {
-			// TODO:: test for models with several meshes
 			for (int i = 0; i < 3; i++) {
 				aabb_max_[i] = std::max(aabb_max_[i], data.aabb_max[i]);
-				aabb_min_[i] = std::max(aabb_min_[i], data.aabb_min[i]);
+				aabb_min_[i] = std::min(aabb_min_[i], data.aabb_min[i]);
 			}
 			meshes_.emplace_back(data);
 		});
-		/* spdlog::debug("{}: final aabb_max ({}, {}, {}), aabb_min({}, {}, {})", model_name_, aabb_max_.x, aabb_max_.y, aabb_max_.z, aabb_min_.x, aabb_min_.y, aabb_min_.z); */
 	}
 
 	model_data_loader::model_data_loader(std::vector<std::string>::iterator paths_begin, std::vector<std::string>::iterator paths_end) {
@@ -161,9 +159,6 @@ namespace kanso {
 		}
 
 		for (auto&& kv : raw_models_data_) {
-			/* std::for_each(kv.second.begin(), kv.second.end(), [kv](const auto& mesh_data) { */
-			/* 	spdlog::debug("{}: aabb_max ({}, {}, {}), aabb_min({}, {}, {})", kv.first, mesh_data.aabb_max.x, mesh_data.aabb_max.y, mesh_data.aabb_max.z, mesh_data.aabb_min.x, mesh_data.aabb_min.y, mesh_data.aabb_min.z); */
-			/* }); */
 			auto data = std::make_unique<model_data>(kv.first, kv.second.begin(), kv.second.end());
 			models_data_.emplace(kv.first, std::move(data));
 		}
@@ -176,7 +171,8 @@ namespace kanso {
 		const aiScene*   scene = importer.ReadFile(path.data(), aiProcess_Triangulate | aiProcess_FlipUVs |
 		                                                             aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph | aiProcess_GenBoundingBoxes);
 		if (scene == nullptr || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0 ||
-		    scene->mRootNode == nullptr) { // NOLINT(hicpp-signed-bitwise)
+		    scene->mRootNode == nullptr)
+		{
 			spdlog::error("Failed to open file: {}", path);
 			const std::lock_guard<std::mutex> lock(mut_);
 			raw_models_data_.emplace_back(path, raw_model_data{});

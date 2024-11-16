@@ -89,8 +89,7 @@ namespace kanso {
 	} // namespace
 
 	// TODO: shader failed loading is not held anywhere
-	shader::shader(std::string_view vert_file, std::string_view frag_file)
-	    : id_(create_shader(vert_file, frag_file)) {}
+	shader::shader(std::string_view vert_file, std::string_view frag_file) : id_(create_shader(vert_file, frag_file)) {}
 
 	void shader::set_uniform(uint shader, std::string_view name, const glm::vec3& vector) {
 		glUniform3fv(glGetUniformLocation(shader, name.data()), 1, &vector[0]);

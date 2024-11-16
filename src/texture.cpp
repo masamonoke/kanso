@@ -46,7 +46,7 @@ namespace kanso {
 		for (const auto& map : maps_) {
 
 			renderer_->bind_texture(shader, map.type(), map.id(), diffuse_nr, specular_nr, height_nr, normal_nr, number,
-			                       index);
+			                        index);
 
 			index++;
 		}

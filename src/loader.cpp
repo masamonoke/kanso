@@ -90,7 +90,7 @@ namespace kanso {
 		});
 
 		const model_data_loader loader{ paths.begin(), paths.end() };
-		loader.get_models_data(out_map);
+		loader.models_data(out_map);
 	}
 
 	void loader::load_models(const nlohmann::json& models_json, back_inserter<std::shared_ptr<model>> inserter) {
