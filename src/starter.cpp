@@ -1,8 +1,14 @@
 #include "starter.hpp"
+#include "core.hpp"
+#include "loader.hpp"
 
 #include "spdlog/spdlog.h"
+#include "nlohmann/json.hpp"
+
+#include <fstream>
 
 namespace kanso {
+
 
 	namespace {
 		nlohmann::json read_scene(const char* scene_path) {

@@ -38,6 +38,8 @@ namespace kanso {
 			virtual int   width() const                 = 0;
 			virtual bool  is_key_pressed(int key) const = 0;
 			virtual bool  should_close() const          = 0;
+
+			virtual void* internal() = 0;
 	};
 
 	class glfw_window : public window {
@@ -68,6 +70,8 @@ namespace kanso {
 			int   width() const override;
 			bool  is_key_pressed(int key) const override;
 			bool  should_close() const override;
+
+			void* internal() override { return window_; }
 
 		private:
 			GLFWwindow*               window_ = nullptr;

@@ -7,7 +7,8 @@ namespace kanso {
 	    : close_(false),
 	      window_(std::make_shared<glfw_window>()),
 	      loader_(std::make_unique<loader>(std::move(json))),
-		  renderer_(renderer_factory::make_renderer())
+		  renderer_(renderer_factory::make_renderer()),
+		  gui_(std::make_unique<opengl_gui>(window_)) // TODO: make it generic
 	{
 		scene_        = loader_->make_scene();
 		camera_       = loader_->make_camera();
@@ -18,6 +19,10 @@ namespace kanso {
 		renderer_->clear(0.5f, 0.5f, 0.5f);
 
 		scene_->draw(*camera_, *window_);
+
+		gui_->draw();
+
+		// window update should be last
 		window_->update();
 	}
 

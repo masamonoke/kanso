@@ -19,12 +19,23 @@ include_directories(include)
 include_directories(deps/assimp/include)
 include_directories(deps/json/include)
 include_directories(deps/glm)
+include_directories(deps/imgui)
 
 find_package(OpenGL REQUIRED)
 message(STATUS "Found OpenGL")
 
 file(GLOB SHADERS_OPENGL
 	shaders/*
+)
+
+file(GLOB IMGUI
+	deps/imgui/imgui_draw.cpp
+	deps/imgui/backends/imgui_impl_glfw.cpp
+	deps/imgui/imgui_tables.cpp
+	deps/imgui/imgui_widgets.cpp
+	deps/imgui/imgui.cpp
+	deps/imgui/backends/imgui_impl_opengl3.cpp
+	deps/imgui/imgui_demo.cpp
 )
 
 add_executable(${PROJECT_NAME}
@@ -46,6 +57,8 @@ add_executable(${PROJECT_NAME}
 	src/starter.cpp
 	src/raycast.cpp
 	src/primitive.cpp
+	src/gui.cpp
+	${IMGUI}
 )
 
 add_custom_target(

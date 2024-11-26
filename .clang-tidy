@@ -34,7 +34,9 @@ Checks: >
   -hicpp-signed-bitwise,
   -cppcoreguidelines-non-private-member-variables-in-classes,
   -google-default-arguments,
-  -modernize-use-nodiscard
+  -modernize-use-nodiscard,
+  -readability-named-parameter,
+  -hicpp-named-parameter
 
 WarningsAsErrors: true
 
