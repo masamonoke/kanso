@@ -7,38 +7,25 @@
 
 namespace kanso {
 
-#ifdef GLFWAPI
-	template <typename Camera, typename Window, typename Scene>
-	constexpr auto evt_wrapper(Camera&& camera, Window&& window, Scene&& scene) {
-		return std::make_unique<glfw_wrapper>(std::forward<Camera>(camera), std::forward<Window>(window),
-		                                      std::forward<Scene>(scene));
-	}
-#endif
-
-	event_system::event_system(const std::shared_ptr<window>& w, const std::shared_ptr<camera>& camera,
-	                           const std::shared_ptr<scene>& scene)
-	    : event_wrapper_(evt_wrapper(camera, w, scene)) {
+	event_system::event_system(const std::shared_ptr<window>& w, const std::shared_ptr<camera>& camera, const std::shared_ptr<scene>& scene,
+							   const std::shared_ptr<gui>& gui)
+		: event_wrapper_(event_wrapper_factory::make_event_wrapper(camera, w, scene, gui)) {
 		w->subscribe_on_mouse_click(event_wrapper_->mouse_button_evt_callback());
 		w->subscribe_on_scroll_change(event_wrapper_->scroll_evt_callback());
 		w->subsribe_on_keyboard_click(event_wrapper_->keyboard_evt_callback());
 		w->subsribe_on_mouse_pos_change(event_wrapper_->mouse_pos_evt_callback());
+		w->subscribe_on_focus_changed(event_wrapper_->focus_evt_callback());
 	}
 
 	glfw_wrapper::glfw_wrapper(std::shared_ptr<camera> camera, std::shared_ptr<window> window,
-	                           std::shared_ptr<scene> scene)
-	    : camera_(std::move(camera)),
+	                           std::shared_ptr<scene> scene, std::shared_ptr<gui> gui)
+	    : mouse_buttons_map_(mapped_mouse_buttons()),
+		  key_buttons_map_(mapped_keys()),
+		  camera_(std::move(camera)),
 	      window_(std::move(window)),
-	      scene_(std::move(scene)) {
-		mouse_buttons_map_[KANSO_MOUSE_BUTTON_LEFT]  = GLFW_MOUSE_BUTTON_LEFT;
-		mouse_buttons_map_[KANSO_MOUSE_BUTTON_RIGHT] = GLFW_MOUSE_BUTTON_RIGHT;
-
-		key_buttons_map_[KANSO_KEYBOARD_BUTTON_W] = GLFW_KEY_W;
-		key_buttons_map_[KANSO_KEYBOARD_BUTTON_S] = GLFW_KEY_S;
-		key_buttons_map_[KANSO_KEYBOARD_BUTTON_D] = GLFW_KEY_D;
-		key_buttons_map_[KANSO_KEYBOARD_BUTTON_A] = GLFW_KEY_A;
-		key_buttons_map_[KANSO_KEYBOARD_BUTTON_Q] = GLFW_KEY_Q;
-		key_buttons_map_[KANSO_KEYBOARD_BUTTON_E] = GLFW_KEY_E;
-	}
+	      scene_(std::move(scene)),
+		  gui_(std::move(gui))
+	{}
 
 	std::function<void(void*, double, double)> glfw_wrapper::mouse_pos_evt_callback() {
 
@@ -81,8 +68,10 @@ namespace kanso {
 
 	std::function<void(void*, enum mouse_button b, enum button_status action)>
 	glfw_wrapper::mouse_button_evt_callback() {
-
 		return [this](void* ctx, enum mouse_button b, enum button_status action) {
+
+			gui_->handle_click(ctx, b, action);
+
 			const auto camera_view = camera_->view();
 			const auto camera_proj = camera_->proj(*window_);
 
@@ -128,6 +117,8 @@ namespace kanso {
 			auto  camera_speed = delta_time * 2.5f;
 			auto* window       = static_cast<GLFWwindow*>(ctx);
 
+			// TODO: this must be in some system than interacts with buttons and can bind
+			// functions to this buttons events
 			if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 				camera_->move_front(camera_speed);
 			}
@@ -165,6 +156,12 @@ namespace kanso {
 		};
 	}
 
+	std::function<void(void*, int)> glfw_wrapper::focus_evt_callback() {
+		return [](void*, int) {
+		};
+	}
+
+
 	template <>
 	bool glfw_wrapper::is_key_pressed(void* ctx, enum mouse_button key) {
 		return glfwGetMouseButton(static_cast<GLFWwindow*>(ctx), mouse_buttons_map_[key]) == GLFW_PRESS;
@@ -174,4 +171,17 @@ namespace kanso {
 	bool glfw_wrapper::is_key_pressed(void* ctx, enum key_button key) {
 		return glfwGetKey(static_cast<GLFWwindow*>(ctx), key_buttons_map_[key]) == GLFW_PRESS;
 	}
+
+	std::unique_ptr<event_wrapper> event_wrapper_factory::make_event_wrapper(const std::shared_ptr<camera>& camera,
+																			 const std::shared_ptr<window>& window,
+																			 const std::shared_ptr<scene>&  scene,
+																			 const std::shared_ptr<gui>&    gui)
+	{
+#ifdef GLFWAPI
+		return std::make_unique<glfw_wrapper>(camera, window, scene, gui);
+#else
+		throw exception::not_implemented_exception("Unknown window API");
+#endif
+	}
+
 } // namespace kanso

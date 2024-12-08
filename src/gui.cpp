@@ -1,5 +1,6 @@
 #include "gui.hpp"
 #include "window.hpp"
+#include "exception.hpp"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdouble-promotion"
@@ -15,7 +16,7 @@
 
 namespace kanso {
 
-	gui::gui(const std::shared_ptr<window> &) {
+	gui::gui(const std::shared_ptr<window>&) {
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 	}
@@ -25,11 +26,15 @@ namespace kanso {
 		ImGui::Render();
 	}
 
-	opengl_gui::opengl_gui(const std::shared_ptr<window> &w) : gui(w) {
+	opengl_gui::opengl_gui(const std::shared_ptr<window>& w)
+	    : gui(w),
+	      mouse_buttons_map_(mapped_mouse_buttons()),
+	      key_buttons_map_(mapped_keys()),
+		  button_actions_map_(mapped_actions())
+	{
 		const char* glsl_version = "#version 410 core";
-		ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow *>(w->internal()), true);
+		ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow*>(w->internal()), false);
 		ImGui_ImplOpenGL3_Init(glsl_version);
-		ImGui::StyleColorsDark();
 		spdlog::info("User interface is initialized");
 	}
 
@@ -45,10 +50,27 @@ namespace kanso {
 	}
 
 	void opengl_gui::create_frame() {
-
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		ImGui::ShowDemoWindow();
 	}
-}
+
+	void opengl_gui::handle_click(void* ctx, enum mouse_button b, enum button_status action) {
+		auto* window = static_cast<GLFWwindow*>(ctx);
+
+		const int glfw_button = mouse_buttons_map_[b];
+		const int glfw_action = button_actions_map_[action];
+
+		ImGui_ImplGlfw_MouseButtonCallback(window, glfw_button, glfw_action, 0);
+	}
+
+	std::unique_ptr<gui> gui_factory::make_gui(const std::shared_ptr<window>& window) {
+#ifdef OPENGL_AVAILABLE
+		return std::make_unique<opengl_gui>(window);
+#else
+		throw exception::not_implemented_exception("Unknown graphics API");
+#endif
+	}
+
+} // namespace kanso

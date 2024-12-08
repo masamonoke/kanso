@@ -203,6 +203,15 @@ namespace kanso {
 		spdlog::debug("Registered mouse scroll callback");
 	}
 
+	void glfw_window::subscribe_on_focus_changed(std::function<void(void*, int)> focus_callback) {
+		static std::function<void(GLFWwindow*, int)> callback;
+
+		callback = focus_callback;
+		auto glfw_callback = [](GLFWwindow* window, int focused) { callback(window, focused); };
+
+		glfwSetWindowFocusCallback(window_, glfw_callback);
+	}
+
 	void glfw_window::update() {
 		glfwSwapBuffers(window_);
 		glfwPollEvents();

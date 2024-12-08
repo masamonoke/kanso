@@ -58,6 +58,7 @@ add_executable(${PROJECT_NAME}
 	src/raycast.cpp
 	src/primitive.cpp
 	src/gui.cpp
+	src/core.cpp
 	${IMGUI}
 )
 

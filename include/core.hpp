@@ -1,5 +1,7 @@
 #pragma once
 
+#include <map>
+
 namespace kanso {
 	constexpr char const* DEFAULT_SCENE_PATH    = "scene/default_scene.json";
 	constexpr int         DEFAULT_WINDOW_WIDTH  = 800;
@@ -27,4 +29,9 @@ namespace kanso {
 	enum mouse_button { KANSO_MOUSE_BUTTON_LEFT, KANSO_MOUSE_BUTTON_RIGHT };
 
 	enum button_status { KANSO_STATUS_PRESS, KANSO_STATUS_RELEASE };
+
+	std::map<enum mouse_button, int>  mapped_mouse_buttons();
+	std::map<enum key_button, int>    mapped_keys();
+	std::map<enum button_status, int> mapped_actions();
+
 } // namespace kanso

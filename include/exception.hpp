@@ -17,4 +17,9 @@ namespace kanso::exception {
 			std::runtime_error e;
 	};
 
+	class not_implemented_exception : public base_kanso_exception {
+		public:
+			not_implemented_exception(std::string&& msg) : base_kanso_exception(std::move(msg)) {}
+	};
+
 } // namespace kanso::exception

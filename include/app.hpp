@@ -23,7 +23,7 @@ namespace kanso {
 			std::shared_ptr<camera>       camera_;
 			std::unique_ptr<event_system> event_system_;
 			std::unique_ptr<renderer>     renderer_;
-			std::unique_ptr<gui>          gui_;
+			std::shared_ptr<gui>          gui_;
 
 			void update();
 			void input();
