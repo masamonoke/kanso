@@ -45,8 +45,10 @@ namespace kanso {
 	}
 
 	void opengl_gui::draw() {
-		gui::draw();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		if (enable_draw_) {
+			gui::draw();
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		}
 	}
 
 	void opengl_gui::create_frame() {

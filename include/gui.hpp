@@ -16,8 +16,13 @@ namespace kanso {
 			virtual void draw();
 			virtual void handle_click(void*, enum mouse_button b, enum button_status action) = 0;
 
+			void toggle_draw() { enable_draw_ = !enable_draw_; }
+
 		private:
 			virtual void create_frame() = 0;
+
+		protected:
+			bool enable_draw_ = false;
 	};
 
 	class opengl_gui : public gui {

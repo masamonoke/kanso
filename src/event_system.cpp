@@ -142,6 +142,15 @@ namespace kanso {
 			if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
 				camera_->move_down(camera_speed);
 			}
+
+			static bool pressed = false;
+			if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS) {
+				pressed = true;
+			}
+			if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_RELEASE && pressed) {
+				pressed = false;
+				gui_->toggle_draw();
+			}
 		};
 	}
 
