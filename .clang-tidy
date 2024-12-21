@@ -36,7 +36,9 @@ Checks: >
   -google-default-arguments,
   -modernize-use-nodiscard,
   -readability-named-parameter,
-  -hicpp-named-parameter
+  -hicpp-named-parameter,
+  -cppcoreguidelines-pro-type-vararg,
+  -hicpp-vararg
 
 WarningsAsErrors: true
 

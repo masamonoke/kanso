@@ -20,6 +20,7 @@ namespace kanso {
 
 		private:
 			virtual void create_frame() = 0;
+			virtual void create_windows() = 0;
 
 		protected:
 			bool enable_draw_ = false;
@@ -39,6 +40,7 @@ namespace kanso {
 			std::map<enum button_status, int> button_actions_map_;
 
 			void create_frame() override;
+			void create_windows() override;
 	};
 
 	namespace gui_factory {

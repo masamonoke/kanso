@@ -23,6 +23,7 @@ namespace kanso {
 
 	void gui::draw() {
 		create_frame();
+		create_windows();
 		ImGui::Render();
 	}
 
@@ -55,7 +56,30 @@ namespace kanso {
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		ImGui::ShowDemoWindow();
+	}
+
+	void opengl_gui::create_windows() {
+		static float sliderValue = 0.5f;
+		static bool checkboxState = false;
+		static int buttonClickCount = 0;
+		ImGui::Begin("My Custom Window");
+        ImGui::Text("Hello, world!");
+
+        // Slider
+        ImGui::SliderFloat("Slider", &sliderValue, 0.0f, 1.0f, "Value: %.3f");
+
+        // Checkbox
+        ImGui::Checkbox("Check Me", &checkboxState);
+        ImGui::Text("Checkbox is %s", checkboxState ? "ON" : "OFF");
+
+        // Button
+        if (ImGui::Button("Click Me")) {
+            buttonClickCount++;
+        }
+        ImGui::SameLine();
+        ImGui::Text("Clicked %d times", buttonClickCount);
+
+        ImGui::End();
 	}
 
 	void opengl_gui::handle_click(void* ctx, enum mouse_button b, enum button_status action) {
