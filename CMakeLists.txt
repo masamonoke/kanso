@@ -59,6 +59,7 @@ add_executable(${PROJECT_NAME}
 	src/primitive.cpp
 	src/gui.cpp
 	src/core.cpp
+	src/input_system.cpp
 	${IMGUI}
 )
 

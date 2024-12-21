@@ -7,6 +7,7 @@
 #include "camera.hpp"
 #include "scene.hpp"
 #include "gui.hpp"
+#include "input_system.hpp"
 
 namespace kanso {
 
@@ -18,7 +19,7 @@ namespace kanso {
 			virtual std::function<void(void*, enum mouse_button, enum button_status)> mouse_button_evt_callback() = 0;
 			virtual std::function<void(void*)>                                        keyboard_evt_callback()     = 0;
 			virtual std::function<void(void*, double, double)>                        scroll_evt_callback()       = 0;
-			virtual std::function<void(void*, int)>                                          focus_evt_callback()        = 0;
+			virtual std::function<void(void*, int)>                                   focus_evt_callback()        = 0;
 	};
 
 	class event_system {
@@ -54,6 +55,7 @@ namespace kanso {
 			std::shared_ptr<window>          window_;
 			std::shared_ptr<scene>           scene_;
 			std::shared_ptr<gui>             gui_;
+			glfw_input                       input_;
 
 			template <typename KeyType>
 			bool is_key_pressed(void* ctx, KeyType key) {
@@ -63,6 +65,8 @@ namespace kanso {
 			bool is_key_pressed(void* ctx, enum mouse_button key);
 			template <>
 			bool is_key_pressed(void* ctx, enum key_button key);
+
+			void prepare_input_system();
 	};
 
 	namespace event_wrapper_factory {

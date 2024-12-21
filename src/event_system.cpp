@@ -17,6 +17,29 @@ namespace kanso {
 		w->subscribe_on_focus_changed(event_wrapper_->focus_evt_callback());
 	}
 
+	void glfw_wrapper::prepare_input_system() {
+		input_.bind_key(key_button::KANSO_KEYBOARD_BUTTON_W, key_button_mod::KANSO_KEYBOARD_MOD_NONE, press_type::PRESS,
+						[this]() { camera_->move_front(0.03f); });
+
+		input_.bind_key(key_button::KANSO_KEYBOARD_BUTTON_S, key_button_mod::KANSO_KEYBOARD_MOD_NONE, press_type::PRESS,
+						[this]() { camera_->move_back(0.03f); });
+
+		input_.bind_key(key_button::KANSO_KEYBOARD_BUTTON_D, key_button_mod::KANSO_KEYBOARD_MOD_NONE, press_type::PRESS,
+						[this]() { camera_->move_right(0.03f); });
+
+		input_.bind_key(key_button::KANSO_KEYBOARD_BUTTON_A, key_button_mod::KANSO_KEYBOARD_MOD_NONE, press_type::PRESS,
+						[this]() { camera_->move_left(0.03f); });
+
+		input_.bind_key(key_button::KANSO_KEYBOARD_BUTTON_Q, key_button_mod::KANSO_KEYBOARD_MOD_NONE, press_type::PRESS,
+						[this]() { camera_->move_up(0.03f); });
+
+		input_.bind_key(key_button::KANSO_KEYBOARD_BUTTON_E, key_button_mod::KANSO_KEYBOARD_MOD_NONE, press_type::PRESS,
+						[this]() { camera_->move_down(0.03f); });
+
+		input_.bind_key(key_button::KANSO_KEYBOARD_BUTTON_F1, key_button_mod::KANSO_KEYBOARD_MOD_NONE, press_type::SINGLE_PRESS,
+						[this]() { gui_->toggle_draw(); });
+	}
+
 	glfw_wrapper::glfw_wrapper(std::shared_ptr<camera> camera, std::shared_ptr<window> window,
 	                           std::shared_ptr<scene> scene, std::shared_ptr<gui> gui)
 	    : mouse_buttons_map_(mapped_mouse_buttons()),
@@ -24,8 +47,11 @@ namespace kanso {
 		  camera_(std::move(camera)),
 	      window_(std::move(window)),
 	      scene_(std::move(scene)),
-		  gui_(std::move(gui))
-	{}
+		  gui_(std::move(gui)),
+		  input_(static_cast<GLFWwindow*>(window_->internal()))
+	{
+		prepare_input_system();
+	}
 
 	std::function<void(void*, double, double)> glfw_wrapper::mouse_pos_evt_callback() {
 
@@ -106,51 +132,8 @@ namespace kanso {
 	}
 
 	std::function<void(void*)> glfw_wrapper::keyboard_evt_callback() {
-		return [this](void* ctx) {
-			(void)ctx;
-
-			static auto last_frame = 0.0f;
-			auto        cur_frame  = window_->context_time();
-			auto        delta_time = cur_frame - last_frame;
-			last_frame             = cur_frame;
-
-			auto  camera_speed = delta_time * 2.5f;
-			auto* window       = static_cast<GLFWwindow*>(ctx);
-
-			// TODO: this must be in some system than interacts with buttons and can bind
-			// functions to this buttons events
-			if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-				camera_->move_front(camera_speed);
-			}
-
-			if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-				camera_->move_back(camera_speed);
-			}
-
-			if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-				camera_->move_right(camera_speed);
-			}
-
-			if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-				camera_->move_left(camera_speed);
-			}
-
-			if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
-				camera_->move_up(camera_speed);
-			}
-
-			if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
-				camera_->move_down(camera_speed);
-			}
-
-			static bool pressed = false;
-			if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS) {
-				pressed = true;
-			}
-			if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_RELEASE && pressed) {
-				pressed = false;
-				gui_->toggle_draw();
-			}
+		return [this](void*) {
+			input_.handle_input();
 		};
 	}
 
