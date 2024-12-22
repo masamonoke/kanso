@@ -38,6 +38,8 @@ namespace kanso {
 				return aabb_min_;
 			}
 
+			std::string name() const { return model_name_; }
+
 		private:
 			std::vector<mesh> meshes_;
 			std::string       model_name_;

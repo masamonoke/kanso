@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "core.hpp"
+#include "scene.hpp"
 
 namespace kanso {
 
@@ -10,11 +11,11 @@ namespace kanso {
 
 	class gui {
 		public:
-			gui(const std::shared_ptr<window>& w);
+			gui(const std::shared_ptr<const window>& w, const std::shared_ptr<const scene>& scene);
 			virtual ~gui() = default;
 
 			virtual void draw();
-			virtual void handle_click(void*, enum mouse_button b, enum button_status action) = 0;
+			virtual bool handle_click(void*, enum mouse_button b, enum button_status action) = 0;
 
 			void toggle_draw() { enable_draw_ = !enable_draw_; }
 
@@ -24,15 +25,16 @@ namespace kanso {
 
 		protected:
 			bool enable_draw_ = false;
+			std::shared_ptr<const scene> scene_;
 	};
 
 	class opengl_gui : public gui {
 		public:
-			opengl_gui(const std::shared_ptr<window>& w);
+			opengl_gui(const std::shared_ptr<const window>& w, const std::shared_ptr<const scene>& scene);
 			~opengl_gui() override;
 
 			void draw() override;
-			void handle_click(void* ctx, enum mouse_button b, enum button_status action) override;
+			bool handle_click(void* ctx, enum mouse_button b, enum button_status action) override;
 
 		private:
 			std::map<enum mouse_button, int>  mouse_buttons_map_;
@@ -44,6 +46,6 @@ namespace kanso {
 	};
 
 	namespace gui_factory {
-		std::unique_ptr<gui> make_gui(const std::shared_ptr<window>&);
+		std::unique_ptr<gui> make_gui(const std::shared_ptr<window>& window, const std::shared_ptr<const scene>& scene);
 	};
 } // namespace kanso

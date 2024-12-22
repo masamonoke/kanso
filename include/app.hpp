@@ -21,9 +21,9 @@ namespace kanso {
 			std::unique_ptr<loader>       loader_;
 			std::shared_ptr<scene>        scene_;
 			std::shared_ptr<camera>       camera_;
-			std::unique_ptr<event_system> event_system_;
 			std::unique_ptr<renderer>     renderer_;
 			std::shared_ptr<gui>          gui_;
+			std::unique_ptr<event_system> event_system_;
 
 			void update();
 			void input();

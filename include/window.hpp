@@ -41,6 +41,7 @@ namespace kanso {
 			virtual bool  should_close() const          = 0;
 
 			virtual void* internal() = 0;
+			virtual void* internal() const = 0;
 	};
 
 	class glfw_window : public window {
@@ -74,6 +75,7 @@ namespace kanso {
 			bool  should_close() const override;
 
 			void* internal() override { return window_; }
+			void* internal() const override { return window_; }
 
 		private:
 			GLFWwindow*               window_ = nullptr;

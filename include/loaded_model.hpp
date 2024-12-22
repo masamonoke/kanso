@@ -16,8 +16,15 @@ namespace kanso {
 			loaded_model(const loaded_model&&)             = delete;
 			loaded_model&& operator=(const loaded_model&&) = delete;
 
-			glm::vec3 aabb_min() override;
-			glm::vec3 aabb_max() override;
+			glm::vec3 aabb_min() const override;
+			glm::vec3 aabb_max() const override;
+
+			std::string type() const override {
+				return "loaded_model";
+			}
+			std::string name() const override {
+				return data_->name();
+			}
 
 		private:
 			std::shared_ptr<model_data> data_;
@@ -27,6 +34,7 @@ namespace kanso {
 			void draw_model(uint shader, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos);
 			void draw_bounding_box(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos);
 			void recalculate_bounding_box();
+			glm::vec3 calculate_aabb(glm::vec3 p) const;
 	};
 
 } // namespace kanso

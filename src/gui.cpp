@@ -16,7 +16,7 @@
 
 namespace kanso {
 
-	gui::gui(const std::shared_ptr<window>&) {
+	gui::gui(const std::shared_ptr<const window>&, const std::shared_ptr<const scene>& scene) : scene_(scene) {
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 	}
@@ -27,8 +27,8 @@ namespace kanso {
 		ImGui::Render();
 	}
 
-	opengl_gui::opengl_gui(const std::shared_ptr<window>& w)
-	    : gui(w),
+	opengl_gui::opengl_gui(const std::shared_ptr<const window>& w, const std::shared_ptr<const scene>& scene)
+	    : gui(w, scene),
 	      mouse_buttons_map_(mapped_mouse_buttons()),
 	      key_buttons_map_(mapped_keys()),
 		  button_actions_map_(mapped_actions())
@@ -59,41 +59,49 @@ namespace kanso {
 	}
 
 	void opengl_gui::create_windows() {
-		static float sliderValue = 0.5f;
-		static bool checkboxState = false;
-		static int buttonClickCount = 0;
-		ImGui::Begin("My Custom Window");
-        ImGui::Text("Hello, world!");
+		std::vector<model_view> items= scene_->models();
 
-        // Slider
-        ImGui::SliderFloat("Slider", &sliderValue, 0.0f, 1.0f, "Value: %.3f");
+        ImGui::Begin("Menu");
 
-        // Checkbox
-        ImGui::Checkbox("Check Me", &checkboxState);
-        ImGui::Text("Checkbox is %s", checkboxState ? "ON" : "OFF");
+		const std::string name_title = "Object Name";
+		// why not const char* imgui???
+        ImGui::InputText("Name", const_cast<char *>(name_title.c_str()), name_title.size()); // NOLINT
 
-        // Button
-        if (ImGui::Button("Click Me")) {
-            buttonClickCount++;
+        ImGui::Separator();
+
+		int id = 0;
+        for (auto& item : items) {
+            ImGui::PushID(id++);
+
+            ImGui::Text("%s", item.name.c_str());
+
+            ImGui::InputFloat3("Position", item.pos.data());
+            ImGui::InputFloat3("Rotation", item.rot.data());
+            ImGui::InputFloat3("Scale", item.scale.data());
+            ImGui::InputText("Type", item.type.data(), item.type.capacity());
+
+            ImGui::Separator();
+            ImGui::PopID();
         }
-        ImGui::SameLine();
-        ImGui::Text("Clicked %d times", buttonClickCount);
 
         ImGui::End();
 	}
 
-	void opengl_gui::handle_click(void* ctx, enum mouse_button b, enum button_status action) {
+	bool opengl_gui::handle_click(void* ctx, enum mouse_button b, enum button_status action) {
 		auto* window = static_cast<GLFWwindow*>(ctx);
 
 		const int glfw_button = mouse_buttons_map_[b];
 		const int glfw_action = button_actions_map_[action];
 
 		ImGui_ImplGlfw_MouseButtonCallback(window, glfw_button, glfw_action, 0);
+
+		return ImGui::IsAnyItemHovered();
+
 	}
 
-	std::unique_ptr<gui> gui_factory::make_gui(const std::shared_ptr<window>& window) {
+	std::unique_ptr<gui> gui_factory::make_gui(const std::shared_ptr<window>& window, const std::shared_ptr<const scene>& scene) {
 #ifdef OPENGL_AVAILABLE
-		return std::make_unique<opengl_gui>(window);
+		return std::make_unique<opengl_gui>(window, scene);
 #else
 		throw exception::not_implemented_exception("Unknown graphics API");
 #endif

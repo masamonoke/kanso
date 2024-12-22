@@ -1,7 +1,7 @@
 #include "event_system.hpp"
 #include "GLFW/glfw3.h"
 #include "raycast.hpp"
-/* #include "primitive.hpp" */
+#include "primitive.hpp"
 
 #include <spdlog/spdlog.h>
 
@@ -96,7 +96,9 @@ namespace kanso {
 	glfw_wrapper::mouse_button_evt_callback() {
 		return [this](void* ctx, enum mouse_button b, enum button_status action) {
 
-			gui_->handle_click(ctx, b, action);
+			if (gui_->handle_click(ctx, b, action)) {
+				return;
+			}
 
 			const auto camera_view = camera_->view();
 			const auto camera_proj = camera_->proj(*window_);
@@ -116,12 +118,16 @@ namespace kanso {
 					               camera_view,
 					               camera_proj };
 
-				/* auto displacement = ray.get_dir() * 50.0f; */
-				/* scene_->add_model(std::make_unique<line>(ray.get_origin() + glm::vec3{ 0, 0, -0.5 }, */
-				/*                                          ray.get_origin() + displacement)); */
+				auto displacement = ray.get_dir() * 50.0f;
+				scene_->add_model(std::make_unique<line>(ray.get_origin() + glm::vec3{ 0, 0, -0.5 },
+				                                         ray.get_origin() + displacement));
 
 				auto it = std::find_if(scene_->begin(), scene_->end(), [ray](const auto& model) {
-					auto       sm           = std::static_pointer_cast<scene_model>(model);
+					if (not model->is_scene_model()) {
+						return false;
+					}
+
+					const std::shared_ptr<const scene_model> sm = std::static_pointer_cast<const scene_model>(model);
 					return ray.is_intersects(sm->aabb_min(), sm->aabb_max());
 				});
 				if (it != scene_->end()) {

@@ -56,28 +56,24 @@ namespace kanso {
 		}
 	}
 
-	glm::vec3 loaded_model::aabb_min() {
-		model_matrix_ = { 1 };
-		model_matrix_ = glm::translate(model_matrix_, position_);
-		model_matrix_ = glm::scale(model_matrix_, scale_);
+	glm::vec3 loaded_model::calculate_aabb(glm::vec3 p) const {
+		glm::mat4 model_matrix = { 1 };
+		model_matrix = glm::translate(model_matrix, position_);
+		model_matrix = glm::scale(model_matrix, scale_);
 
-		model_matrix_ = glm::rotate(model_matrix_, glm::radians(rotation_[0]), { 1, 0, 0 });
-		model_matrix_ = glm::rotate(model_matrix_, glm::radians(rotation_[1]), { 0, 1, 0 });
-		model_matrix_ = glm::rotate(model_matrix_, glm::radians(rotation_[2]), { 0, 0, 1 });
+		model_matrix = glm::rotate(model_matrix, glm::radians(rotation_[0]), { 1, 0, 0 });
+		model_matrix = glm::rotate(model_matrix, glm::radians(rotation_[1]), { 0, 1, 0 });
+		model_matrix = glm::rotate(model_matrix, glm::radians(rotation_[2]), { 0, 0, 1 });
 
-		return { model_matrix_ * glm::vec4(aabb_min_, 1.0f) };
+		return { model_matrix * glm::vec4(p, 1.0f) };
 	}
 
-	glm::vec3 loaded_model::aabb_max() {
-		model_matrix_ = { 1 };
-		model_matrix_ = glm::translate(model_matrix_, position_);
-		model_matrix_ = glm::scale(model_matrix_, scale_);
+	glm::vec3 loaded_model::aabb_min() const {
+		return calculate_aabb(aabb_min_);
+	}
 
-		model_matrix_ = glm::rotate(model_matrix_, glm::radians(rotation_[0]), { 1, 0, 0 });
-		model_matrix_ = glm::rotate(model_matrix_, glm::radians(rotation_[1]), { 0, 1, 0 });
-		model_matrix_ = glm::rotate(model_matrix_, glm::radians(rotation_[2]), { 0, 0, 1 });
-
-		return { model_matrix_ * glm::vec4(aabb_max_, 1.0f) };
+	glm::vec3 loaded_model::aabb_max() const {
+		return calculate_aabb(aabb_max_);
 	}
 
 	void loaded_model::recalculate_bounding_box() {

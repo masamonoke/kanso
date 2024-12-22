@@ -12,7 +12,6 @@ namespace kanso {
 	}
 
 	line::line(const glm::vec3& start, const glm::vec3& end, std::string_view vert_file, std::string_view frag_file)
-	    : model(start, vert_file, frag_file),
-	      renderer_(renderer_factory::make_renderer(start, end)) {}
+	    : model(vert_file, frag_file), renderer_(renderer_factory::make_renderer(start, end)), start_(start) {}
 
 } // namespace kanso

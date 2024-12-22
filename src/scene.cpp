@@ -23,5 +23,22 @@ namespace kanso {
 		models_.emplace_back(std::move(model));
 	}
 
+	std::vector<model_view> scene::models() const {
+		std::vector<model_view> views;
+		views.reserve(models_.size());
+		for (const auto& model : models_) {
+			;
+			model_view const view{
+				model->name(),
+				{ model->pos()[0], model->pos()[1], model->pos()[2] },
+				{ model->rot()[0], model->pos()[1], model->pos()[2] },
+				{ model->scale()[0], model->scale()[1], model->scale()[2] },
+				model->type()
+			};
+			views.emplace_back(view);
+		}
+		return views;
+	}
+
 
 } // namespace kanso

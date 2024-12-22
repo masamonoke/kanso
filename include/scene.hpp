@@ -23,6 +23,8 @@ namespace kanso {
 				return models_.end();
 			}
 
+			std::vector<model_view> models() const;
+
 		private:
 			std::vector<std::shared_ptr<model>> models_;
 			std::vector<std::shared_ptr<light>> lights_;
