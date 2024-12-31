@@ -200,7 +200,7 @@ namespace kanso {
 
 	void glfw_window::subsribe_on_keyboard_click(std::function<void(void*)> keyboard_click_callback) {
 		keyboard_click_callback_ = keyboard_click_callback;
-		spdlog::debug("Registered mouse scroll callback");
+		spdlog::debug("Registered keyboard callback");
 	}
 
 	void glfw_window::subscribe_on_focus_changed(std::function<void(void*, int)> focus_callback) {
@@ -210,6 +210,16 @@ namespace kanso {
 		auto glfw_callback = [](GLFWwindow* window, int focused) { callback(window, focused); };
 
 		glfwSetWindowFocusCallback(window_, glfw_callback);
+	}
+
+	void glfw_window::subscribe_on_char_input(std::function<void(void*, uint)> char_callback) {
+		static std::function<void(GLFWwindow*, uint)> callback;
+
+		callback = char_callback;
+		auto glfw_callback = [](GLFWwindow* window, uint c) { callback(window, c); };
+
+		glfwSetCharCallback(window_, glfw_callback);
+		spdlog::debug("Registered char input callback");
 	}
 
 	void glfw_window::update() {

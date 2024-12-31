@@ -1,11 +1,9 @@
 #include "input_system.hpp"
-#include "exception.hpp"
 #include "spdlog/spdlog.h"
 
 namespace kanso {
 
 	void input_system::handle_input() {
-		/* funcs_[{ key, press }](); */
 		for (const auto& kv : funcs_) {
 			kv.second();
 		}
@@ -102,7 +100,7 @@ namespace kanso {
 		};
 
 		return [this, glfw_key, double_press]() {
-			static bool pressed = false; // TODO: add to buttons status map
+			static bool pressed = false;
 			if (glfwGetKey(window_, glfw_key) == GLFW_PRESS) {
 				pressed = true;
 			}

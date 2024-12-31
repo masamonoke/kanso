@@ -1,7 +1,8 @@
 #include "gui.hpp"
 #include "window.hpp"
+#ifndef OPENGL_AVAILABLE
 #include "exception.hpp"
-
+#endif
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdouble-promotion"
 
@@ -64,7 +65,6 @@ namespace kanso {
         ImGui::Begin("Menu");
 
 		const std::string name_title = "Object Name";
-		// why not const char* imgui???
         ImGui::InputText("Name", const_cast<char *>(name_title.c_str()), name_title.size()); // NOLINT
 
         ImGui::Separator();
@@ -105,6 +105,16 @@ namespace kanso {
 #else
 		throw exception::not_implemented_exception("Unknown graphics API");
 #endif
+	}
+
+	bool gui::blocked_keyboard() const {
+		return char_input_;
+	}
+
+	void opengl_gui::handle_char(uint c) {
+		ImGuiIO& io = ImGui::GetIO();
+		io.AddInputCharacter(c);
+		char_input_ = io.WantCaptureKeyboard;
 	}
 
 } // namespace kanso

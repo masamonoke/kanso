@@ -15,6 +15,7 @@ namespace kanso {
 		w->subsribe_on_keyboard_click(event_wrapper_->keyboard_evt_callback());
 		w->subsribe_on_mouse_pos_change(event_wrapper_->mouse_pos_evt_callback());
 		w->subscribe_on_focus_changed(event_wrapper_->focus_evt_callback());
+		w->subscribe_on_char_input(event_wrapper_->char_input_callback());
 	}
 
 	void glfw_wrapper::prepare_input_system() {
@@ -139,7 +140,9 @@ namespace kanso {
 
 	std::function<void(void*)> glfw_wrapper::keyboard_evt_callback() {
 		return [this](void*) {
-			input_.handle_input();
+			if (!gui_->blocked_keyboard()) {
+				input_.handle_input();
+			}
 		};
 	}
 
@@ -159,6 +162,11 @@ namespace kanso {
 		};
 	}
 
+	std::function<void(void*, uint)> glfw_wrapper::char_input_callback() {
+		return [this](void*, uint c) {
+			gui_->handle_char(c);
+		};
+	}
 
 	template <>
 	bool glfw_wrapper::is_key_pressed(void* ctx, enum mouse_button key) {

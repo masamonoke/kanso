@@ -20,6 +20,7 @@ namespace kanso {
 			virtual std::function<void(void*)>                                        keyboard_evt_callback()     = 0;
 			virtual std::function<void(void*, double, double)>                        scroll_evt_callback()       = 0;
 			virtual std::function<void(void*, int)>                                   focus_evt_callback()        = 0;
+			virtual std::function<void(void*, uint)>                                  char_input_callback()       = 0;
 	};
 
 	class event_system {
@@ -39,6 +40,7 @@ namespace kanso {
 			std::function<void(void*)>                                        keyboard_evt_callback() override;
 			std::function<void(void*, double, double)>                        scroll_evt_callback() override;
 			std::function<void(void*, int)>                                   focus_evt_callback() override;
+			std::function<void(void*, uint)>                                  char_input_callback() override;
 
 		private:
 			struct mouse_pos {
@@ -72,6 +74,6 @@ namespace kanso {
 	namespace event_wrapper_factory {
 		std::unique_ptr<event_wrapper> make_event_wrapper(const std::shared_ptr<camera> &camera, const std::shared_ptr<window> &window,
 														  const std::shared_ptr<scene> &scene, const std::shared_ptr<gui> &gui);
-	};
+	}
 
 } // namespace kanso

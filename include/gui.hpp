@@ -16,6 +16,9 @@ namespace kanso {
 
 			virtual void draw();
 			virtual bool handle_click(void*, enum mouse_button b, enum button_status action) = 0;
+			virtual void handle_char(uint c) = 0;
+
+			bool blocked_keyboard() const;
 
 			void toggle_draw() { enable_draw_ = !enable_draw_; }
 
@@ -24,8 +27,9 @@ namespace kanso {
 			virtual void create_windows() = 0;
 
 		protected:
-			bool enable_draw_ = false;
+			bool enable_draw_ = true;
 			std::shared_ptr<const scene> scene_;
+			bool char_input_ = false;
 	};
 
 	class opengl_gui : public gui {
@@ -35,6 +39,7 @@ namespace kanso {
 
 			void draw() override;
 			bool handle_click(void* ctx, enum mouse_button b, enum button_status action) override;
+			void handle_char(uint c) override;
 
 		private:
 			std::map<enum mouse_button, int>  mouse_buttons_map_;
