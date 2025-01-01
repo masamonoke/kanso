@@ -15,6 +15,7 @@ namespace kanso {
 	};
 
 	struct model_view {
+		std::string id;
 		std::string name;
 		std::array<float, 3> pos;
 		std::array<float, 3> rot;
@@ -24,7 +25,7 @@ namespace kanso {
 
 	class model : public drawable {
 		public:
-			model(const shader& render_shader) : render_shader_(render_shader), model_matrix_(1) {}
+			model(const shader& render_shader) : render_shader_(render_shader), model_matrix_(1), id_(uuid::generate_id()) {}
 			model(std::string_view vert_file, std::string_view frag_file)
 				: render_shader_(shader(vert_file, frag_file)),
 				  model_matrix_(1) {}
@@ -39,6 +40,10 @@ namespace kanso {
 				return model_matrix_;
 			}
 
+			std::string id() const {
+				return id_;
+			}
+
 			virtual glm::vec3   pos() const            = 0;
 			virtual glm::vec3   rot() const            = 0;
 			virtual glm::vec3   scale() const          = 0;
@@ -49,6 +54,7 @@ namespace kanso {
 		protected:
 			shader    render_shader_;
 			glm::mat4 model_matrix_;
+			std::string id_;
 	};
 
 	class scene_model : public model {

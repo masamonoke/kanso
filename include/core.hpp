@@ -39,4 +39,8 @@ namespace kanso {
 	std::map<enum button_status, int> mapped_actions();
 	std::map<enum press_type, int>    mapped_press();
 
+	namespace uuid {
+		std::string generate_id();
+	}
+
 } // namespace kanso

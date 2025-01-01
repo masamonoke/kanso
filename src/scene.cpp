@@ -27,8 +27,8 @@ namespace kanso {
 		std::vector<model_view> views;
 		views.reserve(models_.size());
 		for (const auto& model : models_) {
-			;
 			model_view const view{
+				model->id(),
 				model->name(),
 				{ model->pos()[0], model->pos()[1], model->pos()[2] },
 				{ model->rot()[0], model->pos()[1], model->pos()[2] },
