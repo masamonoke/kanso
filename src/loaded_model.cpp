@@ -13,7 +13,7 @@ namespace kanso {
 		recalculate_bounding_box();
 	}
 
-	void loaded_model::draw(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos) {
+	void loaded_model::draw(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos) const {
 		renderer_->reset_stencil_test();
 		draw_model(render_shader(), view, proj, camera_pos);
 
@@ -25,7 +25,7 @@ namespace kanso {
 	}
 
 	void loaded_model::draw_model(uint shader, const glm::mat4& view, const glm::mat4& proj,
-	                              const glm::vec3& camera_pos) {
+	                              const glm::vec3& camera_pos) const {
 		shader::use(shader);
 
 		model_matrix_ = { 1 };
@@ -50,8 +50,8 @@ namespace kanso {
 		draw_bounding_box(view, proj, camera_pos);
 	}
 
-	void loaded_model::draw_bounding_box(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos) {
-		for (auto& line : aabb_box_) {
+	void loaded_model::draw_bounding_box(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos) const {
+		for (const auto& line : aabb_box_) {
 			line.draw(view, proj, camera_pos);
 		}
 	}

@@ -2,7 +2,7 @@
 
 namespace kanso {
 
-	void line::draw(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos) {
+	void line::draw(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos) const {
 		(void)camera_pos;
 		model_matrix_ = { 1.0f };
 		auto mvp      = proj * view * model_matrix_;

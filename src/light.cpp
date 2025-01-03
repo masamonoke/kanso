@@ -15,7 +15,7 @@ namespace kanso {
 	    : light(common_part),
 	      point_light_part_(point_light) {}
 
-	void point_light::bind_to(uint shader) {
+	void point_light::bind_to(uint shader) const {
 		shader::use(shader);
 
 		shader::set_uniform(shader, "pointLight.ambient", common_data().ambient);
@@ -36,7 +36,7 @@ namespace kanso {
 	    : light(common_part),
 	      direction_(direction) {}
 
-	void directional_light::bind_to(uint shader) {
+	void directional_light::bind_to(uint shader) const {
 		shader::use(shader);
 
 		shader::set_uniform(shader, "dirLight.ambient", common_data().ambient);
@@ -54,7 +54,7 @@ namespace kanso {
 	    : light(common_part),
 	      spot_light_part_(spot_light_part) {}
 
-	void spot_light::bind_to(uint shader) {
+	void spot_light::bind_to(uint shader) const {
 		shader::use(shader);
 		shader::set_uniform(shader, "spotLight.ambient", common_data().ambient);
 		shader::set_uniform(shader, "spotLight.diffuse", common_data().diffuse);

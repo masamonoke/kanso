@@ -11,7 +11,7 @@ namespace kanso {
 	class drawable {
 		public:
 			virtual ~drawable()                                                                          = default;
-			virtual void draw(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos) = 0;
+			virtual void draw(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos) const = 0;
 	};
 
 	struct model_view {
@@ -32,7 +32,7 @@ namespace kanso {
 
 			virtual void select_toggle() = 0;
 
-			uint render_shader() {
+			uint render_shader() const {
 				return render_shader_.id();
 			}
 
@@ -53,7 +53,7 @@ namespace kanso {
 
 		protected:
 			shader    render_shader_;
-			glm::mat4 model_matrix_;
+			mutable glm::mat4 model_matrix_;
 			std::string id_;
 	};
 

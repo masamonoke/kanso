@@ -9,7 +9,7 @@ namespace kanso {
 		public:
 			line(const glm::vec3& start, const glm::vec3& end, std::string_view vert_file = "shaders/line.vert", std::string_view frag_file = "shaders/line.frag");
 
-			void draw(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos) override;
+			void draw(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos) const override;
 			void select_toggle() override {}
 
 			std::string type() const override {

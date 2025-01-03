@@ -60,6 +60,7 @@ add_executable(${PROJECT_NAME}
 	src/gui.cpp
 	src/core.cpp
 	src/input_system.cpp
+	src/object_manager.cpp
 	${IMGUI}
 )
 

@@ -1,4 +1,5 @@
 #include "loader.hpp"
+#include "light.hpp"
 #include "model_data_loader.hpp"
 #include "loaded_model.hpp"
 
@@ -50,7 +51,7 @@ namespace kanso {
 			}
 		});
 
-		return std::make_unique<scene>(std::move(models), std::move(lights));
+		return std::make_unique<scene>(std::make_unique<object_manager>(std::move(models), std::move(lights)));
 	}
 
 	std::shared_ptr<camera> loader::make_camera() {

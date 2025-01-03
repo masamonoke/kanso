@@ -1,33 +1,26 @@
 #pragma once
 
-#include "model.hpp"
-#include "light.hpp"
 #include "camera.hpp"
-#include "window.hpp"
+#include "object_manager.hpp"
 
 namespace kanso {
 
 	class scene {
 		public:
-			scene(std::vector<std::shared_ptr<model>> models, std::vector<std::shared_ptr<light>> lights);
+			scene(std::shared_ptr<object_manager> manager);
 
 			void draw(const camera& camera, const window& window);
 
 			void add_model(std::unique_ptr<model> model);
 
-			std::vector<std::shared_ptr<model>>::iterator begin() {
-				return models_.begin();
-			}
+			std::vector<std::shared_ptr<model>>::const_iterator model_begin();
+			std::vector<std::shared_ptr<model>>::const_iterator model_end();
 
-			std::vector<std::shared_ptr<model>>::iterator end() {
-				return models_.end();
-			}
-
-			std::vector<model_view> models() const;
+			std::vector<model_view>::iterator view_begin() const;
+			std::vector<model_view>::iterator view_end() const;
 
 		private:
-			std::vector<std::shared_ptr<model>> models_;
-			std::vector<std::shared_ptr<light>> lights_;
+			std::shared_ptr<object_manager> obj_manager_;
 	};
 
 } // namespace kanso

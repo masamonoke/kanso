@@ -1,4 +1,5 @@
 #include "gui.hpp"
+#include "model.hpp"
 #include "window.hpp"
 #ifndef OPENGL_AVAILABLE
 #include "exception.hpp"
@@ -60,7 +61,8 @@ namespace kanso {
 	}
 
 	void opengl_gui::create_windows() {
-		std::vector<model_view> items= scene_->models();
+		auto begin = scene_->view_begin();
+		auto end = scene_->view_end();
 
         ImGui::Begin("Menu");
 
@@ -70,15 +72,15 @@ namespace kanso {
         ImGui::Separator();
 
 		int id = 0;
-        for (auto& item : items) {
+        for (auto it = begin; it != end; ++it) {
             ImGui::PushID(id++);
 
-            ImGui::Text("%s", item.name.c_str());
+            ImGui::Text("%s", it->name.c_str());
 
-            ImGui::InputFloat3("Position", item.pos.data());
-            ImGui::InputFloat3("Rotation", item.rot.data());
-            ImGui::InputFloat3("Scale", item.scale.data());
-            ImGui::InputText("Type", item.type.data(), item.type.capacity());
+            ImGui::InputFloat3("Position", it->pos.data());
+            ImGui::InputFloat3("Rotation", it->rot.data());
+            ImGui::InputFloat3("Scale", it->scale.data());
+            ImGui::InputText("Type", it->type.data(), it->type.capacity());
 
             ImGui::Separator();
             ImGui::PopID();
