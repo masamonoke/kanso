@@ -115,4 +115,8 @@ if (${CMAKE_BUILD_TYPE} MATCHES Debug)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG=ON)
 endif()
 
+find_program(iwyu_path NAMES include-what-you-use iwyu REQUIRED)
+
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
+
 target_link_libraries(${PROJECT_NAME} glfw OpenGL::GL assimp spdlog nlohmann_json::nlohmann_json glm)
