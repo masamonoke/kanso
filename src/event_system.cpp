@@ -168,12 +168,10 @@ namespace kanso {
 		};
 	}
 
-	template <>
 	bool glfw_wrapper::is_key_pressed(void* ctx, enum mouse_button key) {
 		return glfwGetMouseButton(static_cast<GLFWwindow*>(ctx), mouse_buttons_map_[key]) == GLFW_PRESS;
 	}
 
-	template <>
 	bool glfw_wrapper::is_key_pressed(void* ctx, enum key_button key) {
 		return glfwGetKey(static_cast<GLFWwindow*>(ctx), key_buttons_map_[key]) == GLFW_PRESS;
 	}

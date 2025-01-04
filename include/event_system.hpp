@@ -59,13 +59,7 @@ namespace kanso {
 			std::shared_ptr<gui>             gui_;
 			glfw_input                       input_;
 
-			template <typename KeyType>
-			bool is_key_pressed(void* ctx, KeyType key) {
-				(void)ctx, (void)key;
-			}
-			template <>
 			bool is_key_pressed(void* ctx, enum mouse_button key);
-			template <>
 			bool is_key_pressed(void* ctx, enum key_button key);
 
 			void prepare_input_system();

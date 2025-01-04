@@ -225,7 +225,9 @@ namespace kanso {
 	void glfw_window::update() {
 		glfwSwapBuffers(window_);
 		glfwPollEvents();
-		keyboard_click_callback_(window_);
+		if (keyboard_click_callback_) {
+			keyboard_click_callback_(window_);
+		}
 	}
 
 	float glfw_window::context_time() const {

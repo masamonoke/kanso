@@ -61,9 +61,6 @@ namespace kanso {
 	}
 
 	void opengl_gui::create_windows() {
-		auto begin = scene_->view_begin();
-		auto end = scene_->view_end();
-
         ImGui::Begin("Menu");
 
 		const std::string name_title = "Object Name";
@@ -72,7 +69,7 @@ namespace kanso {
         ImGui::Separator();
 
 		int id = 0;
-        for (auto it = begin; it != end; ++it) {
+        for (auto it = scene_->view_begin(), end = scene_->view_end(); it != end; ++it) {
             ImGui::PushID(id++);
 
             ImGui::Text("%s", it->name.c_str());
@@ -98,7 +95,6 @@ namespace kanso {
 		ImGui_ImplGlfw_MouseButtonCallback(window, glfw_button, glfw_action, 0);
 
 		return ImGui::IsAnyItemHovered();
-
 	}
 
 	std::unique_ptr<gui> gui_factory::make_gui(const std::shared_ptr<window>& window, const std::shared_ptr<const scene>& scene) {
