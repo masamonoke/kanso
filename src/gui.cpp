@@ -36,7 +36,7 @@ namespace kanso {
 		  button_actions_map_(mapped_actions())
 	{
 		const char* glsl_version = "#version 410 core";
-		ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow*>(w->internal()), false);
+		ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow*>(w->internal()), true);
 		ImGui_ImplOpenGL3_Init(glsl_version);
 		spdlog::info("User interface is initialized");
 	}
