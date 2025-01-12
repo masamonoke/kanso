@@ -63,8 +63,8 @@ namespace kanso {
 	void opengl_gui::create_windows() {
         ImGui::Begin("Menu");
 
-		const std::string name_title = "Object Name";
-        ImGui::InputText("Name", const_cast<char *>(name_title.c_str()), name_title.size()); // NOLINT
+		char name_title[] = "Object Name"; // NOLINT
+        ImGui::InputText("Name", name_title, std::strlen(name_title), ImGuiInputTextFlags_ReadOnly); // NOLINT
 
         ImGui::Separator();
 
@@ -74,10 +74,10 @@ namespace kanso {
 
             ImGui::Text("%s", it->name.c_str());
 
-            ImGui::InputFloat3("Position", it->pos.data());
-            ImGui::InputFloat3("Rotation", it->rot.data());
-            ImGui::InputFloat3("Scale", it->scale.data());
-            ImGui::InputText("Type", it->type.data(), it->type.capacity());
+            ImGui::InputFloat3("Position", it->pos.data(), "%.3f", ImGuiInputTextFlags_ReadOnly);
+            ImGui::InputFloat3("Rotation", it->rot.data(), "%.3f", ImGuiInputTextFlags_ReadOnly);
+            ImGui::InputFloat3("Scale", it->scale.data(), "%.3f", ImGuiInputTextFlags_ReadOnly);
+            ImGui::InputText("Type", it->type.data(), it->type.capacity(), ImGuiInputTextFlags_ReadOnly);
 
             ImGui::Separator();
             ImGui::PopID();

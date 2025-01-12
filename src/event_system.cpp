@@ -1,7 +1,8 @@
 #include "event_system.hpp"
 #include "GLFW/glfw3.h"
+#include "model.hpp"
 #include "raycast.hpp"
-#include "primitive.hpp"
+/* #include "primitive.hpp" */
 
 #include <spdlog/spdlog.h>
 
@@ -119,12 +120,12 @@ namespace kanso {
 					               camera_view,
 					               camera_proj };
 
-				auto displacement = ray.get_dir() * 50.0f;
-				scene_->add_model(std::make_unique<line>(ray.get_origin() + glm::vec3{ 0, 0, -0.5 },
-				                                         ray.get_origin() + displacement));
+				/* auto displacement = ray.get_dir() * 50.0f; */
+				/* scene_->add_model(std::make_unique<line>(ray.get_origin() + glm::vec3{ 0, 0, -0.5 }, */
+				/*                                          ray.get_origin() + displacement)); */
 
 				auto it = std::find_if(scene_->model_begin(), scene_->model_end(), [ray](const auto& model) {
-					if (not model->is_scene_model()) {
+					if (!model->is_scene_model()) {
 						return false;
 					}
 
