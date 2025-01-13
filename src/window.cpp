@@ -222,6 +222,15 @@ namespace kanso {
 		spdlog::debug("Registered char input callback");
 	}
 
+	void glfw_window::subscribe_on_cursor_enter(std::function<void(void*, int)> enter_callback) {
+		static std::function<void(GLFWwindow*, int)> callback;
+
+		callback = enter_callback;
+		auto glfw_callback = [](GLFWwindow* window, int entered) { callback(window, entered); };
+
+		glfwSetCursorEnterCallback(window_, glfw_callback);
+	}
+
 	void glfw_window::update() {
 		glfwSwapBuffers(window_);
 		glfwPollEvents();

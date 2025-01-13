@@ -17,6 +17,7 @@ namespace kanso {
 		w->subsribe_on_mouse_pos_change(event_wrapper_->mouse_pos_evt_callback());
 		w->subscribe_on_focus_changed(event_wrapper_->focus_evt_callback());
 		w->subscribe_on_char_input(event_wrapper_->char_input_callback());
+		w->subscribe_on_cursor_enter(event_wrapper_->cursor_enter_evt_callback());
 	}
 
 	void glfw_wrapper::prepare_input_system() {
@@ -159,6 +160,11 @@ namespace kanso {
 	}
 
 	std::function<void(void*, int)> glfw_wrapper::focus_evt_callback() {
+		return [](void*, int) {
+		};
+	}
+
+	std::function<void(void*, int)> glfw_wrapper::cursor_enter_evt_callback() {
 		return [](void*, int) {
 		};
 	}

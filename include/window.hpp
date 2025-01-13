@@ -25,6 +25,7 @@ namespace kanso {
 			virtual void subsribe_on_keyboard_click(std::function<void(void*)> keyboard_click_callback)                      = 0;
 			virtual void subscribe_on_focus_changed(std::function<void(void*, int)> focus_callback)                          = 0;
 			virtual void subscribe_on_char_input(std::function<void(void*, uint)> char_callback)                             = 0;
+			virtual void subscribe_on_cursor_enter(std::function<void(void*, int)> enter_callback)                                 = 0;
 
 			virtual enum mouse_button  map_mouse_button(int button)  = 0;
 			virtual enum key_button    map_key_button(int button)    = 0;
@@ -60,6 +61,7 @@ namespace kanso {
 			void subsribe_on_keyboard_click(std::function<void(void*)> keyboard_click_callback) override;
 			void subscribe_on_focus_changed(std::function<void(void*, int)> focus_callback) override;
 			void subscribe_on_char_input(std::function<void(void*, uint)> char_callback) override;
+			void subscribe_on_cursor_enter(std::function<void(void*, int)> enter_callback) override;
 
 			enum mouse_button  map_mouse_button(int button) override;
 			enum key_button    map_key_button(int button) override;

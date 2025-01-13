@@ -21,6 +21,8 @@ namespace kanso {
 			virtual std::function<void(void*, double, double)>                        scroll_evt_callback()       = 0;
 			virtual std::function<void(void*, int)>                                   focus_evt_callback()        = 0;
 			virtual std::function<void(void*, uint)>                                  char_input_callback()       = 0;
+			virtual std::function<void(void*, int)>                                   cursor_enter_evt_callback() = 0;
+
 	};
 
 	class event_system {
@@ -40,6 +42,7 @@ namespace kanso {
 			std::function<void(void*)>                                        keyboard_evt_callback() override;
 			std::function<void(void*, double, double)>                        scroll_evt_callback() override;
 			std::function<void(void*, int)>                                   focus_evt_callback() override;
+			std::function<void(void*, int)>                                   cursor_enter_evt_callback() override;
 			std::function<void(void*, uint)>                                  char_input_callback() override;
 
 		private:

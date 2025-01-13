@@ -35,8 +35,8 @@ namespace kanso {
 	      key_buttons_map_(mapped_keys()),
 		  button_actions_map_(mapped_actions())
 	{
-		const char* glsl_version = "#version 410 core";
 		ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow*>(w->internal()), true);
+		const char* glsl_version = "#version 410 core";
 		ImGui_ImplOpenGL3_Init(glsl_version);
 		spdlog::info("User interface is initialized");
 	}
@@ -74,9 +74,22 @@ namespace kanso {
 
             ImGui::Text("%s", it->name.c_str());
 
-            ImGui::InputFloat3("Position", it->pos.data(), "%.3f", ImGuiInputTextFlags_ReadOnly);
-            ImGui::InputFloat3("Rotation", it->rot.data(), "%.3f", ImGuiInputTextFlags_ReadOnly);
-            ImGui::InputFloat3("Scale", it->scale.data(), "%.3f", ImGuiInputTextFlags_ReadOnly);
+            const bool isPosChange = ImGui::InputFloat3("Position", it->pos.data());
+            const bool isRotChange = ImGui::InputFloat3("Rotation", it->rot.data());
+            const bool isScaleChange = ImGui::InputFloat3("Scale", it->scale.data());
+
+			if (isPosChange) {
+				spdlog::info("Object {} changed pos to: ({}, {}, {})", it->id, it->pos[0], it->pos[1], it->pos[2]);
+			}
+
+			if (isRotChange) {
+				spdlog::info("Object {} changed rot to: ({}, {}, {})", it->id, it->rot[0], it->rot[1], it->rot[2]);
+			}
+
+			if (isScaleChange) {
+				spdlog::info("Object {} changed scale to: ({}, {}, {})", it->id, it->scale[0], it->scale[1], it->scale[2]);
+			}
+
             ImGui::InputText("Type", it->type.data(), it->type.capacity(), ImGuiInputTextFlags_ReadOnly);
 
             ImGui::Separator();
