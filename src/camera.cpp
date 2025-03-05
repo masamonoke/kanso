@@ -24,11 +24,6 @@ namespace kanso {
 		pos_ -= front_ * speed;
 	}
 
-	glm::vec3 camera::front_up_cross() {
-		static auto cross = glm::cross(front_, up_);
-		return cross;
-	}
-
 	void camera::move_left(float speed) {
 		pos_ -= glm::cross(front_, up_) * speed;
 	}

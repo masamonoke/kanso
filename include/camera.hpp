@@ -40,7 +40,6 @@ namespace kanso {
 			float     update_yaw_   = -90.0f;
 			float     update_pitch_ = 0.0f;
 
-			[[nodiscard]] glm::vec3 front_up_cross();
 	};
 
 } // namespace kanso

@@ -21,7 +21,7 @@ namespace kanso {
 		public:
 			tex_map(const raw_tex& data);
 
-			std::string type() const {
+			const std::string& type() const {
 				return type_;
 			}
 
