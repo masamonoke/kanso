@@ -3,13 +3,14 @@
 #include "model.hpp"
 #include "raycast.hpp"
 /* #include "primitive.hpp" */
+#include "gsl/gsl"
 
 #include <spdlog/spdlog.h>
 
 namespace kanso {
 
-	event_system::event_system(const std::shared_ptr<window>& w, const std::shared_ptr<camera>& camera, const std::shared_ptr<scene>& scene,
-							   const std::shared_ptr<gui>& gui)
+	event_system::event_system(const std::shared_ptr<window>& w, const std::shared_ptr<camera>& camera,
+							   const std::shared_ptr<scene>& scene, const std::shared_ptr<gui>& gui)
 		: event_wrapper_(event_wrapper_factory::make_event_wrapper(camera, w, scene, gui)) {
 		w->subscribe_on_mouse_click(event_wrapper_->mouse_button_evt_callback());
 		w->subscribe_on_scroll_change(event_wrapper_->scroll_evt_callback());
@@ -21,26 +22,73 @@ namespace kanso {
 	}
 
 	void glfw_wrapper::prepare_input_system() {
+		// TODO: speed to constant
 		input_.bind_key(key_button::KANSO_KEYBOARD_BUTTON_W, key_button_mod::KANSO_KEYBOARD_MOD_NONE, press_type::PRESS,
-						[this]() { camera_->move_front(0.03f); });
+	 [this]() {
+			if (is_game_mode_) {
+				return;
+			}
+			camera_->move_front(0.03f);
+		});
 
 		input_.bind_key(key_button::KANSO_KEYBOARD_BUTTON_S, key_button_mod::KANSO_KEYBOARD_MOD_NONE, press_type::PRESS,
-						[this]() { camera_->move_back(0.03f); });
+	 [this]() {
+			if (is_game_mode_) {
+				return;
+			}
+
+			camera_->move_back(0.03f);
+		});
 
 		input_.bind_key(key_button::KANSO_KEYBOARD_BUTTON_D, key_button_mod::KANSO_KEYBOARD_MOD_NONE, press_type::PRESS,
-						[this]() { camera_->move_right(0.03f); });
+	 [this]() {
+			if (is_game_mode_) {
+				return;
+			}
+
+			camera_->move_right(0.03f);
+		});
 
 		input_.bind_key(key_button::KANSO_KEYBOARD_BUTTON_A, key_button_mod::KANSO_KEYBOARD_MOD_NONE, press_type::PRESS,
-						[this]() { camera_->move_left(0.03f); });
+	 [this]() {
+			if (is_game_mode_) {
+				return;
+			}
+
+			camera_->move_left(0.03f);
+		});
 
 		input_.bind_key(key_button::KANSO_KEYBOARD_BUTTON_Q, key_button_mod::KANSO_KEYBOARD_MOD_NONE, press_type::PRESS,
-						[this]() { camera_->move_up(0.03f); });
+	 [this]() {
+			if (is_game_mode_) {
+				return;
+			}
+
+	 		camera_->move_up(0.03f);
+		});
 
 		input_.bind_key(key_button::KANSO_KEYBOARD_BUTTON_E, key_button_mod::KANSO_KEYBOARD_MOD_NONE, press_type::PRESS,
-						[this]() { camera_->move_down(0.03f); });
+	 [this]() {
+			if (is_game_mode_) {
+				return;
+			}
+
+	 		camera_->move_down(0.03f);
+		});
 
 		input_.bind_key(key_button::KANSO_KEYBOARD_BUTTON_F1, key_button_mod::KANSO_KEYBOARD_MOD_NONE, press_type::SINGLE_PRESS,
-						[this]() { gui_->toggle_draw(); });
+	 [this]() {
+			if (is_game_mode_) {
+				return;
+			}
+
+	 		gui_->toggle_draw();
+		});
+
+		input_.bind_key(key_button::KANSO_KEYBOARD_BUTTON_F5, key_button_mod::KANSO_KEYBOARD_MOD_NONE, press_type::SINGLE_PRESS, [this]() {
+			is_game_mode_ = !is_game_mode_;
+			spdlog::info("Mode: {}", is_game_mode_? "game" : "dev");
+		});
 	}
 
 	glfw_wrapper::glfw_wrapper(std::shared_ptr<camera> camera, std::shared_ptr<window> window,
@@ -51,7 +99,8 @@ namespace kanso {
 	      window_(std::move(window)),
 	      scene_(std::move(scene)),
 		  gui_(std::move(gui)),
-		  input_(static_cast<GLFWwindow*>(window_->internal()))
+		  input_(static_cast<GLFWwindow*>(window_->internal())),
+		  is_game_mode_(false)
 	{
 		prepare_input_system();
 	}
@@ -59,6 +108,10 @@ namespace kanso {
 	std::function<void(void*, double, double)> glfw_wrapper::mouse_pos_evt_callback() {
 
 		return [this](void* ctx, double xpos, double ypos) {
+			if (is_game_mode_) {
+				return;
+			}
+
 			if (is_key_pressed(ctx, KANSO_MOUSE_BUTTON_RIGHT)) {
 				float x_shift{};
 				float y_shift{};
@@ -98,6 +151,9 @@ namespace kanso {
 	std::function<void(void*, enum mouse_button b, enum button_status action)>
 	glfw_wrapper::mouse_button_evt_callback() {
 		return [this](void* ctx, enum mouse_button b, enum button_status action) {
+			if (is_game_mode_) {
+				return;
+			}
 
 			if (gui_->handle_click(ctx, b, action)) {
 				return;
@@ -149,9 +205,10 @@ namespace kanso {
 	}
 
 	std::function<void(void*, double, double)> glfw_wrapper::scroll_evt_callback() {
-		return [this](void* ctx, double xoffset, double yoffset) {
-			(void)ctx;
-			(void)xoffset;
+		return [this](void*, double, double yoffset) {
+			if (is_game_mode_) {
+				return;
+			}
 
 			auto fov = camera_->fov();
 			fov -= static_cast<float>(yoffset);

@@ -14,7 +14,6 @@ Checks: >
   -google-readability-namespace-comments,
   -google-runtime-int,
   -google-runtime-references,
-  -readability-magic-numbers,
   -llvmlibc-*,
   -fuchsia*,
   -altera*,
@@ -35,8 +34,6 @@ Checks: >
   -cppcoreguidelines-non-private-member-variables-in-classes,
   -google-default-arguments,
   -modernize-use-nodiscard,
-  -readability-named-parameter,
-  -hicpp-named-parameter,
   -cppcoreguidelines-pro-type-vararg,
   -hicpp-vararg
 

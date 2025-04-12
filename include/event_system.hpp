@@ -22,12 +22,12 @@ namespace kanso {
 			virtual std::function<void(void*, int)>                                   focus_evt_callback()        = 0;
 			virtual std::function<void(void*, uint)>                                  char_input_callback()       = 0;
 			virtual std::function<void(void*, int)>                                   cursor_enter_evt_callback() = 0;
-
 	};
 
 	class event_system {
 		public:
 			event_system(const std::shared_ptr<window>& w, const std::shared_ptr<camera>& camera, const std::shared_ptr<scene>& scene, const std::shared_ptr<gui>& gui);
+
 
 		private:
 			std::unique_ptr<event_wrapper> event_wrapper_;
@@ -61,6 +61,7 @@ namespace kanso {
 			std::shared_ptr<scene>           scene_;
 			std::shared_ptr<gui>             gui_;
 			glfw_input                       input_;
+			bool                             is_game_mode_;
 
 			bool is_key_pressed(void* ctx, enum mouse_button key);
 			bool is_key_pressed(void* ctx, enum key_button key);
